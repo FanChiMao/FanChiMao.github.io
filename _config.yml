@@ -1,6 +1,6 @@
 # Site
 repository: sproogen/resume-theme
-favicon: ./images/favicon.ico
+favicon: images/favicon.ico
 
 # Content configuration version
 version: 2
@@ -25,15 +25,15 @@ instagram_username: 52hz_fan
 linkedin_username: 植貿-范-432665220
 # xing_username: jekyll
 # pinterest_username: jekyll
-# youtube_username: %2Fchannel%2FUCIV7WMa5O_TZKZZSzXcLmmw
+youtube_username: channel//UCIV7WMa5O_TZKZZSzXcLmmw
 # googleplus_username: +jekyll
 # orcid_username: 0000-0000-0000-0000
 
 # Additional icon links
-additional_links:
-- title: itsgoingto.be
-  icon: fas fa-globe
-  url: https://www.itsgoingto.be
+#additional_links:
+# - title: itsgoingto.be
+#  icon: fas fa-globe
+#  url: https://www.itsgoingto.be
 # - title: another link
 #   icon: font awesome brand icon name (eg. fab fa-twitter) (https://fontawesome.com/icons?d=gallery&m=free)
 #   url: Link url (eg. https://google.com)
