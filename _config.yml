@@ -90,17 +90,23 @@ content:
         link: https://github.com/FanChiMao/TermProject-2015-Java-AndroidStudio
         link_text: Classroom Interaction App
         additional_links:
-          - title:  TermProject-2017-Java-AndroidStudio
+          - title:  Android App
             icon: fab fa-github
             url: github.com/FanChiMao/TermProject-2015-Java-AndroidStudio
-          # - title:  Github page for project (eg. sproogen/modern-resume-theme)
-          #   icon: fab fa-github
-          #   url: Link to project (eg. sproogen.github.io/modern-resume-theme)
-        quote: >
-          This is probably one of the greatest apps ever created, if you don't agree you're probably wrong.
         description: | # this will include new lines to allow paragraphs
           I started this project as a way if learning <mark>React</mark> and it has since grown into a fully fledged app. I have learned many skills through this and been I'm very proud of having this in my portfolio. If you don't have a project as awesome as this I would advise you make one.
-
+      
+      - layout: left
+        title: AICUP競賽 (2020)
+        link: https://github.com/FanChiMao/Competition-2021-Pytorch-YOLOv4
+        link_text: YOLOv4 object detection
+        additional_links:
+          - title:  YOLOv4
+            icon: fab fa-github
+            url: github.com/FanChiMao/Competition-2021-Pytorch-YOLOv4
+        description: | # this will include new lines to allow paragraphs
+          在研究所一下時，
+          
   - title: A Little More About Me
     layout: text
     content: | # this will include new lines to allow paragraphs
