@@ -85,14 +85,14 @@ content:
   - title: Projects # Title for the section
     layout: list # Type of content section (list/text)
     content:
-      - layout: top-middle
-        title: Super awesome project
-        link: github.com/sproogen
-        # link_text: Project Website
+      - layout: left
+        title: Android
+        link: github.com/FanChiMao/TermProject-2015-Java-AndroidStudio
+        link_text: Project Website
         additional_links:
-          - title:  sproogen/modern-resume-theme
+          - title:  FanChiMao/TermProject-2015-Java-AndroidStudio
             icon: fab fa-github
-            url: github.com/sproogen/modern-resume-theme
+            url: github.com/FanChiMao/TermProject-2015-Java-AndroidStudio
           # - title:  Github page for project (eg. sproogen/modern-resume-theme)
           #   icon: fab fa-github
           #   url: Link to project (eg. sproogen.github.io/modern-resume-theme)
