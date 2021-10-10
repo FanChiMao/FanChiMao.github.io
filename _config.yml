@@ -87,10 +87,11 @@ content:
     content:
       - layout: left
         title: Android
-        link: github.com/FanChiMao/TermProject-2015-Java-AndroidStudio
-        link_text: Project Website
+        link: https://github.com/FanChiMao/TermProject-2015-Java-AndroidStudio
+        # link_text: Project Website
         additional_links:
           - title:  FanChiMao/TermProject-2015-Java-AndroidStudio
+            layout: middle
             icon: fab fa-github
             url: github.com/FanChiMao/TermProject-2015-Java-AndroidStudio
           # - title:  Github page for project (eg. sproogen/modern-resume-theme)
