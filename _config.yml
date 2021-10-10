@@ -86,12 +86,11 @@ content:
     layout: list # Type of content section (list/text)
     content:
       - layout: left
-        title: Android
+        title: 畢業專題 (2017)
         link: https://github.com/FanChiMao/TermProject-2015-Java-AndroidStudio
-        # link_text: Project Website
+        link_text: Classroom Interaction App
         additional_links:
-          - title:  FanChiMao/TermProject-2015-Java-AndroidStudio
-            layout: middle
+          - title:  TermProject-2017-Java-AndroidStudio
             icon: fab fa-github
             url: github.com/FanChiMao/TermProject-2015-Java-AndroidStudio
           # - title:  Github page for project (eg. sproogen/modern-resume-theme)
