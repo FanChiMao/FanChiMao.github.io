@@ -104,9 +104,6 @@ content:
           - title:  YOLOv4
             icon: fab fa-github
             url: github.com/FanChiMao/Competition-2021-Pytorch-YOLOv4
-          - title:  YOLOv4
-            icon: fab fa-github
-            url: github.com/FanChiMao/Competition-2021-Pytorch-YOLOv4
         description: | # this will include new lines to allow paragraphs
           在研究所一下時，
           
