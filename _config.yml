@@ -94,23 +94,20 @@ content:
           - title:  Android App
             icon: fab fa-github
             url: github.com/FanChiMao/TermProject-2015-Java-AndroidStudio
-          - title:  Github page for project
-            icon: fab fa-github
-            url: github.com/FanChiMao/TermProject-2015-Java-AndroidStudio
         description: | # this will include new lines to allow paragraphs
-          大學四年裡面讓我最有印象的大概就是畢業專題了，也正是做了本次的專題，讓我發現自己似乎比較適合走軟體這條路。 當時做這個專題，本身自己是只修過C語言的必修課程，程式能力與純軟的資工系比起來嚴重不足，所以從Android Studio的安裝使用、java的語法以及我負責的資料庫SQL語法，都是自己一點一點看各種資料自學而來的。 最終在大部分同學的專題主題都是偏向硬體的電機系中，我們這組得到了相當不錯的成績，也很慶幸自己能在電機系中找到和我一樣比較喜歡打程式的同學。 製作專題的過程分工明確且交流順暢，對我而言很滿意整體的過程與結果! 
+          大學四年裡面讓我最有印象的大概就是畢業專題了，也正是做了本次的專題，讓我發現自己似乎比較適合走軟體這條路。 當時做這個專題，本身自己是只修過C語言的必修課程，程式能力與純軟的資工系比起來嚴重不足，所以從Android Studio的安裝使用、java的語法以及我負責的資料庫SQL語法，都是自己一點一點看各種資料自學而來的。 最終在大部分同學的專題主題都是偏向硬體的電機系中，我們這組得到了相當不錯的成績，也很慶幸自己能在電機系中找到和我一樣比較喜歡打程式的同學。 製作專題的過程分工明確且交流順暢，對我而言是很滿意整體的過程與結果! 
           
       - layout: left
         title: AICUP競賽 (2020)
+        caption: 2020.2 - 2020.6
         link: https://github.com/FanChiMao/Competition-2021-Pytorch-YOLOv4
-        
         link_text: YOLOv4 object detection
         additional_links:
           - title:  YOLOv4
             icon: fab fa-github
             url: github.com/FanChiMao/Competition-2021-Pytorch-YOLOv4
         description: | # this will include new lines to allow paragraphs
-          在研究所一下時，
+          在研究所一下時，教授要求我們組隊參加
           
   - title: A Little More About Me
     layout: text
