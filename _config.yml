@@ -85,7 +85,7 @@ content:
   - title: Projects # Title for the section
     layout: list # Type of content section (list/text)
     content:
-      - layout: top-middle
+      - layout: left
         title: 畢業專題 (2017)
         link: https://github.com/FanChiMao/TermProject-2015-Java-AndroidStudio
         link_text: Classroom Interaction App
@@ -97,9 +97,9 @@ content:
             icon: fab fa-github
             url: github.com/FanChiMao/TermProject-2015-Java-AndroidStudio
         description: | # this will include new lines to allow paragraphs
-          大學的畢業專題
+          大學四年裡面讓我最有印象的大概就是畢業專題了，也正是做了本次的專題，讓我發現自己似乎比較適合走軟體這條路。 當時做這個專題，本身自己是只修過C語言的必修課程，程式能力與純軟的資工系比起來嚴重不足，所以從Android Studio的安裝使用、java的語法以及我負責的SQL語法都是一點一點看各種資料自學而來的。 
           
-      - layout: top-middle
+      - layout: left
         title: AICUP競賽 (2020)
         link: https://github.com/FanChiMao/Competition-2021-Pytorch-YOLOv4
         link_text: YOLOv4 object detection
