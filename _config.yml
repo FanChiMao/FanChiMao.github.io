@@ -85,7 +85,7 @@ content:
   - title: Projects # Title for the section
     layout: list # Type of content section (list/text)
     content:
-      - layout: left
+      - layout: middle
         title: 畢業專題 (2017)
         link: https://github.com/FanChiMao/TermProject-2015-Java-AndroidStudio
         link_text: Classroom Interaction App
@@ -96,7 +96,7 @@ content:
         description: | # this will include new lines to allow paragraphs
           大學的畢業專題
           
-      - layout: left
+      - layout: middle
         title: AICUP競賽 (2020)
         link: https://github.com/FanChiMao/Competition-2021-Pytorch-YOLOv4
         link_text: YOLOv4 object detection
