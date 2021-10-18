@@ -87,6 +87,7 @@ content:
     content:
       - layout: left
         title: 畢業專題 (2017)
+        caption: 2016 - 2017
         link: https://github.com/FanChiMao/TermProject-2015-Java-AndroidStudio
         link_text: Classroom Interaction App
         additional_links:
@@ -102,6 +103,7 @@ content:
       - layout: left
         title: AICUP競賽 (2020)
         link: https://github.com/FanChiMao/Competition-2021-Pytorch-YOLOv4
+        
         link_text: YOLOv4 object detection
         additional_links:
           - title:  YOLOv4
