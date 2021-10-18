@@ -93,6 +93,9 @@ content:
           - title:  Android App
             icon: fab fa-github
             url: github.com/FanChiMao/TermProject-2015-Java-AndroidStudio
+          - title:  Github page for project
+            icon: fab fa-github
+            url: github.com/FanChiMao/TermProject-2015-Java-AndroidStudio
         description: | # this will include new lines to allow paragraphs
           大學的畢業專題
           
