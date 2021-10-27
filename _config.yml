@@ -41,7 +41,7 @@ linkedin_username: 植貿-范-432665220
 
 # About Section
 about_title: Personal Profile
-about_profile_image: images/profile.jpg
+about_profile_image: https://i.imgur.com/m2rDOMa.jpg
 about_content: | # this will include new lines to allow paragraphs
   **Hello World! 我是范植貿，今年25歲，來自新竹，現居台中。**
   
