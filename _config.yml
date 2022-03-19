@@ -88,7 +88,6 @@ content:
         quote: >
           利用可選擇性殘差塊在改良式階層編解碼器網路實現影像修復
           <br />Image Restoration by Selective Residual Block on Improved Hierarchical Encoder-Decoder Networks  
-
         link: https://github.com/FanChiMao/SRMNet-thesis
         link_text: Thesis
         additional_links:
@@ -96,7 +95,11 @@ content:
             icon: fab fa-github
             url: https://github.com/FanChiMao/SRMNet-thesis
         description: | # this will include new lines to allow paragraphs
-        
+          <br />① We proposed an improved hierarchical encoder-decoder network called M-Net+.
+          <br />② We proposed an efficient residual block named Selective Residual Block (SRB), which is a balance between the complexity and efficacy by several ablation studies..
+          <br />③ We proposed a novel feature fusion method named SWFF which is considered with the feature information of wavelet transformation.
+          <br />④ We proposed a restoration model which can handle 5 different restoration tasks including denoising, deblurring, dehazing, deraining and image enhancement. And test on over 10 datasets which gets the competitive results and visual performances.
+
       - layout: left
         title: 畢業專題 (2017)
         caption: 2016.7 - 2017.5
