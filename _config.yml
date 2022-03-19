@@ -95,11 +95,11 @@ content:
             icon: fab fa-github
             url: https://github.com/FanChiMao/SRMNet-thesis
         description: | # this will include new lines to allow paragraphs
-          <br />① We proposed an improved hierarchical encoder-decoder network called M-Net+.
-          <br />② We proposed an efficient residual block named Selective Residual Block (SRB), which is a balance between the complexity and efficacy by several ablation studies..
-          <br />③ We proposed a novel feature fusion method named SWFF which is considered with the feature information of wavelet transformation.
-          <br />④ We proposed a restoration model which can handle 5 different restoration tasks including denoising, deblurring, dehazing, deraining and image enhancement. And test on over 10 datasets which gets the competitive results and visual performances.
-
+          ① 我們提出了改良版的階層式編解碼器架構: MINet+。
+          <br />② 我們提出了一種平衡型模塊，稱為選擇殘差模塊(Selective Residual Block)。
+          <br />③ 我們提出了一個全新的特徵融合方式，稱為選擇小波特徵融合(Selective Wavelet Feature Fusion)。
+          <br />④ 我們提出一個完整的影像修復模型，能處理5種不同的影像修復任務，並測試於超過10個資料集，所有實驗都顯示出我們提出模型的強大效能。
+          
       - layout: left
         title: 畢業專題 (2017)
         caption: 2016.7 - 2017.5
