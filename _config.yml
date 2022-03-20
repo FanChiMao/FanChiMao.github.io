@@ -178,10 +178,10 @@ content:
             icon: fab fa-github
             url: https://github.com/FanChiMao/SRMNet
           - title: arXiv
-            icon: fa-solid fa-memo
+            icon: fas fa-memo
             url: https://arxiv.org/abs/2203.01296
           - title: HuggingFace
-            icon: fa-solid fa-face-smiling-hands
+            icon: fas fa-face-smiling-hands
             url: https://huggingface.co/spaces/52Hz/SRMNet_real_world_denoising
         description: | # this will include new lines to allow paragraphs  
           我們提出的SRMNet影像去雜訊模型，在SIDD資料集中，圖像評估指標排名世界第5名。  
@@ -196,10 +196,10 @@ content:
             icon: fab fa-github
             url: https://github.com/FanChiMao/HWMNet
           - title: arXiv
-            icon: fa-solid fa-memo
+            icon: fas fa-memo
             url: https://arxiv.org/abs/2203.01296
           - title: HuggingFace
-            icon: fa-solid fa-face-smiling-hands
+            icon: fas fa-face-smiling-hands
             url: https://huggingface.co/spaces/52Hz/HWMNet_lowlight_enhancement
         description: | # this will include new lines to allow paragraphs  
           我們提出的HWNet影像低光源增強模型，在LOL資料集中，圖像評估指標排名世界第2名。  
