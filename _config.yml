@@ -98,7 +98,7 @@ content:
             icon: fab fa-github
             url: https://github.com/FanChiMao/Competition-2021-Pytorch-Reggression
           - title: award
-            iconL fa-solid fa-award
+            icon: fas fa-award
             url: https://i.imgur.com/SIQyjTo.jpg
         description: | # this will include new lines to allow paragraphs  
           ① 利用現成業界模具機台的參數數據，用深度學習方式預測晶圓或產品品質。  
@@ -136,7 +136,7 @@ content:
             icon: fab fa-github
             url: https://github.com/FanChiMao/Competition-2021-Pytorch-YOLOv4
           - title: award
-            icon: fa-solid fa-award
+            icon: fas fa-award
             url: https://i.imgur.com/hoBExox.jpg
         description: | # this will include new lines to allow paragraphs  
           ① 利用物件偵測模型(如:YOLOv4)來偵測空拍水稻圖的秧苗位置。  
