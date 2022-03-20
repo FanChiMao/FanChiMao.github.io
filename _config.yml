@@ -177,6 +177,7 @@ content:
         caption: Mar 2022
         quote: >
           Selective Residual M-Net for Real Image Denoising  
+          <br /> 我們提出的SRMNet影像去雜訊模型，在SIDD資料集中，圖像評估指標排名世界第5名。 
         additional_links:
           - title: SRMNet
             icon: fab fa-github
@@ -186,15 +187,14 @@ content:
             url: https://arxiv.org/abs/2203.01296
           - title: HuggingFace
             icon: fas fa-play
-            url: https://huggingface.co/spaces/52Hz/SRMNet_real_world_denoising
-        description: | # this will include new lines to allow paragraphs  
-          我們提出的SRMNet影像去雜訊模型，在SIDD資料集中，圖像評估指標排名世界第5名。  
+            url: https://huggingface.co/spaces/52Hz/SRMNet_real_world_denoising     
         
       - layout: left
         title: HWMNet
         caption: Feb 2022
         quote: >
           Half Wavelet Attention on M-Net+ for Low-Light Image Enhancement  
+          <br /> 我們提出的HWNet影像低光源增強模型，在LOL資料集中，圖像評估指標排名世界第2名。  
         additional_links:
           - title: HWMNet
             icon: fab fa-github
@@ -205,14 +205,13 @@ content:
           - title: HuggingFace
             icon: fas fa-play
             url: https://huggingface.co/spaces/52Hz/HWMNet_lowlight_enhancement
-        description: | # this will include new lines to allow paragraphs  
-          我們提出的HWNet影像低光源增強模型，在LOL資料集中，圖像評估指標排名世界第2名。  
-          
+
       - layout: left
         title: SUNet
         caption: Dec 2021
         quote: >
           SUNet: Swin Transformer UNet for Image Denoising
+          <br /> 利用Swin Tansformer為基礎架構，提出SUNet影像降噪模型，並被ISCAS 2022所接受。
         additional_links:
           - title: SUNet
             icon: fab fa-github
@@ -223,14 +222,13 @@ content:
           - title: HuggingFace
             icon: fas fa-play
             url: https://huggingface.co/spaces/52Hz/SUNet_AWGN_denoising
-        description: | # this will include new lines to allow paragraphs  
-          利用Swin Tansformer為基礎架構，提出SUNet影像降噪模型，並被ISCAS 2022所接受。
 
       - layout: left
         title: CMFNet
         caption: Sep 2021
         quote: >
           SUNet: Compound Multi-branch Feature Fusion for Real Image Restoration
+          <br /> 提出的CMFNet模型，針對影像去模糊、影像去雨滴與影像去霧任務進行修復，並投稿至ICLR 2022。
         additional_links:
           - title: CMFNet
             icon: fab fa-github
@@ -241,9 +239,7 @@ content:
           - title: HuggingFace
             icon: fas fa-play
             url: https://huggingface.co/spaces/52Hz/CMFNet_deblurring
-        description: | # this will include new lines to allow paragraphs  
-          提出的CMFNet模型，針對影像去模糊、影像去雨滴與影像去霧任務進行修復，並投稿至ICLR 2022。
-          
+
 # Footer
 footer_show_references: 
 # references_title: References on request (Override references text)
