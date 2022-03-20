@@ -52,13 +52,13 @@ content:
   - title: Education # Title for the section
     layout: list # Type of content section (list/text)
     content:
-      - layout: center
+      - layout: top-middle
         title: 國立中興大學 (NCHU)
         caption: Sep 2020 - present
         sub_title: 電機工程研究所
         description: | # this will include new lines to allow paragraphs
           
-      - layout: mid
+      - layout: top-middle
         title: 元智大學 (YZU)
         caption: Sep 2015 - Aug 2020
         sub_title: 電機工程學系
@@ -67,7 +67,7 @@ content:
   - title: Research Experiences # Title for the section
     layout: list # Type of content section (list/text)
     content:
-      - layout: middle
+      - layout: top-middle
         title: 碩士畢業論文
         caption: Sep 2021 - Mar 2022
         link: https://drive.google.com/file/d/1PKB0Mb02cmNcB5zCae_SYDbgPr4w86xy/view?usp=sharing
@@ -88,7 +88,7 @@ content:
           ③ 我們提出了一個全新的特徵融合方式，稱為選擇小波特徵融合(Selective Wavelet Feature Fusion)。  
           ④ 我們提出一個高性能的影像修復模型，能處理5種不同的影像修復任務，並測試於超過10個資料集。  
                   
-      - layout: middle
+      - layout: top-middle
         title: IMBD 競賽
         caption: Sep 2021 - Dec 2021  
         link: https://imbd2021.thu.edu.tw/
@@ -108,7 +108,7 @@ content:
           ② 利用現成業界模具機台的參數數據，用深度學習方式預測晶圓或產品品質。  
           ③ 在118個隊伍中，得到前31名並通過初賽。  
 
-      - layout: middle
+      - layout: top-middle
         title: 課堂期末專題
         caption: May 2021 - July 2021
         link: https://drive.google.com/file/d/1v8vUadmU1_-o6Hx5lXWCJhrG9sHCl9q_/view?usp=sharing
@@ -128,7 +128,7 @@ content:
           ② 利用android app作為遙控器藍芽控制Arduino小車方向，並將小車鏡頭接收到的畫面實時回傳至手機。  
           ③ 最終得分為93/100，為全班第4名。  
 
-      - layout: middle
+      - layout: top-middle
         title: AICUP 競賽
         caption: Jan 2021 - Jun 2021
         link: https://aidea-web.tw/topic/9c88c428-0aa7-480b-85e0-2d8fb2fcf3fc
@@ -148,7 +148,7 @@ content:
           ② 利用物件偵測模型(如:YOLOv4)來偵測空拍水稻圖的秧苗位置。  
           ③ 擔任隊長職務，在523組參賽隊伍中，獲得全國第9名佳作。
           
-      - layout: middle
+      - layout: top-middle
         title: 大學畢業專題
         caption: July 2016 - May 2017
         link: https://docs.google.com/document/d/1tA1TyLsBKkUloF144vLz7zFzpF9rVBwj/edit?usp=sharing&ouid=108348190349543369603&rtpof=true&sd=true
@@ -171,7 +171,7 @@ content:
   - title: Publications # Title for the section
     layout: list # Type of content section (list/text)
     content:
-      - layout: middle
+      - layout: top-middle
         title: SRMNet
         caption: Mar 2022
         quote: >
@@ -189,7 +189,7 @@ content:
         description: | # this will include new lines to allow paragraphs  
           我們提出的SRMNet影像去雜訊模型，在SIDD資料集中，圖像評估指標排名世界第5名。  
         
-      - layout: middle
+      - layout: top-middle
         title: HWMNet
         caption: Feb 2022
         quote: >
@@ -207,7 +207,7 @@ content:
         description: | # this will include new lines to allow paragraphs  
           我們提出的HWNet影像低光源增強模型，在LOL資料集中，圖像評估指標排名世界第2名。  
           
-      - layout: middle
+      - layout: top-middle
         title: SUNet
         caption: 2021
         quote: >
