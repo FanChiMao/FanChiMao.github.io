@@ -89,7 +89,7 @@ content:
         title: IMBD 競賽
         caption: Sep 2021 - Dec 2021  
         link: https://imbd2021.thu.edu.tw/
-        link_text: https://imbd2021.thu.edu.tw/
+        link_text: Competition website
         quote: >
           2021全國智慧製造大數據分析競賽
           <br />National Intelligent Manufacturing Big Data Analysis Competition  
@@ -97,6 +97,9 @@ content:
           - title:  Competition-2021-Pytorch-Reggression
             icon: fab fa-github
             url: https://github.com/FanChiMao/Competition-2021-Pytorch-Reggression
+          - title: award
+            iconL fa-solid fa-award
+            url: https://i.imgur.com/SIQyjTo.jpg
         description: | # this will include new lines to allow paragraphs  
           ① 利用現成業界模具機台的參數數據，用深度學習方式預測晶圓或產品品質。  
           ② 在118個隊伍中，得到前31名並通過初賽。  
@@ -112,15 +115,34 @@ content:
         additional_links:
           - title:  TermProject-2021-EnbeddedSystem
             icon: fab fa-github
-            url: https://github.com/FanChiMao/TermProject-2021-EnbeddedSystem
+            url: https://github.com/FanChiMao/TermProject-2021-EnbeddedSystem     
           - title: demo video
             icon: fab fa-youtube
-            url: https://youtu.be/YIfOnbJ-TMI
+            url: https://youtu.be/YIfOnbJ-TMI  
         description: | # this will include new lines to allow paragraphs  
           ① 利用android app作為遙控器藍芽控制Arduino小車方向，並將小車鏡頭接收到的畫面實時回傳至手機。  
           ② 最終得分為93/100，為全班第四名。  
 
+      - layout: left
+        title: 2021 AICUP
+        caption: Jan 2021 - Jun 2021
+        link: https://aidea-web.tw/topic/9c88c428-0aa7-480b-85e0-2d8fb2fcf3fc
+        link_text: Competition website
+        quote: >
+          水稻無人機全彩影像植株位置自動標註與應用
+          <br />Competition on Automatic rice plant position labeling on true color images by UAS and its applications
+        additional_links:
+          - title: Competition-2021-Pytorch-YOLOv4
+            icon: fab fa-github
+            url: https://github.com/FanChiMao/Competition-2021-Pytorch-YOLOv4
+          - title: award
+            icon: fa-solid fa-award
+            url: https://i.imgur.com/hoBExox.jpg
+        description: | # this will include new lines to allow paragraphs  
+          ① 利用物件偵測模型(如:YOLOv4)來偵測空拍水稻圖的秧苗位置。  
+          ② 擔任隊長職務，在523組參賽隊伍中，獲得全國第9名佳作。
           
+
 # Footer
 footer_show_references: 
 # references_title: References on request (Override references text)
