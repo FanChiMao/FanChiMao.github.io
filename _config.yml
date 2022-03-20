@@ -43,22 +43,23 @@ linkedin_username: 植貿-范-432665220
 about_title: Personal Profile
 about_profile_image: https://i.imgur.com/m2rDOMa.jpg
 about_content: | # this will include new lines to allow paragraphs
-  **Hello World! 我是范植貿，今年25歲，來自新竹，現居台中。**
-  
-  2022畢業於中興大學研究所，
+  出生於1997年，生長於新竹，個性溫和善於傾聽，會站在別人的角度換位思考，不易與人發生爭執，因此在團隊合作中，可以良好的溝通及互動，因為影響團隊效率除了專業技能外，人與人之間和睦相處更是關鍵，我在露易莎打工時更深深體會了這點。  
+  大學就讀元智大學電機系，畢業後發現相較於硬體領域，我對軟體方面更加有興趣，因此在考上中興大學電機系碩士班後，找了偏重於軟體開發的教授與實驗室，主要的研究領域為電腦視覺、影像處理與深度學習。  
+  碩士期間主要研究影像修復(Image Restoration)任務中包括影像去噪(Image Denoising)、影像去模糊(Image Deblurring)、影像去雨(Imade Deraining)、影像去霧(Image Dehazing)與低光源增強(Low-light Enhancement)。  
+  且由於對任何事物都充滿著好奇心並渴望能夠不斷地進步成長的個性。 碩士期間額外學習了物件偵測(Object Detection)、資料分析(Data Analyze)並參與全國性程式競賽，得到了不錯的成績。 除此之外，碩二時投稿4篇會議論文分別至ICLR (reject)、ISCAS (accept)、ICME (in review)與ICIP (in review)等國際會議，並參與校內語言中心課程學習英文口說與日文課程。  
 
 
 content:
   - title: Education # Title for the section
     layout: list # Type of content section (list/text)
     content:
-      - layout: top-middle
+      - layout: left
         title: 國立中興大學 (NCHU)
         caption: Sep 2020 - present
         sub_title: 電機工程研究所
         description: | # this will include new lines to allow paragraphs
           
-      - layout: top-middle
+      - layout: left
         title: 元智大學 (YZU)
         caption: Sep 2015 - Aug 2020
         sub_title: 電機工程學系
@@ -67,7 +68,7 @@ content:
   - title: Research Experiences # Title for the section
     layout: list # Type of content section (list/text)
     content:
-      - layout: top-middle
+      - layout: left
         title: 碩士畢業論文
         caption: Sep 2021 - Mar 2022
         link: https://drive.google.com/file/d/1PKB0Mb02cmNcB5zCae_SYDbgPr4w86xy/view?usp=sharing
@@ -88,7 +89,7 @@ content:
           ③ 我們提出了一個全新的特徵融合方式，稱為選擇小波特徵融合(Selective Wavelet Feature Fusion)。  
           ④ 我們提出一個高性能的影像修復模型，能處理5種不同的影像修復任務，並測試於超過10個資料集。  
                   
-      - layout: top-middle
+      - layout: left
         title: IMBD 競賽
         caption: Sep 2021 - Dec 2021  
         link: https://imbd2021.thu.edu.tw/
@@ -108,7 +109,7 @@ content:
           ② 利用現成業界模具機台的參數數據，用深度學習方式預測晶圓或產品品質。  
           ③ 在118個隊伍中，得到前31名並通過初賽。  
 
-      - layout: top-middle
+      - layout: left
         title: 課堂期末專題
         caption: May 2021 - July 2021
         link: https://drive.google.com/file/d/1v8vUadmU1_-o6Hx5lXWCJhrG9sHCl9q_/view?usp=sharing
@@ -128,7 +129,7 @@ content:
           ② 利用android app作為遙控器藍芽控制Arduino小車方向，並將小車鏡頭接收到的畫面實時回傳至手機。  
           ③ 最終得分為93/100，為全班第4名。  
 
-      - layout: top-middle
+      - layout: left
         title: AICUP 競賽
         caption: Jan 2021 - Jun 2021
         link: https://aidea-web.tw/topic/9c88c428-0aa7-480b-85e0-2d8fb2fcf3fc
@@ -148,7 +149,7 @@ content:
           ② 利用物件偵測模型(如:YOLOv4)來偵測空拍水稻圖的秧苗位置。  
           ③ 擔任隊長職務，在523組參賽隊伍中，獲得全國第9名佳作。
           
-      - layout: top-middle
+      - layout: left
         title: 大學畢業專題
         caption: July 2016 - May 2017
         link: https://docs.google.com/document/d/1tA1TyLsBKkUloF144vLz7zFzpF9rVBwj/edit?usp=sharing&ouid=108348190349543369603&rtpof=true&sd=true
@@ -171,7 +172,7 @@ content:
   - title: Publications # Title for the section
     layout: list # Type of content section (list/text)
     content:
-      - layout: top-middle
+      - layout: left
         title: SRMNet
         caption: Mar 2022
         quote: >
@@ -189,7 +190,7 @@ content:
         description: | # this will include new lines to allow paragraphs  
           我們提出的SRMNet影像去雜訊模型，在SIDD資料集中，圖像評估指標排名世界第5名。  
         
-      - layout: top-middle
+      - layout: left
         title: HWMNet
         caption: Feb 2022
         quote: >
@@ -207,9 +208,9 @@ content:
         description: | # this will include new lines to allow paragraphs  
           我們提出的HWNet影像低光源增強模型，在LOL資料集中，圖像評估指標排名世界第2名。  
           
-      - layout: top-middle
+      - layout: left
         title: SUNet
-        caption: 2021
+        caption: Dec 2021
         quote: >
           SUNet: Swin Transformer UNet for Image Denoising
         additional_links:
@@ -225,7 +226,24 @@ content:
         description: | # this will include new lines to allow paragraphs  
           利用Swin Tansformer為基礎架構，提出SUNet影像降噪模型，並被ISCAS 2022所接受。
 
-
+      - layout: left
+        title: CMFNet
+        caption: Sep 2021
+        quote: >
+          SUNet: Compound Multi-branch Feature Fusion for Real Image Restoration
+        additional_links:
+          - title: CMFNet
+            icon: fab fa-github
+            url: https://github.com/FanChiMao/CMFNet
+          - title: arXiv
+            icon: fas fa-book
+            url: https://paperswithcode.com/paper/compound-multi-branch-feature-fusion-for-real
+          - title: HuggingFace
+            icon: fas fa-play
+            url: https://huggingface.co/spaces/52Hz/CMFNet_deblurring
+        description: | # this will include new lines to allow paragraphs  
+          提出的CMFNet模型，針對影像去模糊、影像去雨滴與影像去霧任務進行修復，並投稿至ICLR 2022。
+          
 # Footer
 footer_show_references: 
 # references_title: References on request (Override references text)
