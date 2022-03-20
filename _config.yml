@@ -241,6 +241,28 @@ content:
             icon: fas fa-play
             url: https://huggingface.co/spaces/52Hz/CMFNet_deblurring
 
+      - layout: left
+        title: WBTP-VTON
+        caption: Jan 2021
+        quote: >
+          WBTP-VTON: Whole Body and Texture Preservation based Virtual Try-on Network
+          <br /> 優化學長論文，並替他參與ICCE-TW 2021線上會議，除指導教授外為第二作者。
+        additional_links:
+          - title: WBTP-VTON
+            icon: fab fa-github
+            url: https://github.com/FanChiMao/WBTP-VTON
+          - title: ICCE-TW
+            icon: fas fa-book
+            url: https://ieeexplore.ieee.org/document/9603061
+          - title: video presentation
+            icon: fab fa-youtube
+            url: https://youtu.be/Z7pu1OWh5BQ
+            
+  - title: Side Projects and Hobbies # Title for the section
+      layout: text # Type of content section (list/text)
+      content:
+
+
 # Footer
 footer_show_references: 
 # references_title: References on request (Override references text)
