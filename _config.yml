@@ -44,8 +44,11 @@ about_title: Personal Profile
 about_profile_image: https://i.imgur.com/m2rDOMa.jpg
 about_content: | # this will include new lines to allow paragraphs
   出生於1997年，生長於新竹，個性溫和善於傾聽，會站在別人的角度換位思考，不易與人發生爭執，因此在團隊合作中，可以良好的溝通及互動，因為影響團隊效率除了專業技能外，人與人之間和睦相處更是關鍵，我在露易莎打工時更深深體會了這點。  
+  <br />
   大學就讀元智大學電機系，畢業後發現相較於硬體領域，我對軟體方面更加有興趣，因此在考上中興大學電機系碩士班後，找了偏重於軟體開發的教授與實驗室，主要的研究領域為電腦視覺、影像處理與深度學習。  
+  <br />
   碩士期間主要研究影像修復(Image Restoration)任務中包括影像去噪(Image Denoising)、影像去模糊(Image Deblurring)、影像去雨(Imade Deraining)、影像去霧(Image Dehazing)與低光源增強(Low-light Enhancement)。  
+  <br />
   且由於對任何事物都充滿著好奇心並渴望能夠不斷地進步成長的個性。 碩士期間額外學習了物件偵測(Object Detection)、資料分析(Data Analyze)並參與全國性程式競賽，得到了不錯的成績。 除此之外，碩二時投稿4篇會議論文分別至ICLR (reject)、ISCAS (accept)、ICME (in review)與ICIP (in review)等國際會議，並參與校內語言中心課程學習英文口說與日文課程。  
 
 
