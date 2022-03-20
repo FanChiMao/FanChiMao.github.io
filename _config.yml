@@ -106,7 +106,7 @@ content:
           ③ 在118個隊伍中，得到前31名並通過初賽。  
 
       - layout: middle
-        title: 期末專題
+        title: 課堂期末專題
         caption: May 2021 - July 2021
         link: https://drive.google.com/file/d/1v8vUadmU1_-o6Hx5lXWCJhrG9sHCl9q_/view?usp=sharing
         link_text: Termproject report
@@ -123,7 +123,7 @@ content:
         description: | # this will include new lines to allow paragraphs  
           ① Python/C/JavaScript/Raspberry Pi 3/Arduino/Android App/Communication protocol  
           ② 利用android app作為遙控器藍芽控制Arduino小車方向，並將小車鏡頭接收到的畫面實時回傳至手機。  
-          ③ 最終得分為93/100，為全班第四名。  
+          ③ 最終得分為93/100，為全班第4名。  
 
       - layout: middle
         title: 2021 AICUP
@@ -158,13 +158,17 @@ content:
             icon: fab fa-github
             url: https://github.com/FanChiMao/TermProject-2017-Java-AndroidStudio
           - title: ppt
-            icon: fas fa-presentation-screen
+            icon: fas fa-display
             url: https://docs.google.com/presentation/d/1YsvzB4KOTbtPYtGbjwFzsWaPwZb21d-g/edit?usp=sharing&ouid=108348190349543369603&rtpof=true&sd=true
         description: | # this will include new lines to allow paragraphs  
           ① JavaScript/SQL/Android App/Socket connection  
-          ② 從零開始建構出一個完整功能的課堂互動應用程式。  
+          ② 從零開始建構出一個完整功能的課堂互動應用程式，包含了網路傳輸、資料庫的創建。  
           ③ 最終得分為94/100，為全班排名前10%。  
 
+  - title: Publications # Title for the section
+    layout: list # Type of content section (list/text)
+    content:
+    
 # Footer
 footer_show_references: 
 # references_title: References on request (Override references text)
