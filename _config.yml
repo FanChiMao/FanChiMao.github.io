@@ -79,6 +79,9 @@ content:
           - title:  Thesis
             icon: fab fa-github
             url: https://github.com/FanChiMao/SRMNet-thesis
+          - title: HuggingFace
+            icon: fas fa-circle-play
+            url: https://huggingface.co/spaces/52Hz/SRMNet_thesis
         description: | # this will include new lines to allow paragraphs
           ① 我們提出了改良版的階層式編解碼器架構: MINet+。  
           ② 我們提出了一種平衡型模塊，稱為選擇殘差模塊(Selective Residual Block)。  
@@ -181,7 +184,7 @@ content:
             icon: fas fa-book
             url: https://arxiv.org/abs/2203.01296
           - title: HuggingFace
-            icon: fas fa-cube
+            icon: fas fa-circle-play
             url: https://huggingface.co/spaces/52Hz/SRMNet_real_world_denoising
         description: | # this will include new lines to allow paragraphs  
           我們提出的SRMNet影像去雜訊模型，在SIDD資料集中，圖像評估指標排名世界第5名。  
@@ -199,10 +202,29 @@ content:
             icon: fas fa-book
             url: https://arxiv.org/abs/2203.01296
           - title: HuggingFace
-            icon: fas fa-cube
+            icon: fas fa-circle-play
             url: https://huggingface.co/spaces/52Hz/HWMNet_lowlight_enhancement
         description: | # this will include new lines to allow paragraphs  
           我們提出的HWNet影像低光源增強模型，在LOL資料集中，圖像評估指標排名世界第2名。  
+          
+      - layout: middle
+        title: SUNet
+        caption: 2021
+        quote: >
+          SUNet: Swin Transformer UNet for Image Denoising
+        additional_links:
+          - title: SUNet
+            icon: fab fa-github
+            url: https://github.com/FanChiMao/SUNet
+          - title: arXiv
+            icon: fas fa-book
+            url: https://arxiv.org/abs/2202.14009
+          - title: HuggingFace
+            icon: fas fa-circle-play
+            url: https://huggingface.co/spaces/52Hz/SUNet_AWGN_denoising
+        description: | # this will include new lines to allow paragraphs  
+          利用Swin Tansformer為基礎架構，提出SUNet影像降噪模型，並被ISCAS 2022所接受。
+
 
 # Footer
 footer_show_references: 
