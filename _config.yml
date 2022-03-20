@@ -54,13 +54,13 @@ content:
     content:
       - layout: left
         title: 國立中興大學 (NCHU)
-        caption: 2020.9 - present
+        caption: Sep 2020 - present
         sub_title: 電機工程研究所
         description: | # this will include new lines to allow paragraphs
           
       - layout: left
         title: 元智大學 (YZU)
-        caption: 2015.9 - 2020.8
+        caption: Sep 2015 - Aug 2020
         sub_title: 電機工程學系
         description: | # this will include new lines to allow paragraphs
                             
@@ -70,6 +70,8 @@ content:
       - layout: left
         title: 碩士論文
         caption: Sep 2021 - Mar 2022
+        link: https://drive.google.com/file/d/1PKB0Mb02cmNcB5zCae_SYDbgPr4w86xy/view?usp=sharing
+        link_text: Thesis
         quote: >
           利用可選擇性殘差塊在改良式階層編解碼器網路實現影像修復
           <br />Image Restoration by Selective Residual Block on Improved Hierarchical Encoder-Decoder Networks  
@@ -82,10 +84,11 @@ content:
           <br />② 我們提出了一種平衡型模塊，稱為選擇殘差模塊(Selective Residual Block)。
           <br />③ 我們提出了一個全新的特徵融合方式，稱為選擇小波特徵融合(Selective Wavelet Feature Fusion)。
           <br />④ 我們提出一個高性能的影像修復模型，能處理5種不同的影像修復任務，並測試於超過10個資料集。  
-          
       - layout: left
         title: IMBD 競賽
         caption: Sep 2021 - Dec 2021  
+        link: https://imbd2021.thu.edu.tw/
+        link_text: IMBD competition
         quote: >
           2021全國智慧製造大數據分析競賽
           <br />National Intelligent Manufacturing Big Data Analysis Competition  
