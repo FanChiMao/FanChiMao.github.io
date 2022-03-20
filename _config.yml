@@ -227,7 +227,7 @@ content:
         title: CMFNet
         caption: Sep 2021
         quote: >
-          SUNet: Compound Multi-branch Feature Fusion for Real Image Restoration
+          Compound Multi-branch Feature Fusion for Real Image Restoration
           <br /> 提出的CMFNet模型，針對影像去模糊、影像去雨滴與影像去霧任務進行修復，並投稿至ICLR 2022。
         additional_links:
           - title: CMFNet
