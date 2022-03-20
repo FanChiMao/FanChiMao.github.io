@@ -101,7 +101,7 @@ content:
           2021全國智慧製造大數據分析競賽
           <br />National Intelligent Manufacturing Big Data Analysis Competition  
         additional_links:
-          - title:  Competition-2021-Pytorch-Reggression
+          - title: Competition-2021-Pytorch-Reggression
             icon: fab fa-github
             url: https://github.com/FanChiMao/Competition-2021-Pytorch-Reggression
           - title: award
