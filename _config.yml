@@ -113,6 +113,9 @@ content:
           - title:  TermProject-2021-EnbeddedSystem
             icon: fab fa-github
             url: https://github.com/FanChiMao/TermProject-2021-EnbeddedSystem
+          - title: demo video
+            icon: fab fa-youtube
+            url: https://youtu.be/YIfOnbJ-TMI
         description: | # this will include new lines to allow paragraphs  
           ① 利用android app作為遙控器藍芽控制Arduino小車方向，並將小車鏡頭接收到的畫面實時回傳至手機。  
           ② 最終得分為93/100，為全班第四名。  
