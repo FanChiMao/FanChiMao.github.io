@@ -114,7 +114,7 @@ content:
           系統晶片之嵌入式即時作業系統期末專題: Android APP 控制藍芽小車回傳實時影像
           <br />Embedded Real-Time Operating System for System-on-Chip Term Project : Real time Streaming on Arduino Car with App Controller  
         additional_links:
-          - title:  TermProject-2021-EnbeddedSystem
+          - title: TermProject-2021-EnbeddedSystem
             icon: fab fa-github
             url: https://github.com/FanChiMao/TermProject-2021-EnbeddedSystem     
           - title: demo video
@@ -126,7 +126,7 @@ content:
           ③ 最終得分為93/100，為全班第4名。  
 
       - layout: middle
-        title: 2021 AICUP
+        title: AICUP 競賽
         caption: Jan 2021 - Jun 2021
         link: https://aidea-web.tw/topic/9c88c428-0aa7-480b-85e0-2d8fb2fcf3fc
         link_text: Competition website
@@ -158,7 +158,7 @@ content:
             icon: fab fa-github
             url: https://github.com/FanChiMao/TermProject-2017-Java-AndroidStudio
           - title: ppt
-            icon: fas fa-display
+            icon: fa-solid fa-display
             url: https://docs.google.com/presentation/d/1YsvzB4KOTbtPYtGbjwFzsWaPwZb21d-g/edit?usp=sharing&ouid=108348190349543369603&rtpof=true&sd=true
         description: | # this will include new lines to allow paragraphs  
           ① JavaScript/SQL/Android App/Socket connection  
@@ -168,7 +168,42 @@ content:
   - title: Publications # Title for the section
     layout: list # Type of content section (list/text)
     content:
-    
+      - layout: middle
+        title: SRMNet
+        caption: Mar 2022
+        quote: >
+          Selective Residual M-Net for Real Image Denoising  
+        additional_links:
+          - title: SRMNet
+            icon: fab fa-github
+            url: https://github.com/FanChiMao/SRMNet
+          - title: arXiv
+            icon: fa-solid fa-memo
+            url: https://arxiv.org/abs/2203.01296
+          - title: HuggingFace
+            icon: fa-solid fa-face-smiling-hands
+            url: https://huggingface.co/spaces/52Hz/SRMNet_real_world_denoising
+        description: | # this will include new lines to allow paragraphs  
+          我們提出的SRMNet影像去雜訊模型，在SIDD資料集中，圖像評估指標排名世界第5名。  
+        
+      - layout: middle
+        title: HWMNet
+        caption: Feb 2022
+        quote: >
+          Half Wavelet Attention on M-Net+ for Low-Light Image Enhancement  
+        additional_links:
+          - title: HWMNet
+            icon: fab fa-github
+            url: https://github.com/FanChiMao/HWMNet
+          - title: arXiv
+            icon: fa-solid fa-memo
+            url: https://arxiv.org/abs/2203.01296
+          - title: HuggingFace
+            icon: fa-solid fa-face-smiling-hands
+            url: https://huggingface.co/spaces/52Hz/HWMNet_lowlight_enhancement
+        description: | # this will include new lines to allow paragraphs  
+          我們提出的HWNet影像低光源增強模型，在LOL資料集中，圖像評估指標排名世界第2名。  
+
 # Footer
 footer_show_references: 
 # references_title: References on request (Override references text)
