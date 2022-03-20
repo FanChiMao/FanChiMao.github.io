@@ -52,13 +52,15 @@ content:
   - title: Education # Title for the section
     layout: list # Type of content section (list/text)
     content:
-      - layout: middle
+      - layout: center
+        border: weak
         title: 國立中興大學 (NCHU)
         caption: Sep 2020 - present
         sub_title: 電機工程研究所
         description: | # this will include new lines to allow paragraphs
           
-      - layout: middle
+      - layout: center
+        border: weak
         title: 元智大學 (YZU)
         caption: Sep 2015 - Aug 2020
         sub_title: 電機工程學系
