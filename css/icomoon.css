@@ -822,6 +822,9 @@
 .icon-phone-outline:before {
   content: "\ea3b";
 }
+.icon-laptop:before {
+  content: "\f109";
+}
 .icon-microphone-outline:before {
   content: "\ea3c";
 }
@@ -984,6 +987,9 @@
 .icon-signal:before {
   content: "\e06f";
 }
+.icon-computer11:before {
+  content: "\f121";
+}
 .icon-target3:before {
   content: "\e070";
 }
@@ -1013,6 +1019,9 @@
 }
 .icon-monitor:before {
   content: "\e079";
+}
+.icon-windows:before {
+  content: "\f17a";
 }
 .icon-server:before {
   content: "\e07a";
@@ -1382,6 +1391,12 @@
 }
 .icon-bulb:before {
   content: "\e90e";
+}
+.icon-android:before {
+  content: "\f17b";
+}
+.icon-python:before {
+  content: "\f3e2";
 }
 .icon-pen2:before {
   content: "\e90f";
