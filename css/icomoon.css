@@ -33,6 +33,10 @@
 .icon-plus:before {
   content: "\e932";
 }
+.fa-award:before{
+  content:"\f559"
+}
+.fa-trophy:before{content:"\f091"}
 .icon-minus:before {
   content: "\e933";
 }
