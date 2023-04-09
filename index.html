@@ -57,7 +57,7 @@
 			<div class="text-center">
 				<div class="author-img" style="background-image: url(figures/photo.jpg);"></div>
 				<h1 id="colorlib-logo"><a href="index.html">Chi-Mao Fan</a></h1>
-				<span class="position"><a href="#">AI R&D Engineer</a> IN <a href="https://www.asus.com/">ASUS</a> </span>
+				<span class="position"><a href="#">AI R&D Engineer</a> IN <a href="https://www.asus.com/" target="_blank">ASUS</a> </span>
 			</div>
 			
 			<div class="colorlib-footer">
@@ -560,115 +560,160 @@
 						<div class="col-md-12 animate-box" data-animate-effect="fadeInLeft">
 							<div class="fancy-collapse-panel">
 								<div class="panel-group" id="pub_accordion" role="tablist" aria-multiselectable="true">
-									<!-- ++ Paper 5 ++ -->
+									<!-- ++ Paper thesis ++ -->
 									<div class="panel panel-default">
-									    <div class="panel-heading" role="tab" id="pub_heading1">
+									    <div class="panel-heading" role="tab" id="pub_heading_thesis">
 									        <h4 class="panel-title">
-									            <a data-toggle="collapse" data-parent="#pub_accordion" href="#pub_collapse1" aria-expanded="true" aria-controls="pub_collapse1">IEEE International Conference on Image Processing (ICIP 2022)
+									            <a data-toggle="collapse" data-parent="#pub_accordion" href="#pub_collapse_thesis" aria-expanded="true" aria-controls="pub_collapse_thesis">IEEE Taipei Section Best Paper Awards (2022)
 									            </a>
 									        </h4>
 									    </div>
-										<div id="pub_collapse1" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="pub_heading1">
+										<div id="pub_collapse_thesis" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="pub_heading_thesis">
+											<div class="panel-body">			      			
+												<p> <b><a href="https://ieeexplore.ieee.org/document/9897503" target="_blank">Image Restoration using Improved Hierarchical Encoder-Decoder Networks <br>with Selective Residual Blocks</a></b>
+													<br>In this paper, we based on light hierarchical 
+													network architecture: U-Net, and improve from Residual Dense Block (RDB) 
+													which is good at image restoration tasks but memory-consuming to an efficient 
+													block called Selective Residual Block (SRB). We also improve the hierarchical 
+													network structure U-Net by adding the gatepost feature paths which enrich more
+													spatial feature information comparing with the traditional U-Net and have the 
+													synergy with SRB. Besides this, we also proposed a loss function which is based 
+													on two important metrics in image restoration: peak signal-to-noise (PSNR) and 
+													structural similarity index to optimize our model. Finally, proposed network could 
+													handle the <b>9 different restoration tasks</b> such as denoising, deblurring, deraining,
+													dehazing and low-light image enhancement. Furthermore, the performances are 
+													good in terms of quantitative metrics and visual quality. </p>
+												<div style="display: flex;">
+													<div style="flex-basis: 48%;">
+														<a href="https://github.com/FanChiMao/SRMNet-thesis" target="_blank"><img src="figures/Papers/Thesis/thesis_gif.gif" width="100%" height="250"></a>
+													</div>
+													<div style="flex-basis: 4%;"></div> <!-- middle blank -->
+													<div style="flex-basis: 48%;">
+														<a href="figures/Papers/Thesis/A2.jpg" target="_blank"><img src="figures/Papers/Thesis/a.png" width="100%" height="250"></a>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<!-- ++ Paper HWMNet ++ -->
+									<div class="panel panel-default">
+									    <div class="panel-heading" role="tab" id="pub_heading_HWMNet">
+									        <h4 class="panel-title">
+									            <a data-toggle="collapse" data-parent="#pub_accordion" href="#pub_collapse_HWMNet" aria-expanded="false" aria-controls="pub_collapse_HWMNet">IEEE International Conference on Image Processing (ICIP 2022)
+									            </a>
+									        </h4>
+									    </div>
+										<div id="pub_collapse_HWMNet" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pub_heading_HWMNet">
 											<div class="panel-body">			      			
 												<p> <b><a href="https://ieeexplore.ieee.org/document/9897503" target="_blank">Half Wavelet Attention on M-Net+ for Low-Light Image Enhancement</a></b> <br>Low-Light Image Enhancement is a computer vision task which intensifies the dark images to appropriate brightness. It can also be seen as an illposed problem in image restoration domain. With the success of deep neural networks, the convolutional neural networks surpass the traditional algorithm-based methods and become the mainstream in the computer vision area. To advance the performance of enhancement algorithms, we propose an image enhancement network (HWMNet) based on an improved hierarchical model: M-Net+. Specifically, we use a half wavelet attention block on M-Net+ to enrich the features from wavelet domain. Furthermore, our HWMNet has competitive performance results on two image enhancement datasets in terms of quantitative metrics and visual quality.</p>
 												<div style="display: flex;">
 													<div style="flex-basis: 48%;">
-													  <iframe src="https://www.youtube.com/embed/docLJbxJkyA" width="100%" height="250"></iframe>
+														<a href="https://github.com/FanChiMao/HWMNet" target="_blank"><img src="figures/Papers/HWMNet/hwmnet_gif.gif" width="100%" height="250"></a>
 													</div>
 													<div style="flex-basis: 4%;"></div> <!-- middle blank -->
 													<div style="flex-basis: 48%;">
-													  <img src="figures/Papers/" width="100%" height="250">
+													  <iframe src="https://www.youtube.com/embed/docLJbxJkyA" width="100%" height="250"></iframe>
 													</div>
-												  </div>
-												<strong><a href="https://github.com/FanChiMao/HWMNet">Learn More</a></strong>
+												</div>
 											</div>
 										</div>
 									</div>
-									<!-- ++ Paper 4 ++ -->
+									<!-- ++ Paper MNet ++ -->
 									<div class="panel panel-default">
-									    <div class="panel-heading" role="tab" id="pub_heading4">
+									    <div class="panel-heading" role="tab" id="pub_heading_MNet">
 									        <h4 class="panel-title">
-									            <a class="collapsed" data-toggle="collapse" data-parent="#pub_accordion" href="#pub_collapse4" aria-expanded="false" aria-controls="pub_collapse4">IEEE International Conference on Consumer Electronics-Taiwan (ICCE-TW 2022)
+									            <a class="collapsed" data-toggle="collapse" data-parent="#pub_accordion" href="#pub_collapse_MNet" aria-expanded="false" aria-controls="pub_collapse_MNet">IEEE International Conference on Consumer Electronics-Taiwan (ICCE-TW 2022)
 									            </a>
 									        </h4>
 									    </div>
-									    <div id="pub_collapse4" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pub_heading4">
+									    <div id="pub_collapse_MNet" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pub_heading_MNet">
 											<div class="panel-body">				      			
 												<p> <b><a href="https://ieeexplore.ieee.org/document/9869195" target="_blank">Improved Hierarchical M-Net+ for Blind Image Denoising</a></b> <br>Image denoising is a long standing ill-posed prob-lem. Recently, the convolution neural networks (CNNs) gradually stand in the spotlight and almost dominated the computer vision field and had achieved impressive results in different levels of vision tasks. One of famous hierarchical CNN-backbones is the U-Net which shows awesome performance in both denoising and other areas of computer vision. However, the hierarchical architecture usually suffers from the loss of spatial information due to the repeated sampling. It seriously affects the denoising performance especially the element-wise task like denoising. In this paper, we proposed an improved hierarchical backbone: M-Net+ for image denoising to ameliorate the loss of spatial details. Furthermore, we test on two synthetic Gaussian noise datasets to demonstrate the competitive result of our model.</p>
-												<div class="sprayImage"><img src="side_project_img/long_range/detection_long_range_demo.gif" style="width:50% !important;height:50% !important;" 
-													class="sprayImage"><img src="side_project_img/long_range/GNN_gif.gif" style="width:41% !important;height:50% !important;"><br><br>
-												</div>
 											</div>
 										</div>
 									</div>
-									<!-- ++ Paper 3 ++ -->
+									<!-- ++ Paper SRMNet ++ -->
 									<div class="panel panel-default">
-									    <div class="panel-heading" role="tab" id="pub_heading3">
+									    <div class="panel-heading" role="tab" id="pub_heading_SRMNet">
 									        <h4 class="panel-title">
-									            <a class="collapsed" data-toggle="collapse" data-parent="#pub_accordion" href="#pub_collapse3" aria-expanded="false" aria-controls="pub_collapse3">IEEE European Signal Processing Conference (EUSIPCO 2022)
+									            <a class="collapsed" data-toggle="collapse" data-parent="#pub_accordion" href="#pub_collapse_SRMNet" aria-expanded="false" aria-controls="pub_collapse_SRMNet">IEEE European Signal Processing Conference (EUSIPCO 2022)
 									            </a>
 									        </h4>
 									    </div>
-									    <div id="pub_collapse3" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pub_heading3">
+									    <div id="pub_collapse_SRMNet" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pub_heading_SRMNet">
 											<div class="panel-body">				      			
 												<p> <b><a href="https://ieeexplore.ieee.org/document/9909521" target="_blank">Selective Residual M-Net for Real Image Denoising</a></b> <br>Image restoration is a low-level vision task which is to restore degraded images to noise-free images. With the success of deep neural networks, the convolutional neural networks surpass the traditional restoration methods and become the main-stream in the computer vision area. To advance the performance of denoising algorithms, we propose a blind real image denoising network (SRMNet) by employing a hierarchical architecture improved from U-Net. Specifically, we use a selective kernel with residual block on the hierarchical structure called M-Net to enrich the multi-scale semantic information. Furthermore, our SRMNet has competitive performance results on two synthetic and two real-world noisy datasets in terms of quantitative metrics and visual quality. The source code and pretrained model are available at https://github.com/FanChiMao/SRMNet.</p>
-												<div class="sprayImage"><img src="side_project_img/long_range/detection_long_range_demo.gif" style="width:50% !important;height:50% !important;" 
-													class="sprayImage"><img src="side_project_img/long_range/GNN_gif.gif" style="width:41% !important;height:50% !important;"><br><br>
-													<a href="https://ieeexplore.ieee.org/document/9909521"> Learn More</a>
+												<div style="display: flex;">
+													<div style="flex-basis: 48%;">
+														<a href="https://github.com/FanChiMao/SRMNet" target="_blank"><img src="figures/Papers/SRMNet/srmnet_gif.gif" width="100%" height="250"></a>
+													</div>
+													<div style="flex-basis: 4%;"></div> <!-- middle blank -->
+													<div style="flex-basis: 48%;">
+													  <iframe src="https://www.youtube.com/embed/uju2fSa44h4" width="100%" height="250"></iframe>
+													</div>
 												</div>
 											</div>
 										</div>
 									</div>
-									<!-- ++ Paper 2 ++ -->
+									<!-- ++ Paper SUNet ++ -->
 									<div class="panel panel-default">
-									    <div class="panel-heading" role="tab" id="pub_heading2">
+									    <div class="panel-heading" role="tab" id="pub_heading_SUNet">
 									        <h4 class="panel-title">
-									            <a class="collapsed" data-toggle="collapse" data-parent="#pub_accordion" href="#collapse2" aria-expanded="false" aria-controls="collapse2">IEEE International Symposium on Circuits and Systems (ISCAS 2022)
+									            <a class="collapsed" data-toggle="collapse" data-parent="#pub_accordion" href="#collapse_SUNet" aria-expanded="false" aria-controls="collapse_SUNet">IEEE International Symposium on Circuits and Systems (ISCAS 2022)
 									            </a>
 									        </h4>
 									    </div>
-									    <div id="collapse2" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pub_heading2">
+									    <div id="collapse_SUNet" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pub_heading_SUNet">
 											<div class="panel-body">									      			
 												<p> <b><a href="https://ieeexplore.ieee.org/document/9937486" target="_blank">SUNet: Swin Transformer UNet for Image Denoising</a></b> <br>Image restoration is a challenging ill-posed problem which also has been a long-standing issue. In the past few years, the convolution neural networks (CNNs) almost dominated the computer vision and had achieved considerable success in different levels of vision tasks including image restoration. However, recently the Swin Transformer-based model also shows impressive performance, even surpasses the CNN-based methods to become the state-of-the-art on high-level vision tasks. In this paper, we proposed a restoration model called SUNet which uses the Swin Transformer layer as our basic block and then is applied to UNet architecture for image denoising.</p>
-												<div class="sprayImage"><img src="side_project_img/long_range/detection_long_range_demo.gif" style="width:50% !important;height:50% !important;" 
-													class="sprayImage"><img src="side_project_img/long_range/GNN_gif.gif" style="width:41% !important;height:50% !important;"><br><br>
-													<a href="https://github.com/FanChiMao/SUNet"> Learn More</a>
+												<div style="display: flex;">
+													<div style="flex-basis: 48%;">
+														<a href="https://github.com/FanChiMao/SUNet" target="_blank"><img src="figures/Papers/SUNet/sunet_gif.gif" width="100%" height="250"></a>
+													</div>
+													<div style="flex-basis: 4%;"></div> <!-- middle blank -->
+													<div style="flex-basis: 48%;">
+													  <iframe src="https://www.youtube.com/embed/XQsFxGaDTGk" width="100%" height="250"></iframe>
+													</div>
 												</div>
 											</div>
 										</div>
 									</div>
-									<!-- ++ Paper 1 ++ -->
+									<!-- ++ Paper WBTP-VTON ++ -->
 									<div class="panel panel-default">
-									    <div class="panel-heading" role="tab" id="pub_heading5">
+									    <div class="panel-heading" role="tab" id="pub_heading_WBTP">
 									        <h4 class="panel-title">
-									            <a class="collapsed" data-toggle="collapse" data-parent="#pub_accordion" href="#pub_collapse5" aria-expanded="false" aria-controls="pub_collapse5">IEEE International Conference on Consumer Electronics-Taiwan (ICCE-TW 2021)
+									            <a class="collapsed" data-toggle="collapse" data-parent="#pub_accordion" href="#pub_collapse_WBTP" aria-expanded="false" aria-controls="pub_collapse_WBTP">IEEE International Conference on Consumer Electronics-Taiwan (ICCE-TW 2021)
 									            </a>
 									        </h4>
 									    </div>
-									    <div id="pub_collapse5" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pub_heading5">
+									    <div id="pub_collapse_WBTP" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pub_heading_WBTP">
 											<div class="panel-body">				      			
 												<p> <b><a href="https://ieeexplore.ieee.org/document/9603061" target="_blank">WBTP-VTON: Whole Body and Texture Preservation based Virtual Try-On Network</a></b> <br>Image-based virtual clothes try-on systems are becoming more and more popular. However, many challenges are waiting to be solved. Therefore, we propose a new fully learnable method, called the whole body and texture preservation based virtual try-on network (WBTP-VTON) to guide the virtual attempt to deal with all practical challenges in this area. First, the WBTP-VTON template conversion is used to transform the target clothing and pants (or skirts) according to the body shape of the target person using a method called Geometric Matching Module (GMM). The second part is to synthesize the final image and make the generated results more realistic. Finally, we use try-on modules and synthetic masks to combine the deformed clothes and the final image to ensure image smoothness. After experimenting on a large data set, it is proved that our WBTP-VTON method has advanced virtual try-on performance.</p>
-												<div class="sprayImage"><img src="side_project_img/long_range/detection_long_range_demo.gif" style="width:50% !important;height:50% !important;" 
-													class="sprayImage"><img src="side_project_img/long_range/GNN_gif.gif" style="width:41% !important;height:50% !important;"><br><br>
-													<a href="https://github.com/FanChiMao/WBTP-VTON"> Learn More</a>
+												<div>
+													<strong><a href="https://github.com/FanChiMao/WBTP-VTON" target="_blank"> Learn More</a></strong>
 												</div>
 											</div>
 										</div>
 									</div>
-									<!-- ++ Paper 0 ++ -->
+									<!-- ++ Paper CMFNet ++ -->
 									<div class="panel panel-default">
-									    <div class="panel-heading" role="tab" id="pub_heading0">
+									    <div class="panel-heading" role="tab" id="pub_heading_cmfnet">
 									        <h4 class="panel-title">
-									            <a class="collapsed" data-toggle="collapse" data-parent="#pub_accordion" href="#pub_collapse0" aria-expanded="false" aria-controls="pub_collapse0">ArXiv PrePrint
+									            <a class="collapsed" data-toggle="collapse" data-parent="#pub_accordion" href="#pub_collapse_cmfnet" aria-expanded="false" aria-controls="pub_collapse_cmfnet">ArXiv PrePrint
 									            </a>
 									        </h4>
 									    </div>
-									    <div id="pub_collapse0" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pub_heading0">
+									    <div id="pub_collapse_cmfnet" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pub_heading_cmfnet">
 											<div class="panel-body">				      			
 												<p> <b><a href="https://arxiv.org/abs/2206.02748v1" target="_blank">Compound Multi-branch Feature Fusion for Real Image Restoration</a></b> <br>Image restoration is a challenging and ill-posed problem which also has been a long-standing issue. However, most of learning based restoration methods are proposed to target one degradation type which means they are lack of generalization. In this paper, we proposed a multi-branch restoration model inspired from the Human Visual System (i.e., Retinal Ganglion Cells) which can achieve multiple restoration tasks in a general framework. The experiments show that the proposed multi-branch architecture, called CMFNet, has competitive performance results on four datasets, including image deblurring, dehazing and deraindrop which are very common applications for autonomous cars.</p>
-												<div class="sprayImage"><img src="side_project_img/long_range/detection_long_range_demo.gif" style="width:50% !important;height:50% !important;" 
-													class="sprayImage"><img src="side_project_img/long_range/GNN_gif.gif" style="width:41% !important;height:50% !important;"><br><br>
-													<a href="https://github.com/FanChiMao/CMFNet"> Learn More</a>
+												<div style="display: flex; align-items: center;" >
+													<div style="flex-basis: 48%;">
+														<a href="https://github.com/FanChiMao/CMFNet" target="_blank"><img src="figures/Papers/CMFNet/cmfnet_gif.gif" width="100%" height="250"></a>
+													</div>
+													<div style="flex-basis: 4%;"></div> <!-- middle blank -->
+													<div style="flex-basis: 48%;">
+														<blockquote class="twitter-tweet" style="height:200px;"><p lang="en" dir="ltr">Practical (and impressive) Space from <a href="https://twitter.com/Fan_R_Mao?ref_src=twsrc%5Etfw">@Fan_R_Mao</a> to deblur an image:<a href="https://t.co/7OznjbCYtD" target="_blank">https://t.co/7OznjbCYtD</a> <a href="https://t.co/2FVl6CfGKh" target="_blank">pic.twitter.com/2FVl6CfGKh</a></p>&mdash; Victor M (@victormustar) <a href="https://twitter.com/victormustar/status/1483468080068059139?ref_src=twsrc%5Etfw">January 18, 2022</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+													</div>
 												</div>
 											</div>
 										</div>
