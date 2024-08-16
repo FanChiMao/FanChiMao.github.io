@@ -308,3 +308,28 @@
 
 
 }());
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Number of items to show initially
+    const initialItems = 4;
+    const competitionItems = document.querySelectorAll(".competition-item");
+    const showMoreBtn = document.getElementById("show-more-btn");
+
+    // Show the initial items
+    for (let i = 0; i < initialItems && i < competitionItems.length; i++) {
+        competitionItems[i].classList.add("visible");
+    }
+
+    // Show more items when button is clicked
+    showMoreBtn.addEventListener("click", function() {
+        const hiddenItems = document.querySelectorAll(".competition-item:not(.visible)");
+        for (let i = 0; i < hiddenItems.length && i < initialItems; i++) {
+            hiddenItems[i].classList.add("visible");
+        }
+
+        // Hide the button if all items are visible
+        if (document.querySelectorAll(".competition-item:not(.visible)").length === 0) {
+            showMoreBtn.style.display = "none";
+        }
+    });
+});
