@@ -277,8 +277,8 @@ figure {
           cursor: pointer; }
           #colorlib-hero .flexslider .flex-control-nav li a.flex-active {
             cursor: pointer;
-            background: transparent;
-            border: 2px solid #2c98f0; }
+            background: #2c98f0;
+            }
     #colorlib-hero .flexslider .flex-direction-nav {
       display: none; }
     #colorlib-hero .flexslider .slider-text {
@@ -336,15 +336,15 @@ figure {
           padding: 10px 15px !important;
           border: none;
           font-weight: 400; }
-          #colorlib-hero .flexslider .slider-text > .slider-text-inner .btn.btn-learn {
-            color: #000;
-            border: 1px solid #000;
-            background: transparent !important; }
-            #colorlib-hero .flexslider .slider-text > .slider-text-inner .btn.btn-learn:hover {
-              background: transparent !important;
-              border: 1px solid #000 !important; }
-          @media screen and (max-width: 768px) {
-            #colorlib-hero .flexslider .slider-text > .slider-text-inner .btn {
+        #colorlib-hero .flexslider .slider-text > .slider-text-inner .btn.btn-learn {
+          color: #000;
+          border: 1px solid #000;
+          background: transparent !important; }
+        #colorlib-hero .flexslider .slider-text > .slider-text-inner .btn.btn-learn:hover {
+          background: transparent !important;
+          border: 1px solid #000 !important; }
+        @media screen and (max-width: 768px) {
+           #colorlib-hero .flexslider .slider-text > .slider-text-inner .btn {
               width: 100%; } }
 
 body.offcanvas {
@@ -1616,7 +1616,7 @@ body.offcanvas {
 }
 
 /* The dots/bullets/indicators */
-.dot_, .dot_2, .dot_3, .dot_4, .dot_5 {
+.dot_, .dot_2, .dot_3, .dot_4, .dot_5, .dot_6 {
   cursor: pointer;
   height: 15px;
   width: 15px;
@@ -1626,7 +1626,7 @@ body.offcanvas {
   display: inline-block;
   transition: background-color 0.6s ease;
 }
-.active_, .dot_:hover, .dot_2:hover .dot_3:hover .dot_4:hover .dot_5:hover{
+.active_, .dot_:hover, .dot_2:hover .dot_3:hover .dot_4:hover .dot_5:hover, .dot_6:hover{
   background-color: #717171;
 }
     

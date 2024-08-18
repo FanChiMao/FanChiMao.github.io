@@ -93,9 +93,10 @@
 				</div>
 			</nav>
 
-			
-			<div class="text-center">
-				<p><small><span id="visits"></span> 瀏覽次數</small></p>
+			<br><br><br>
+
+			<div class="text-center" style="width:80%">
+				<script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=1da1f2&w=280&t=n&d=HYO7zzkolzYzN5D-YRL2t4qZkV5snbeKywIK6D79vqc&co=f2f3f7&ct=2d2121'></script>
 			</div>
 			
 		</aside>
@@ -357,7 +358,94 @@
 					<div class="row">
 						<div class="col-md-12">
 				         <div class="timeline-centered">
-							<article class="timeline-entry animate-box" data-animate-effect="fadeInTop">
+							 <article class="timeline-entry animate-box competition-item" data-animate-effect="fadeInTop">
+					            <div class="timeline-entry-inner_comp">
+									<div class="col-md-6">
+										<div class="slideshow-container_">
+											<!-- Full-width images with number and caption text -->
+											<div class="mySlides_6">
+												<img src="figures/competitions/Tracking/1.png" style="width:100%">
+											</div>
+											<div class="mySlides_6">
+												<img src="figures/competitions/Tracking/2.png" style="width:100%">
+											</div>
+											<div class="mySlides_6">
+												<img src="figures/competitions/Tracking/3.png" style="width:100%">
+											</div>
+											<div class="mySlides_6">
+												<img src="figures/competitions/Tracking/4.png" style="width:100%">
+											</div>
+											<div class="mySlides_6">
+												<img src="figures/competitions/Tracking/5.png" style="width:100%">
+											</div>
+											<!-- Next and previous buttons -->
+											<a class="prev_" onclick="plusSlides_6(-1)">&#10094;</a>
+											<a class="next_" onclick="plusSlides_6(1)">&#10095;</a>
+											<!-- The dots/circles -->
+											<div style="position:absolute;bottom:0;margin-bottom:2dp;text-align:center;left:50%;transform: translateX(-50%);">
+												<span class="dot_6" onclick="currentSlide_6(1)"></span>
+												<span class="dot_6" onclick="currentSlide_6(2)"></span>
+												<span class="dot_6" onclick="currentSlide_6(3)"></span>
+												<span class="dot_6" onclick="currentSlide_6(4)"></span>
+												<span class="dot_6" onclick="currentSlide_6(5)"></span>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-6" style="z-index:-100;position: relative;">
+								   		<div class="timeline-label" >
+					               			<h2>車輛追蹤 (2024)</h2>
+					                  		<p>自定義設計物體跟踪方法，以解決極低幀率視頻下的CCTV物體跟踪問題。 獲得全國第二的成績 (社會組第一)</p>
+											<a href="https://github.com/FanChiMao/Competition-2024-PyTorch-Tracking" class="btn btn-primary" target="_blank">程式碼</a>
+										</div>
+									</div>
+					            </div>
+					         </article>
+
+							 <article class="timeline-entry animate-box competition-item" data-animate-effect="fadeInLeft">
+					            <div class="timeline-entry-inner_comp">
+									<div class="col-md-6" style="position: relative;">
+										<div class="slideshow-container_">
+											<!-- Full-width images with number and caption text -->
+											<div class="mySlides_5">
+												<img src="figures/competitions/Badminton/1.png" style="width:100%">
+											</div>
+											<div class="mySlides_5">
+												<img src="figures/competitions/Badminton/2.png" style="width:100%">
+											</div>
+											<div class="mySlides_5">
+												<img src="figures/competitions/Badminton/3.png" style="width:100%">
+											</div>
+											<div class="mySlides_5">
+												<img src="figures/competitions/Badminton/4.png" style="width:100%">
+											</div>
+											<div class="mySlides_5">
+												<img src="figures/competitions/Badminton/5.png" style="width:100%">
+											</div>
+											<!-- Next and previous buttons -->
+											<a class="prev_" onclick="plusSlides_5(-1)">&#10094;</a>
+											<a class="next_" onclick="plusSlides_5(1)">&#10095;</a>
+											<!-- The dots/circles -->
+											<div style="position:absolute;bottom:0;margin-bottom:2dp;text-align:center;left:50%;
+											transform: translateX(-50%);">
+												<span class="dot_5" onclick="currentSlide_5(1)"></span>
+												<span class="dot_5" onclick="currentSlide_5(2)"></span>
+												<span class="dot_5" onclick="currentSlide_5(3)"></span>
+												<span class="dot_5" onclick="currentSlide_5(4)"></span>
+												<span class="dot_5" onclick="currentSlide_5(5)"></span>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-6" style="z-index:-100;position: relative;">
+								   		<div class="timeline-label" >
+					               			<h2>羽球追蹤 (2023)</h2>
+					                  		<p>使用AI方法來定位和分析羽毛球比賽中的羽毛球運動軌跡。</p>
+											<a href="https://github.com/FanChiMao/Competition-2023-PyTorch-Badminton" class="btn btn-primary" target="_blank">程式碼</a>
+										</div>
+									</div>
+					            </div>
+					         </article>
+
+							<article class="timeline-entry animate-box competition-item" data-animate-effect="fadeInRight">
 					            <div class="timeline-entry-inner_comp">
 									<div class="col-md-6" style="position: relative;">
 										<div class="slideshow-container_">
@@ -403,13 +491,13 @@
 								   		<div class="timeline-label" >
 					               			<h2>音訊轉譜 (2022)</h2>
 					                  		<p>整合音源分離與音訊轉錄的AI模型應用程式,將輸入的音樂轉換成樂譜。 取得 Intel DevCUP 第三名。</p>
-											<a href="https://github.com/FanChiMao/Competition-2022-OpenVINO-Devcup" class="btn btn-primary" target="_blank">Github</a>
+											<a href="https://github.com/FanChiMao/Competition-2022-OpenVINO-Devcup" class="btn btn-primary" target="_blank">程式碼</a>
 										</div>
 									</div>
 					            </div>
 					         </article>
 
-					         <article class="timeline-entry animate-box" data-animate-effect="fadeInLeft">
+					         <article class="timeline-entry animate-box competition-item" data-animate-effect="fadeInLeft">
 					            <div class="timeline-entry-inner_comp">
 								   	<div class="col-md-6" style="position: relative;">
 										<div class="slideshow-container_">
@@ -447,13 +535,13 @@
 										<div class="timeline-label">
 											<h2>蘭花分類 (2022)</h2>
 											<p>利用不同合奏增強方式,整合7種不同的分類模型以預測蘭花種類。 於全國 743 組參賽隊伍中得到第 18 名的成績。</p>
-											<a href="https://github.com/FanChiMao/Competition-2022-Pytorch-Orchid_Classification" class="btn btn-primary" target="_blank">Github</a>
+											<a href="https://github.com/FanChiMao/Competition-2022-Pytorch-Orchid_Classification" class="btn btn-primary" target="_blank">程式碼</a>
 										</div>
 									</div>
 					            </div>
 					         </article>
 
-					         <article class="timeline-entry animate-box" data-animate-effect="fadeInRight">
+					         <article class="timeline-entry animate-box competition-item" data-animate-effect="fadeInRight">
 					            <div class="timeline-entry-inner_comp">
 								   	<div class="col-md-6" style="position: relative;">
 										<div class="slideshow-container_">
@@ -483,13 +571,13 @@
 										<div class="timeline-label">
 											<h2>資料回歸 (2021)</h2>
 											<p>利用多層感知器預測工業資料,並於現場根據新提供的訓練資料即時訓練預測模型。 從 118 組中入圍決賽。</p>
-											<a href="https://github.com/FanChiMao/Competition-2021-Pytorch-Reggression" class="btn btn-primary" target="_blank">Github</a>
+											<a href="https://github.com/FanChiMao/Competition-2021-Pytorch-Reggression" class="btn btn-primary" target="_blank">程式碼</a>
 										</div>
 									</div>
 					            </div>
 					         </article>
 
-					        <article class="timeline-entry animate-box" data-animate-effect="fadeInLeft">
+					        <article class="timeline-entry animate-box competition-item" data-animate-effect="fadeInLeft">
 					            <div class="timeline-entry-inner_comp">
 								   	<div class="col-md-6">
 										<div class="slideshow-container_">
@@ -535,11 +623,16 @@
 										<div class="timeline-label">
 											<h2>水稻偵測 (2021)</h2>
 											<p>利用物件偵測模型 (YOLOv4)偵測定位水道空拍圖。 在全國報名隊伍 523 組中取得前10名 (9/523).</p>
-											<a href="https://github.com/FanChiMao/Competition-2021-Pytorch-YOLOv4" class="btn btn-primary" target="_blank">Github</a>
+											<a href="https://github.com/FanChiMao/Competition-2021-Pytorch-YOLOv4" class="btn btn-primary" target="_blank">程式碼</a>
 										</div>
 									</div>
 					            </div>
 					        </article>
+
+							 <article class="timeline-entry animate-box" data-animate-effect="fadeInLeft">
+								 <button id="show-more-btn" class="btn btn-primary">展開更多</button>
+							 </article>
+
 					      </div>
 					   </div>
 				   </div>
@@ -560,6 +653,30 @@
 						<div class="col-md-12 animate-box" data-animate-effect="fadeInLeft">
 							<div class="fancy-collapse-panel">
 								<div class="panel-group" id="pub_accordion" role="tablist" aria-multiselectable="true">
+									<!-- ++ Paper CMFNet ++ -->
+									<div class="panel panel-default">
+									    <div class="panel-heading" role="tab" id="pub_heading_cmfnet">
+									        <h4 class="panel-title">
+									            <a class="collapsed" data-toggle="collapse" data-parent="#pub_accordion" href="#pub_collapse_cmfnet" aria-expanded="false" aria-controls="pub_collapse_cmfnet">IEEE 影像處理國際會議 (ICIP 2023)
+									            </a>
+									        </h4>
+									    </div>
+									    <div id="pub_collapse_cmfnet" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pub_heading_cmfnet">
+											<div class="panel-body">
+												<p> <b><a href="https://ieeexplore.ieee.org/document/10222907" target="_blank">複合多分支特徵融合用於真實圖像修復</a></b> <br>圖像修復是一個具有挑戰性且為一種 ill-posed 問題，這也是一個長期存在的問題。然而，大多數基於學習的修復方法僅針對一種類型的退化，這意味著它們缺乏泛化能力。在本文中，我們提出了一種受到人類視覺系統（即視網膜神經節細胞）啟發的多分支修復模型，該模型可以在一個通用框架中實現多種修復任務。實驗結果顯示，所提出的多分支架構，稱為CMFNet，在四個數據集上的表現具有競爭力，這些數據集包括圖像去模糊、去霧和去雨滴，這些應用在自動駕駛汽車中非常常見。</p>
+												<div style="display: flex; align-items: center;" >
+													<div style="flex-basis: 48%;">
+														<a href="https://github.com/FanChiMao/CMFNet" target="_blank"><img src="figures/Papers/CMFNet/cmfnet_gif.gif" width="100%" height="250"></a>
+													</div>
+													<div style="flex-basis: 4%;"></div> <!-- middle blank -->
+													<div style="flex-basis: 48%;">
+													  <iframe src="https://www.youtube.com/embed/8UCxeuP2A_Q?si=lXrq7NITa9j7_ZNF" width="100%" height="250"></iframe>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
 									<!-- ++ Paper thesis ++ -->
 									<div class="panel panel-default">
 									    <div class="panel-heading" role="tab" id="pub_heading_thesis">
@@ -604,7 +721,7 @@
 									    </div>
 										<div id="pub_collapse_HWMNet" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pub_heading_HWMNet">
 											<div class="panel-body">			      			
-												<p> <b><a href="https://ieeexplore.ieee.org/document/9897503" target="_blank">Half Wavelet Attention on M-Net+ for Low-Light Image Enhancement</a></b> <br>Low-Light Image Enhancement is a computer vision task which intensifies the dark images to appropriate brightness. It can also be seen as an illposed problem in image restoration domain. With the success of deep neural networks, the convolutional neural networks surpass the traditional algorithm-based methods and become the mainstream in the computer vision area. To advance the performance of enhancement algorithms, we propose an image enhancement network (HWMNet) based on an improved hierarchical model: M-Net+. Specifically, we use a half wavelet attention block on M-Net+ to enrich the features from wavelet domain. Furthermore, our HWMNet has competitive performance results on two image enhancement datasets in terms of quantitative metrics and visual quality.</p>
+												<p> <b><a href="https://ieeexplore.ieee.org/document/9897503" target="_blank">半小波注意力在M-Net+上的應用於低光圖像增強</a></b> <br>低光圖像增強是一個計算機視覺任務，旨在將暗圖像增強到適當的亮度。在圖像修復領域，這也被視為一個 ill-posed 問題。隨著深度神經網絡的成功，卷積神經網絡超越了傳統的基於算法的方法，並成為計算機視覺領域的主流。為了提高增強算法的性能，我們提出了一種基於改進的層次模型M-Net+的圖像增強網絡(HWMNet)。具體來說，我們在M-Net+上使用了半小波注意力塊，以豐富來自小波域的特徵。此外，在兩個圖像增強數據集上，我們的HWMNet在定量指標和視覺質量方面的表現都具有競爭力。</p>
 												<div style="display: flex;">
 													<div style="flex-basis: 48%;">
 														<a href="https://github.com/FanChiMao/HWMNet" target="_blank"><img src="figures/Papers/HWMNet/hwmnet_gif.gif" width="100%" height="250"></a>
@@ -627,8 +744,7 @@
 									    </div>
 									    <div id="pub_collapse_MNet" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pub_heading_MNet">
 											<div class="panel-body">				      			
-												<p> <b><a href="https://ieeexplore.ieee.org/document/9869195" target="_blank">Improved Hierarchical M-Net+ for Blind Image Denoising</a></b> <br>Image denoising is a long standing ill-posed prob-lem. Recently, the convolution neural networks (CNNs) gradually stand in the spotlight and almost dominated the computer vision field and had achieved impressive results in different levels of vision tasks. One of famous hierarchical CNN-backbones is the U-Net which shows awesome performance in both denoising and other areas of computer vision. However, the hierarchical architecture usually suffers from the loss of spatial information due to the repeated sampling. It seriously affects the denoising performance especially the element-wise task like denoising. In this paper, we proposed an improved hierarchical backbone: M-Net+ for image denoising to ameliorate the loss of spatial details. Furthermore, we test on two synthetic Gaussian noise datasets to demonstrate the competitive result of our model.</p>
-											</div>
+												<p> <b><a href="https://ieeexplore.ieee.org/document/9869195" target="_blank">改進的層次結構 M-Net+ 用於盲圖像去噪</a></b> <br>圖像去噪是一個長期存在的 ill-posed 問題。最近，卷積神經網絡 (CNNs) 逐漸成為焦點，幾乎主導了計算機視覺領域，並在不同層次的視覺任務中取得了令人印象深刻的成果。其中一個著名的層次結構 CNN 主幹是 U-Net，它在去噪和其他計算機視覺領域表現出色。然而，層次結構通常因重複取樣而導致空間信息的丟失，這對去噪性能，尤其是像去噪這樣的逐點操作任務產生了嚴重影響。本文提出了一種改進的層次主幹模型 M-Net+ 用於圖像去噪，以改善空間細節的丟失。此外，我們在兩個合成的高斯噪聲數據集上進行了測試，展示了我們模型的競爭性結果。</p>											</div>
 										</div>
 									</div>
 									<!-- ++ Paper SRMNet ++ -->
@@ -641,8 +757,7 @@
 									    </div>
 									    <div id="pub_collapse_SRMNet" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pub_heading_SRMNet">
 											<div class="panel-body">				      			
-												<p> <b><a href="https://ieeexplore.ieee.org/document/9909521" target="_blank">Selective Residual M-Net for Real Image Denoising</a></b> <br>Image restoration is a low-level vision task which is to restore degraded images to noise-free images. With the success of deep neural networks, the convolutional neural networks surpass the traditional restoration methods and become the main-stream in the computer vision area. To advance the performance of denoising algorithms, we propose a blind real image denoising network (SRMNet) by employing a hierarchical architecture improved from U-Net. Specifically, we use a selective kernel with residual block on the hierarchical structure called M-Net to enrich the multi-scale semantic information. Furthermore, our SRMNet has competitive performance results on two synthetic and two real-world noisy datasets in terms of quantitative metrics and visual quality. The source code and pretrained model are available at https://github.com/FanChiMao/SRMNet.</p>
-												<div style="display: flex;">
+												<p> <b><a href="https://ieeexplore.ieee.org/document/9909521" target="_blank">選擇性殘差 M-Net 用於真實圖像去噪</a></b> <br>圖像修復是一項低層次的視覺任務，旨在將退化的圖像恢復為無噪聲的圖像。隨著深度神經網絡的成功，卷積神經網絡已超越傳統的修復方法，並成為計算機視覺領域的主流。為了提高去噪算法的性能，我們提出了一種基於層次結構的盲真實圖像去噪網絡（SRMNet），該結構從 U-Net 改進而來。具體而言，我們在層次結構 M-Net 上使用了一個具有殘差塊的選擇性內核，以豐富多尺度語義信息。此外，在兩個合成和兩個真實世界的噪聲數據集上，我們的 SRMNet 在定量指標和視覺質量方面均表現出競爭力。源代碼和預訓練模型可在以下鏈接獲取：https://github.com/FanChiMao/SRMNet。</p>												<div style="display: flex;">
 													<div style="flex-basis: 48%;">
 														<a href="https://github.com/FanChiMao/SRMNet" target="_blank"><img src="figures/Papers/SRMNet/srmnet_gif.gif" width="100%" height="250"></a>
 													</div>
@@ -664,8 +779,7 @@
 									    </div>
 									    <div id="collapse_SUNet" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pub_heading_SUNet">
 											<div class="panel-body">									      			
-												<p> <b><a href="https://ieeexplore.ieee.org/document/9937486" target="_blank">SUNet: Swin Transformer UNet for Image Denoising</a></b> <br>Image restoration is a challenging ill-posed problem which also has been a long-standing issue. In the past few years, the convolution neural networks (CNNs) almost dominated the computer vision and had achieved considerable success in different levels of vision tasks including image restoration. However, recently the Swin Transformer-based model also shows impressive performance, even surpasses the CNN-based methods to become the state-of-the-art on high-level vision tasks. In this paper, we proposed a restoration model called SUNet which uses the Swin Transformer layer as our basic block and then is applied to UNet architecture for image denoising.</p>
-												<div style="display: flex;">
+												<p> <b><a href="https://ieeexplore.ieee.org/document/9937486" target="_blank">SUNet: 基於 Swin Transformer 的 UNet 用於圖像去噪</a></b> <br>圖像修復是一個具有挑戰性的 ill-posed 問題，並且長期以來一直是研究的難題。過去幾年，卷積神經網絡 (CNNs) 幾乎主導了計算機視覺領域，並在包括圖像修復在內的不同層次的視覺任務中取得了相當的成功。然而，最近基於 Swin Transformer 的模型也展示了令人印象深刻的表現，甚至超越了基於 CNN 的方法，成為高層次視覺任務的最新技術。在本文中，我們提出了一個名為 SUNet 的修復模型，該模型使用 Swin Transformer 層作為基本模塊，並將其應用於 UNet 架構來進行圖像去噪。</p>												<div style="display: flex;">
 													<div style="flex-basis: 48%;">
 														<a href="https://github.com/FanChiMao/SUNet" target="_blank"><img src="figures/Papers/SUNet/sunet_gif.gif" width="100%" height="250"></a>
 													</div>
@@ -687,32 +801,8 @@
 									    </div>
 									    <div id="pub_collapse_WBTP" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pub_heading_WBTP">
 											<div class="panel-body">				      			
-												<p> <b><a href="https://ieeexplore.ieee.org/document/9603061" target="_blank">WBTP-VTON: Whole Body and Texture Preservation based Virtual Try-On Network</a></b> <br>Image-based virtual clothes try-on systems are becoming more and more popular. However, many challenges are waiting to be solved. Therefore, we propose a new fully learnable method, called the whole body and texture preservation based virtual try-on network (WBTP-VTON) to guide the virtual attempt to deal with all practical challenges in this area. First, the WBTP-VTON template conversion is used to transform the target clothing and pants (or skirts) according to the body shape of the target person using a method called Geometric Matching Module (GMM). The second part is to synthesize the final image and make the generated results more realistic. Finally, we use try-on modules and synthetic masks to combine the deformed clothes and the final image to ensure image smoothness. After experimenting on a large data set, it is proved that our WBTP-VTON method has advanced virtual try-on performance.</p>
-												<div>
-													<strong><a href="https://github.com/FanChiMao/WBTP-VTON" target="_blank"> Learn More</a></strong>
-												</div>
-											</div>
-										</div>
-									</div>
-									<!-- ++ Paper CMFNet ++ -->
-									<div class="panel panel-default">
-									    <div class="panel-heading" role="tab" id="pub_heading_cmfnet">
-									        <h4 class="panel-title">
-									            <a class="collapsed" data-toggle="collapse" data-parent="#pub_accordion" href="#pub_collapse_cmfnet" aria-expanded="false" aria-controls="pub_collapse_cmfnet">預收錄論文
-									            </a>
-									        </h4>
-									    </div>
-									    <div id="pub_collapse_cmfnet" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pub_heading_cmfnet">
-											<div class="panel-body">				      			
-												<p> <b><a href="https://arxiv.org/abs/2206.02748v1" target="_blank">Compound Multi-branch Feature Fusion for Real Image Restoration</a></b> <br>Image restoration is a challenging and ill-posed problem which also has been a long-standing issue. However, most of learning based restoration methods are proposed to target one degradation type which means they are lack of generalization. In this paper, we proposed a multi-branch restoration model inspired from the Human Visual System (i.e., Retinal Ganglion Cells) which can achieve multiple restoration tasks in a general framework. The experiments show that the proposed multi-branch architecture, called CMFNet, has competitive performance results on four datasets, including image deblurring, dehazing and deraindrop which are very common applications for autonomous cars.</p>
-												<div style="display: flex; align-items: center;" >
-													<div style="flex-basis: 48%;">
-														<a href="https://github.com/FanChiMao/CMFNet" target="_blank"><img src="figures/Papers/CMFNet/cmfnet_gif.gif" width="100%" height="250"></a>
-													</div>
-													<div style="flex-basis: 4%;"></div> <!-- middle blank -->
-													<div style="flex-basis: 48%;">
-														<blockquote class="twitter-tweet" style="height:200px;"><p lang="en" dir="ltr">Practical (and impressive) Space from <a href="https://twitter.com/Fan_R_Mao?ref_src=twsrc%5Etfw">@Fan_R_Mao</a> to deblur an image:<a href="https://t.co/7OznjbCYtD" target="_blank">https://t.co/7OznjbCYtD</a> <a href="https://t.co/2FVl6CfGKh" target="_blank">pic.twitter.com/2FVl6CfGKh</a></p>&mdash; Victor M (@victormustar) <a href="https://twitter.com/victormustar/status/1483468080068059139?ref_src=twsrc%5Etfw">January 18, 2022</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-													</div>
+												<p> <b><a href="https://ieeexplore.ieee.org/document/9603061" target="_blank">WBTP-VTON：基於全身和紋理保護的虛擬試穿網絡</a></b> <br>基於圖像的虛擬服裝試穿系統越來越受歡迎。然而，許多挑戰仍有待解決。為此，我們提出了一種新的完全可學習的方法，稱為基於全身和紋理保護的虛擬試穿網絡 (WBTP-VTON)，以應對該領域中的所有實際挑戰。首先，WBTP-VTON 模板轉換使用幾何匹配模塊 (GMM) 方法根據目標人物的體型來轉換目標衣服和褲子（或裙子）。第二部分是合成最終圖像，使生成的結果更逼真。最後，我們使用試穿模塊和合成遮罩將變形的衣服與最終圖像結合起來，以確保圖像的平滑度。經過在大型數據集上的實驗證明，我們的 WBTP-VTON 方法具有先進的虛擬試穿性能。</p>												<div>
+													<strong><a href="https://github.com/FanChiMao/WBTP-VTON" target="_blank"> 了解更多</a></strong>
 												</div>
 											</div>
 										</div>
@@ -766,19 +856,19 @@
 								<div class="col-md-10 col-md-offset-1 col-md-pull-1 animate-box" data-animate-effect="fadeInRight">
 									<form action="mailto:qaz5517359@gmail.com" method="post" enctype="text/plain">
 										<div class="form-group">
-											<input type="text" class="form-control" placeholder="Name">
+											<input type="text" class="form-control" placeholder="姓名">
 										</div>
 										<div class="form-group">
-											<input type="text" class="form-control" placeholder="Email">
+											<input type="text" class="form-control" placeholder="郵件">
 										</div>
 										<div class="form-group">
-											<input type="text" class="form-control" placeholder="Subject">
+											<input type="text" class="form-control" placeholder="主旨">
 										</div>
 										<div class="form-group">
-											<textarea name="" id="message" cols="30" rows="7" class="form-control" placeholder="Message"></textarea>
+											<textarea name="" id="message" cols="30" rows="7" class="form-control" placeholder="訊息"></textarea>
 										</div>
 										<div class="form-group">
-											<input type="submit" class="btn btn-primary btn-send-message" value="Send Message">
+											<input type="submit" class="btn btn-primary btn-send-message" value="寄送郵件">
 										</div>
 									</form>
 								</div>
