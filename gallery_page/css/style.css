@@ -1243,3 +1243,10 @@ img {
     filter: none;
     -webkit-filter: grayscale(0);
     -webkit-transform: scale(1.01); }
+
+.custom-divider {
+    border: none;
+    border-top: 2px solid gray; /* You can use 'dotted' or 'solid' */
+    margin: 20px 0;
+    width: 100%;
+}
