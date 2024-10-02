@@ -1250,3 +1250,19 @@ img {
     margin: 20px 0;
     width: 100%;
 }
+
+.review-item p {
+
+    margin: 5px 0; /* Spacing between paragraphs */
+    line-height: 1.5; /* Proper line height for readability */
+    align: left
+}
+
+.review-item .stars {
+    color: gold; /* Gold color for stars */
+    font-weight: bold; /* Bold stars */
+}
+
+.review-item .wait-time {
+    font-style: italic;
+}
