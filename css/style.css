@@ -1649,3 +1649,33 @@ body.offcanvas {
   float: left;
   margin-bottom: 10px; 
 }
+
+.interests p {
+  margin: 6px 0;
+  font-size: 16px;
+}
+.interests i {
+  margin-right: 8px;
+}
+
+.language-switcher {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.lang-switcher {
+  display: inline-flex;
+  list-style: none;
+  padding: 0;
+  gap: 12px;
+}
+
+.lang-switcher li a {
+  text-decoration: none;
+  color: #000;
+  font-weight: 600;
+}
+
+.lang-switcher li a:hover {
+  color: #2c98f0;
+}
