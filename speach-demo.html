@@ -71,35 +71,52 @@
       }
     };
 
+    
     $btnStart.onclick = async () => {
-      if (!unlocked) { alert("請先輸入密碼"); return; }
+      if (!unlocked) { alert('請先輸入密碼'); return; }
 
-      $btnStart.disabled = true; $btnStop.disabled = false;
-      $status.textContent = "connecting...";
+      $btnStart.disabled = true; $btnStop.disabled = false; $status.textContent = 'connecting...';
 
-      const { token, region } = await getToken($pass.value);
-      const cfg = speechSDK.SpeechTranslationConfig.fromAuthorizationToken(token, region);
-      const autoDetect = speechSDK.AutoDetectSourceLanguageConfig.fromLanguages(["en-US","zh-TW","ja-JP"]);
-      const targets = document.getElementById("targets").value.split(",").map(s => s.trim());
-      targets.forEach(t => cfg.addTargetLanguage(t));
+      try {
+        // 1) 先要麥克風（會觸發瀏覽器權限）
+        const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // 2) 用 stream 建 AudioConfig（避免 fromDefaultMicrophoneInput 的相容性坑）
+        const audioConfig = SpeechSDK.AudioConfig.fromStreamInput(mediaStream);
 
-      const audio = speechSDK.AudioConfig.fromDefaultMicrophoneInput();
-      recognizer = new speechSDK.TranslationRecognizer(cfg, autoDetect, audio);
+        // 3) 拿短期 token
+        const { token, region } = await getToken($pass.value);
 
-      recognizer.recognizing = (s, e) => {
-        const trans = e.result.translations;
-        $status.textContent = "listening...";
-        log(`[partial] ${e.result.text} → ${[...trans.keys()].map(k => `${k}:${trans.get(k)}`).join(" | ")}`);
-      };
-      recognizer.recognized = (s, e) => {
-        const lang = speechSDK.AutoDetectSourceLanguageResult.fromResult(e.result)?.language || "unknown";
-        const trans = e.result.translations;
-        log(`[final:${lang}] ${e.result.text} → ${[...trans.keys()].map(k => `${k}:${trans.get(k)}`).join(" | ")}`);
-      };
-      recognizer.canceled = (s, e) => { log(`[error] ${e.errorDetails}`); stop(); };
+        // 4) 建立翻譯設定
+        const cfg = SpeechSDK.SpeechTranslationConfig.fromAuthorizationToken(token, region);
+        const autoDetect = SpeechSDK.AutoDetectSourceLanguageConfig.fromLanguages(['en-US','zh-TW','ja-JP']);
+        const targets = document.getElementById('targets').value.split(',').map(s => s.trim()).filter(Boolean);
+        targets.forEach(t => cfg.addTargetLanguage(t));
 
-      recognizer.startContinuousRecognitionAsync();
+        // 5) 建立 recognizer
+        recognizer = new SpeechSDK.TranslationRecognizer(cfg, autoDetect, audioConfig);
+
+        recognizer.recognizing = (s, e) => {
+          const trans = e.result.translations;
+          $status.textContent = 'listening...';
+          log(`[partial] ${e.result.text} → ${[...trans.keys()].map(k => `${k}:${trans.get(k)}`).join(' | ')}`);
+        };
+        recognizer.recognized = (s, e) => {
+          const lang = SpeechSDK.AutoDetectSourceLanguageResult.fromResult(e.result)?.language || 'unknown';
+          const trans = e.result.translations;
+          log(`[final:${lang}] ${e.result.text} → ${[...trans.keys()].map(k => `${k}:${trans.get(k)}`).join(' | ')}`);
+        };
+        recognizer.canceled = (s, e) => { log(`[error] ${e.errorDetails || e.reason}`); stop(); };
+
+        recognizer.startContinuousRecognitionAsync();
+        console.log('[start] recognizer started');
+      } catch (err) {
+        console.error('[start] failed', err);
+        $status.textContent = 'error';
+        $btnStart.disabled = false; $btnStop.disabled = true;
+        log(`[fatal] ${err.message || err}`);
+      }
     };
+
 
     function stop() {
       if (!recognizer) return;
