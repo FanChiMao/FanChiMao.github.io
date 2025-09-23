@@ -116,10 +116,8 @@
         $status.textContent = 'error';
         $btnStart.disabled = false; $btnStop.disabled = true;
         log(`[fatal] ${err.message || err}`);
-      }
+      } 
     };
-
-
 
     function stop() {
       if (!recognizer) return;
