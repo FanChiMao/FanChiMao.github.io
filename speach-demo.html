@@ -71,29 +71,29 @@
       }
     };
 
-    
     $btnStart.onclick = async () => {
       if (!unlocked) { alert('請先輸入密碼'); return; }
 
       $btnStart.disabled = true; $btnStop.disabled = false; $status.textContent = 'connecting...';
 
       try {
-        // 1) 先要麥克風（會觸發瀏覽器權限）
+        // 1) 先要麥克風權限，取到 MediaStream
         const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        // 2) 用 stream 建 AudioConfig（避免 fromDefaultMicrophoneInput 的相容性坑）
+
+        // 2) 用 MediaStream 建立 AudioConfig（⚠️ 一定要傳 AudioConfig 給 recognizer，不是傳 mediaStream）
         const audioConfig = SpeechSDK.AudioConfig.fromStreamInput(mediaStream);
 
         // 3) 拿短期 token
         const { token, region } = await getToken($pass.value);
 
         // 4) 建立翻譯設定
-        const cfg = SpeechSDK.SpeechTranslationConfig.fromAuthorizationToken(token, region);
+        const transCfg = SpeechSDK.SpeechTranslationConfig.fromAuthorizationToken(token, region);
         const autoDetect = SpeechSDK.AutoDetectSourceLanguageConfig.fromLanguages(['en-US','zh-TW','ja-JP']);
         const targets = document.getElementById('targets').value.split(',').map(s => s.trim()).filter(Boolean);
-        targets.forEach(t => cfg.addTargetLanguage(t));
+        targets.forEach(t => transCfg.addTargetLanguage(t));
 
-        // 5) 建立 recognizer
-        recognizer = new SpeechSDK.TranslationRecognizer(cfg, autoDetect, audioConfig);
+        // 5) ⚠️ 第三個參數一定是 audioConfig
+        recognizer = new SpeechSDK.TranslationRecognizer(transCfg, autoDetect, audioConfig);
 
         recognizer.recognizing = (s, e) => {
           const trans = e.result.translations;
@@ -116,7 +116,6 @@
         log(`[fatal] ${err.message || err}`);
       }
     };
-
 
     function stop() {
       if (!recognizer) return;
