@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>Speech Demo</title>
+</head>
+<body>
+  <h2>🎤 即時翻譯測試</h2>
+
+  <div>
+    <label>訪客密碼：</label>
+    <input id="pass" type="password" placeholder="輸入密碼">
+    <button id="btnAuth">解鎖</button>
+    <span id="gateStatus">locked</span>
+  </div>
+
+  <div style="margin-top:8px;">
+    <label>目標語言：</label>
+    <input id="targets" value="zh-Hant,en,ja">
+  </div>
+
+  <div style="margin-top:8px;">
+    <button id="btnStart" disabled>開始</button>
+    <button id="btnStop" disabled>停止</button>
+    <span id="status">idle</span>
+  </div>
+
+  <pre id="out" style="background:#111;color:#0f0;padding:12px;min-height:120px;white-space:pre-wrap;"></pre>
+
+  <!-- Azure Speech SDK -->
+  <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
+  <!-- Demo script -->
+  <script>
+    const TOKEN_URL = "https://api.52hzfan.com/api/token";
+    const speechSDK = window.SpeechSDK;
+    const $out = document.getElementById('out');
+    const $status = document.getElementById('status');
+    const $btnStart = document.getElementById('btnStart');
+    const $btnStop = document.getElementById('btnStop');
+    const $btnAuth = document.getElementById('btnAuth');
+    const $gateStatus = document.getElementById('gateStatus');
+    const $pass = document.getElementById('pass');
+
+    let recognizer = null;
+    let unlocked = false;
+
+    function log(line) {
+      $out.textContent += line + '\n';
+      $out.scrollTop = $out.scrollHeight;
+    }
+
+    async function getToken(password) {
+      const r = await fetch(TOKEN_URL, {
+        headers: { "X-Access-Key": password }
+      });
+      if (!r.ok) throw new Error("token failed " + r.status);
+      return r.json();
+    }
+
+    $btnAuth.onclick = async () => {
+      try {
+        await getToken($pass.value);
+        unlocked = true;
+        $gateStatus.textContent = "unlocked";
+        $btnStart.disabled = false;
+      } catch {
+        unlocked = false;
+        $gateStatus.textContent = "locked";
+        $btnStart.disabled = true;
+        alert("密碼錯誤或已過期");
+      }
+    };
+
+    $btnStart.onclick = async () => {
+      if (!unlocked) { alert("請先輸入密碼"); return; }
+
+      $btnStart.disabled = true; $btnStop.disabled = false;
+      $status.textContent = "connecting...";
+
+      const { token, region } = await getToken($pass.value);
+      const cfg = speechSDK.SpeechTranslationConfig.fromAuthorizationToken(token, region);
+      const autoDetect = speechSDK.AutoDetectSourceLanguageConfig.fromLanguages(["en-US","zh-TW","ja-JP"]);
+      const targets = document.getElementById("targets").value.split(",").map(s => s.trim());
+      targets.forEach(t => cfg.addTargetLanguage(t));
+
+      const audio = speechSDK.AudioConfig.fromDefaultMicrophoneInput();
+      recognizer = new speechSDK.TranslationRecognizer(cfg, autoDetect, audio);
+
+      recognizer.recognizing = (s, e) => {
+        const trans = e.result.translations;
+        $status.textContent = "listening...";
+        log(`[partial] ${e.result.text} → ${[...trans.keys()].map(k => `${k}:${trans.get(k)}`).join(" | ")}`);
+      };
+      recognizer.recognized = (s, e) => {
+        const lang = speechSDK.AutoDetectSourceLanguageResult.fromResult(e.result)?.language || "unknown";
+        const trans = e.result.translations;
+        log(`[final:${lang}] ${e.result.text} → ${[...trans.keys()].map(k => `${k}:${trans.get(k)}`).join(" | ")}`);
+      };
+      recognizer.canceled = (s, e) => { log(`[error] ${e.errorDetails}`); stop(); };
+
+      recognizer.startContinuousRecognitionAsync();
+    };
+
+    function stop() {
+      if (!recognizer) return;
+      recognizer.stopContinuousRecognitionAsync(() => {
+        $status.textContent = "stopped";
+        $btnStart.disabled = false; $btnStop.disabled = true;
+      });
+      recognizer = null;
+    }
+
+    $btnStop.onclick = stop;
+  </script>
+</body>
+</html>
