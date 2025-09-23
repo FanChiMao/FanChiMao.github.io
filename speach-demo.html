@@ -73,27 +73,25 @@
 
     $btnStart.onclick = async () => {
       if (!unlocked) { alert('請先輸入密碼'); return; }
-
       $btnStart.disabled = true; $btnStop.disabled = false; $status.textContent = 'connecting...';
 
       try {
-        // 1) 先要麥克風權限，取到 MediaStream
-        const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-        // 2) 用 MediaStream 建立 AudioConfig（⚠️ 一定要傳 AudioConfig 給 recognizer，不是傳 mediaStream）
-        const audioConfig = SpeechSDK.AudioConfig.fromStreamInput(mediaStream);
-
-        // 3) 拿短期 token
+        // 1) 先拿 token/region
         const { token, region } = await getToken($pass.value);
 
-        // 4) 建立翻譯設定
-        const transCfg = SpeechSDK.SpeechTranslationConfig.fromAuthorizationToken(token, region);
+        // 2) Speech Translation 設定
+        const cfg = SpeechSDK.SpeechTranslationConfig.fromAuthorizationToken(token, region);
         const autoDetect = SpeechSDK.AutoDetectSourceLanguageConfig.fromLanguages(['en-US','zh-TW','ja-JP']);
-        const targets = document.getElementById('targets').value.split(',').map(s => s.trim()).filter(Boolean);
-        targets.forEach(t => transCfg.addTargetLanguage(t));
+        document.getElementById('targets').value
+          .split(',').map(s=>s.trim()).filter(Boolean)
+          .forEach(t => cfg.addTargetLanguage(t));
 
-        // 5) ⚠️ 第三個參數一定是 audioConfig
-        recognizer = new SpeechSDK.TranslationRecognizer(transCfg, autoDetect, audioConfig);
+        // 3) **關鍵**：用預設麥克風建立 AudioConfig（不要自己傳 MediaStream）
+        const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+        console.log('audioConfig ctor =', audioConfig.constructor && audioConfig.constructor.name); // 應是 "AudioConfig"
+
+        // 4) 建 recognizer：參數順序一定是 (cfg, autoDetect, audioConfig)
+        recognizer = new SpeechSDK.TranslationRecognizer(cfg, autoDetect, audioConfig);
 
         recognizer.recognizing = (s, e) => {
           const trans = e.result.translations;
@@ -116,6 +114,7 @@
         log(`[fatal] ${err.message || err}`);
       }
     };
+
 
     function stop() {
       if (!recognizer) return;
