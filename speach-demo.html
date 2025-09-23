@@ -76,21 +76,25 @@
       $btnStart.disabled = true; $btnStop.disabled = false; $status.textContent = 'connecting...';
 
       try {
-        // 1) 先拿 token/region
+        // 1) 拿 token
         const { token, region } = await getToken($pass.value);
 
-        // 2) Speech Translation 設定
+        // 2) 翻譯設定
         const cfg = SpeechSDK.SpeechTranslationConfig.fromAuthorizationToken(token, region);
-        const autoDetect = SpeechSDK.AutoDetectSourceLanguageConfig.fromLanguages(['en-US','zh-TW','ja-JP']);
+        cfg.speechRecognitionLanguage = "zh-TW"; // 主語言，讓翻譯更快穩定
+        // 加目標語言
         document.getElementById('targets').value
-          .split(',').map(s=>s.trim()).filter(Boolean)
+          .split(',').map(s => s.trim()).filter(Boolean)
           .forEach(t => cfg.addTargetLanguage(t));
 
-        // 3) **關鍵**：用預設麥克風建立 AudioConfig（不要自己傳 MediaStream）
-        const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
-        console.log('audioConfig ctor =', audioConfig.constructor && audioConfig.constructor.name); // 應是 "AudioConfig"
+        // 3) 自動偵測來源語言
+        const autoDetect = SpeechSDK.AutoDetectSourceLanguageConfig.fromLanguages(['en-US','zh-TW','ja-JP']);
 
-        // 4) 建 recognizer：參數順序一定是 (cfg, autoDetect, audioConfig)
+        // 4) 預設麥克風
+        const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+        console.log('audioConfig ctor =', audioConfig.constructor && audioConfig.constructor.name);
+
+        // 5) 建 recognizer
         recognizer = new SpeechSDK.TranslationRecognizer(cfg, autoDetect, audioConfig);
 
         recognizer.recognizing = (s, e) => {
@@ -114,6 +118,7 @@
         log(`[fatal] ${err.message || err}`);
       }
     };
+
 
 
     function stop() {
