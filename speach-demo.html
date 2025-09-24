@@ -15,11 +15,6 @@
   </div>
 
   <div style="margin-top:8px;">
-    <label>目標語言：</label>
-    <input id="targets" value="zh-Hant,en,ja">
-  </div>
-
-  <div style="margin-top:8px;">
     <button id="btnStart" disabled>開始</button>
     <button id="btnStop" disabled>停止</button>
     <span id="status">idle</span>
@@ -76,47 +71,58 @@
       $btnStart.disabled = true; $btnStop.disabled = false; $status.textContent = 'connecting...';
 
       try {
-        // 1) 拿 token
+        // 1) 取 token
         const { token, region } = await getToken($pass.value);
 
-        // 2) 翻譯設定
+        // 2) 翻譯設定：來源=中文（台灣），目標=英文/日文
         const cfg = SpeechSDK.SpeechTranslationConfig.fromAuthorizationToken(token, region);
-        cfg.speechRecognitionLanguage = "zh-TW"; // 主語言，讓翻譯更快穩定
-        // 加目標語言
-        document.getElementById('targets').value
-          .split(',').map(s => s.trim()).filter(Boolean)
-          .forEach(t => cfg.addTargetLanguage(t));
+        cfg.speechRecognitionLanguage = "zh-TW";   // 你要講中文
+        ["en", "ja"].forEach(t => cfg.addTargetLanguage(t));  // 只放 en/ja
 
-        // 3) 自動偵測來源語言
-        // const autoDetect = SpeechSDK.AutoDetectSourceLanguageConfig.fromLanguages(['en-US','zh-TW']);
-
-        // 4) 預設麥克風
+        // 3) 麥克風
         const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
-        console.log('audioConfig ctor =', audioConfig.constructor && audioConfig.constructor.name);
 
-        // 5) 建 recognizer
+        // 4) 建立翻譯 recognizer（兩個參數）
         recognizer = new SpeechSDK.TranslationRecognizer(cfg, audioConfig);
 
+        // 診斷事件（可看到是否有拾音）
+        recognizer.sessionStarted = () => console.log("[session] started");
+        recognizer.speechStartDetected = () => console.log("[speech] start");
+        recognizer.speechEndDetected = () => console.log("[speech] end");
+
+        // 即時字幕（中文原文）＋翻譯（英/日）
         recognizer.recognizing = (s, e) => {
-          const trans = e.result.translations;
-          $status.textContent = 'listening...';
-          log(`[partial] ${e.result.text} → ${[...trans.keys()].map(k => `${k}:${trans.get(k)}`).join(' | ')}`);
+          $status.textContent = "listening...";
+          const tr = e.result.translations; // Map
+          const en = tr.get("en") || "";
+          const ja = tr.get("ja") || "";
+          log(`[partial][原文] ${e.result.text}`);
+          if (en) log(`          [英] ${en}`);
+          if (ja) log(`          [日] ${ja}`);
         };
+
         recognizer.recognized = (s, e) => {
-          const lang = SpeechSDK.AutoDetectSourceLanguageResult.fromResult(e.result)?.language || 'unknown';
-          const trans = e.result.translations;
-          log(`[final:${lang}] ${e.result.text} → ${[...trans.keys()].map(k => `${k}:${trans.get(k)}`).join(' | ')}`);
+          const tr = e.result.translations;
+          const en = tr.get("en") || "";
+          const ja = tr.get("ja") || "";
+          log(`[final][原文] ${e.result.text}`);
+          if (en) log(`        [英] ${en}`);
+          if (ja) log(`        [日] ${ja}`);
         };
-        recognizer.canceled = (s, e) => { log(`[error] ${e.errorDetails || e.reason}`); stop(); };
+
+        recognizer.canceled = (s, e) => {
+          log(`[error] reason=${e.reason} details=${e.errorDetails||""}`);
+          stop();
+        };
 
         recognizer.startContinuousRecognitionAsync();
-        console.log('[start] recognizer started');
+        console.log("[start] translation started (src=zh-TW → en/ja)");
       } catch (err) {
-        console.error('[start] failed', err);
-        $status.textContent = 'error';
+        console.error("[start] failed", err);
+        $status.textContent = "error";
         $btnStart.disabled = false; $btnStop.disabled = true;
         log(`[fatal] ${err.message || err}`);
-      } 
+      }
     };
 
     function stop() {
