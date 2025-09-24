@@ -88,14 +88,14 @@
           .forEach(t => cfg.addTargetLanguage(t));
 
         // 3) 自動偵測來源語言
-        const autoDetect = SpeechSDK.AutoDetectSourceLanguageConfig.fromLanguages(['en-US','zh-TW','ja-JP']);
+        const autoDetect = SpeechSDK.AutoDetectSourceLanguageConfig.fromLanguages(['en-US','zh-TW']);
 
         // 4) 預設麥克風
         const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
         console.log('audioConfig ctor =', audioConfig.constructor && audioConfig.constructor.name);
 
         // 5) 建 recognizer
-        recognizer = new SpeechSDK.TranslationRecognizer(cfg, autoDetect, audioConfig);
+        recognizer = new SpeechSDK.TranslationRecognizer(cfg, audioConfig, autoDetect);
 
         recognizer.recognizing = (s, e) => {
           const trans = e.result.translations;
