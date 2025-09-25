@@ -75,7 +75,7 @@ $btnStart.addEventListener('click', async () => {
 
     // 調參：partial 穩定、靜音容忍
     cfg.setProperty(SpeechSDK.PropertyId.SpeechServiceResponse_StablePartialResultThreshold, "3");
-    cfg.setProperty(SpeechSDK.PropertyId.Speech_SegmentationSilenceTimeoutMs, "1500");
+    cfg.setProperty(SpeechSDK.PropertyId.Speech_SegmentationSilenceTimeoutMs, "1000");
     cfg.setProperty(SpeechSDK.PropertyId.SpeechServiceConnection_InitialSilenceTimeoutMs, "5000");
 
     // 音源：預設麥克風
@@ -97,11 +97,35 @@ $btnStart.addEventListener('click', async () => {
       showPartial(e.result.text);  // partial 當過場動畫
     };
     recognizer.recognized = (s, e) => {
-      showPartial('');
-      const tr = e.result.translations; // Map<string,string>
-      const pairs = [...tr.keys()].map(k => `${k}: ${tr.get(k)}`).join(' | ');
-      appendFinal(`[原文] ${e.result.text}`);
-      if (pairs) appendFinal(`  → ${pairs}`);
+        // 收到一次句子結果就把 partial 清掉
+        showPartial('');
+
+        const reason = e.result?.reason;
+        const reasonName = SpeechSDK.ResultReason[reason];
+        console.log('[recognized]', reason, reasonName, e.result?.text);
+
+        if (reason === RR.TranslatedSpeech) {
+            // ✅ 正常：有翻譯
+            const tr = e.result.translations;
+            const pairs = [...tr.keys()].map(k => `${k}: ${tr.get(k)}`).join(' | ');
+            appendFinal(`[原文] ${e.result.text}`);
+            if (pairs) appendFinal(`  → ${pairs}`);
+            return;
+        }
+
+        if (reason === RR.RecognizedSpeech) {
+            // 有辨識但（可能因為目標語言空/SDK行為）沒有翻譯，也當作 final 顯示
+            appendFinal(`[原文] ${e.result.text}`);
+            return;
+        }
+
+        if (reason === RR.NoMatch) {
+            console.log('[nomatch]', e.result?.noMatchDetails);
+            return;
+        }
+
+        // 其他情況先記錄
+        console.log('[recognized other]', reasonName, e);
     };
 
     recognizer.startContinuousRecognitionAsync();
