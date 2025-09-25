@@ -1,140 +1,76 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>Speech Demo</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>即時字幕 & 翻譯 (Local)</title>
+  <link rel="stylesheet" href="./style.css" />
+
 </head>
 <body>
-  <h2>🎤 即時翻譯測試</h2>
+  <div class="wrap">
+    <div class="title">
+      <div class="glow"></div>
+      <h1>即時字幕（中文）→ 英 / 日</h1>
+      <span id="status" class="pill">idle</span>
+    </div>
 
-  <div>
-    <label>訪客密碼：</label>
-    <input id="pass" type="password" placeholder="輸入密碼">
-    <button id="btnAuth">解鎖</button>
-    <span id="gateStatus">locked</span>
+    <div class="grid">
+      <!-- 左：控制卡 -->
+      <section class="card">
+        <div class="row">
+          <div class="mic" aria-hidden="true"></div>
+          <div>
+            <div class="small">使用前先解鎖；開始後允許麥克風</div>
+            <div class="small">token 會過期，卡住時請停止→再解鎖→開始</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <label>訪客密碼</label>
+          <input id="pass" type="password" placeholder="輸入密碼" value="pass-dev-123" />
+          <button id="btnAuth" class="btn">解鎖</button>
+          <span id="gate" class="pill">locked</span>
+        </div>
+
+        <div class="row">
+          <label>來源語言</label>
+          <select id="src">
+            <option value="zh-TW" selected>中文（台灣） zh-TW</option>
+            <option value="en-US">English (US) en-US</option>
+            <option value="ja-JP">日本語 ja-JP</option>
+          </select>
+        </div>
+
+        <div class="row mb-2">
+          <label>目標語言</label>
+          <label class="small"><input type="checkbox" class="tgt" value="en" checked/> 英文 (en)</label>
+          <label class="small"><input type="checkbox" class="tgt" value="ja" checked/> 日文 (ja)</label>
+        </div>
+        
+
+        <!-- <div class="row" style="align-items:flex-start">
+          <label>專有名詞提示</label>
+          <input id="phrases" style="flex:1" placeholder="例：阿貿, 52Hz, Azure, FastAPI, Vue"/>
+        </div> -->
+
+        <div class="row">
+          <button id="btnStart" class="btn" disabled>開始</button>
+          <button id="btnStop" class="btn-ghost" disabled>停止</button>
+        </div>
+      </section>
+
+      <!-- 右：字幕卡 -->
+      <section class="card">
+        <div id="partial" class="">等待語音中<span class="blink">…</span></div>
+        <div id="final"></div>
+      </section>
+    </div>
   </div>
 
-  <div style="margin-top:8px;">
-    <button id="btnStart" disabled>開始</button>
-    <button id="btnStop" disabled>停止</button>
-    <span id="status">idle</span>
-  </div>
-
-  <pre id="out" style="background:#111;color:#0f0;padding:12px;min-height:120px;white-space:pre-wrap;"></pre>
-
-  <!-- Azure Speech SDK -->
+  <!-- Azure Speech SDK（只載這一份） -->
   <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
-  <!-- Demo script -->
-  <script>
-    const TOKEN_URL = "https://api.52hzfan.com/api/token";
-    const speechSDK = window.SpeechSDK;
-    const $out = document.getElementById('out');
-    const $status = document.getElementById('status');
-    const $btnStart = document.getElementById('btnStart');
-    const $btnStop = document.getElementById('btnStop');
-    const $btnAuth = document.getElementById('btnAuth');
-    const $gateStatus = document.getElementById('gateStatus');
-    const $pass = document.getElementById('pass');
-
-    let recognizer = null;
-    let unlocked = false;
-
-    function log(line) {
-      $out.textContent += line + '\n';
-      $out.scrollTop = $out.scrollHeight;
-    }
-
-    async function getToken(password) {
-      const r = await fetch(TOKEN_URL, {
-        headers: { "X-Access-Key": password }
-      });
-      if (!r.ok) throw new Error("token failed " + r.status);
-      return r.json();
-    }
-
-    $btnAuth.onclick = async () => {
-      try {
-        await getToken($pass.value);
-        unlocked = true;
-        $gateStatus.textContent = "unlocked";
-        $btnStart.disabled = false;
-      } catch {
-        unlocked = false;
-        $gateStatus.textContent = "locked";
-        $btnStart.disabled = true;
-        alert("密碼錯誤或已過期");
-      }
-    };
-
-    $btnStart.onclick = async () => {
-      if (!unlocked) { alert('請先輸入密碼'); return; }
-      $btnStart.disabled = true; $btnStop.disabled = false; $status.textContent = 'connecting...';
-
-      try {
-        // 1) 取 token
-        const { token, region } = await getToken($pass.value);
-
-        // 2) 翻譯設定：來源=中文（台灣），目標=英文/日文
-        const cfg = SpeechSDK.SpeechTranslationConfig.fromAuthorizationToken(token, region);
-        cfg.speechRecognitionLanguage = "zh-TW";   // 你要講中文
-        ["en", "ja"].forEach(t => cfg.addTargetLanguage(t));  // 只放 en/ja
-
-        // 3) 麥克風
-        const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
-
-        // 4) 建立翻譯 recognizer（兩個參數）
-        recognizer = new SpeechSDK.TranslationRecognizer(cfg, audioConfig);
-
-        // 診斷事件（可看到是否有拾音）
-        recognizer.sessionStarted = () => console.log("[session] started");
-        recognizer.speechStartDetected = () => console.log("[speech] start");
-        recognizer.speechEndDetected = () => console.log("[speech] end");
-
-        // 即時字幕（中文原文）＋翻譯（英/日）
-        recognizer.recognizing = (s, e) => {
-          $status.textContent = "listening...";
-          const tr = e.result.translations; // Map
-          const en = tr.get("en") || "";
-          const ja = tr.get("ja") || "";
-          log(`[partial][原文] ${e.result.text}`);
-          if (en) log(`          [英] ${en}`);
-          if (ja) log(`          [日] ${ja}`);
-        };
-
-        recognizer.recognized = (s, e) => {
-          const tr = e.result.translations;
-          const en = tr.get("en") || "";
-          const ja = tr.get("ja") || "";
-          log(`[final][原文] ${e.result.text}`);
-          if (en) log(`        [英] ${en}`);
-          if (ja) log(`        [日] ${ja}`);
-        };
-
-        recognizer.canceled = (s, e) => {
-          log(`[error] reason=${e.reason} details=${e.errorDetails||""}`);
-          stop();
-        };
-
-        recognizer.startContinuousRecognitionAsync();
-        console.log("[start] translation started (src=zh-TW → en/ja)");
-      } catch (err) {
-        console.error("[start] failed", err);
-        $status.textContent = "error";
-        $btnStart.disabled = false; $btnStop.disabled = true;
-        log(`[fatal] ${err.message || err}`);
-      }
-    };
-
-    function stop() {
-      if (!recognizer) return;
-      recognizer.stopContinuousRecognitionAsync(() => {
-        $status.textContent = "stopped";
-        $btnStart.disabled = false; $btnStop.disabled = true;
-      });
-      recognizer = null;
-    }
-
-    $btnStop.onclick = stop;
-  </script>
+  <!-- 你的 App 腳本 -->
+  <script defer src="./azure-speach.js"></script>
 </body>
 </html>

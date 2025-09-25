@@ -8,7 +8,7 @@ const $status  = document.getElementById('status');
 const $src     = document.getElementById('src');
 const $partial = document.getElementById('partial');
 const $final   = document.getElementById('final');
-const $phrases = document.getElementById('phrases');
+// const $phrases = document.getElementById('phrases');
 
 // const TOKEN_URL = location.origin + "/api/token";  // local
 const TOKEN_URL = "https://api.52hzfan.com/api/token"
@@ -85,8 +85,8 @@ $btnStart.addEventListener('click', async () => {
     recognizer = new SpeechSDK.TranslationRecognizer(cfg, audioConfig);
 
     // PhraseList（專有名詞提示）
-    const plist = new SpeechSDK.PhraseListGrammar(recognizer);
-    $phrases.value.split(',').map(s=>s.trim()).filter(Boolean).forEach(p => plist.addPhrase(p));
+    // const plist = new SpeechSDK.PhraseListGrammar(recognizer);
+    // $phrases.value.split(',').map(s=>s.trim()).filter(Boolean).forEach(p => plist.addPhrase(p));
 
     // 事件
     recognizer.sessionStarted = () => setStatus('listening','ok');
