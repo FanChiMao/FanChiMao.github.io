@@ -92,8 +92,15 @@ function formatTime(ts) {
 }
 
 async function getToken(pass, { peek = false } = {}) {
-  const url = TOKEN_URL + (peek ? '?peek=1' : '');
-  const res = await fetch(url, { headers: { 'X-Access-Key': pass || '' } });
+  const u = new URL(TOKEN_URL);
+  if (peek) u.searchParams.set('peek', '1');
+
+  const res = await fetch(u.toString(), {
+    method: 'GET',
+    mode: 'cors',
+    credentials: 'omit',
+    headers: { 'X-Access-Key': (pass || '').trim() },
+  });
   const data = await res.json();
   if (!res.ok) throw Object.assign(new Error(data?.error || 'token_failed'), { data, status: res.status });
   return data; // peek: { quota }, 正常: { token, region, quota }
