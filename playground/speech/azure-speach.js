@@ -92,7 +92,7 @@ function formatTime(ts) {
 }
 
 async function getToken(pass, { peek = false } = {}) {
-  const url = '/api/token' + (peek ? '?peek=1' : '');
+  const url = TOKEN_URL + (peek ? '?peek=1' : '');
   const res = await fetch(url, { headers: { 'X-Access-Key': pass || '' } });
   const data = await res.json();
   if (!res.ok) throw Object.assign(new Error(data?.error || 'token_failed'), { data, status: res.status });
