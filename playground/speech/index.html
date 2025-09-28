@@ -3,16 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>即時字幕 & 翻譯 (Local)</title>
-  <link rel="stylesheet" href="./style.css" />
+  <title>Azure Speech Translation</title>
 
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="icon" href="../../icon.png" type="image/png">
+	<link rel="apple-touch-icon" href="../../icon.png">
+	<link rel="shortcut icon" href="../../icon.ico">
+  <!-- Azure Speech SDK（只載這一份） -->
+  <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
 </head>
+
 <body>
   <div class="wrap">
     <div class="title">
       <div class="glow"></div>
       <h1>即時字幕（中文）</h1>
-      <span id="status" class="pill">idle</span>
+      <span id="status" class="pill">狀態</span>
     </div>
 
     <div class="grid">
@@ -29,30 +35,19 @@
         <div class="row">
           <label>訪客密碼</label>
           <input id="pass" type="password" placeholder="輸入密碼" value="" />
-          <button id="btnAuth" class="btn">解鎖</button>
-          <span id="gate" class="pill">locked</span>
-        </div>
-
-        <div class="row">
-          <label>來源語言</label>
-          <select id="src">
-            <option value="zh-TW" selected>中文（台灣） zh-TW</option>
-            <option value="en-US">English (US) en-US</option>
-            <option value="ja-JP">日本語 ja-JP</option>
-          </select>
-        </div>
-
-        <div class="row mb-2">
-          <label>目標語言</label>
-          <label class="small"><input type="checkbox" class="tgt" value="en" checked/> 英文 (en)</label>
-          <label class="small"><input type="checkbox" class="tgt" value="ja" checked/> 日文 (ja)</label>
+          <button id="btnAuth" class="btn">解  鎖</button>
+          <span id="gate" class="pill">鎖定</span>
         </div>
         
-
-        <!-- <div class="row" style="align-items:flex-start">
-          <label>專有名詞提示</label>
-          <input id="phrases" style="flex:1" placeholder="例：阿貿, 52Hz, Azure, FastAPI, Vue"/>
-        </div> -->
+        <div class="row">
+          <label>字幕顯示</label>
+          <select id="viewMode">
+            <option value="orig" selected>僅原文</option>
+            <option value="en">僅英文</option>
+            <option value="ja">僅日文</option>
+            <option value="all">全部</option>
+          </select>
+        </div>
 
         <div class="row">
           <button id="btnStart" class="btn" disabled>開始</button>
@@ -67,9 +62,6 @@
       </section>
     </div>
   </div>
-
-  <!-- Azure Speech SDK（只載這一份） -->
-  <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
   <!-- 你的 App 腳本 -->
   <script defer src="./azure-speach.js"></script>
 </body>
