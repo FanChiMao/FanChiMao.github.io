@@ -91,19 +91,10 @@ function formatTime(ts) {
   return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
-async function getToken(pass, { peek = false } = {}) {
-  const u = new URL(TOKEN_URL);
-  if (peek) u.searchParams.set('peek', '1');
-
-  const res = await fetch(u.toString(), {
-    method: 'GET',
-    mode: 'cors',
-    credentials: 'omit',
-    headers: { 'X-Access-Key': (pass || '').trim() },
-  });
-  const data = await res.json();
-  if (!res.ok) throw Object.assign(new Error(data?.error || 'token_failed'), { data, status: res.status });
-  return data; // peek: { quota }, 正常: { token, region, quota }
+async function getToken(pwd){
+  const r = await fetch(TOKEN_URL, { headers:{'X-Access-Key': pwd}});
+  if (!r.ok) throw new Error('token failed ' + r.status);
+  return r.json();
 }
 
 
