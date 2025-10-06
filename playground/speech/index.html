@@ -22,47 +22,149 @@
     <div class="grid">
       <!-- 左：控制卡 -->
       <section class="card">
-        <div class="row">
-          <div class="mic" aria-hidden="true"></div>
-          <div>
-            <div class="small">使用前先解鎖；開始後允許麥克風</div>
-            <div class="small">token 會過期，卡住時請停止→再解鎖→開始</div>
+        <div class="card-body">
+          <div class="row">
+            <div class="mic" aria-hidden="true"></div>
+            <div>
+              <div class="small">使用前先輸入密碼解鎖；開始前請先允許麥克風</div>
+              <div class="small">token 會過期，卡住時請停止→再解鎖→開始</div>
+            </div>
           </div>
-        </div>
 
-        <div class="row">
-          <label>訪客密碼</label>
-          <input id="pass" type="password" placeholder="輸入密碼" value="" />
-          <button id="btnAuth" class="btn">解  鎖</button>
-          <span id="gate" class="pill">鎖定</span>
-        </div>
-        
-        <div class="row">
-          <label>字幕顯示</label>
-          <select id="viewMode">
-            <option value="orig" selected>僅原文</option>
-            <option value="en">僅英文</option>
-            <option value="ja">僅日文</option>
-            <option value="all">全部</option>
-          </select>
-        </div>
+          <div class="row">
+            <label>訪客密碼</label>
 
-        <div class="row">
-          <button id="btnStart" class="btn" disabled>開始</button>
-          <button id="btnStop" class="btn-ghost" disabled>停止</button>
+            <span class="field-wrap">
+              <input
+                id="pass"
+                type="password"
+                placeholder="輸入密碼"
+                autocomplete="current-password"
+                style="width: 120px;"
+                class="has-eye"
+              />
+              <button
+                id="togglePass"
+                type="button"
+                class="eye"
+                aria-label="顯示/隱藏密碼"
+                aria-pressed="false"
+                title="顯示密碼"
+              >
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+                  <g class="icon-on">
+                    <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M1 12C1 12 5 20 12 20C19 20 23 12 23 12" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="12" r="3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </g>
+                  <g class="icon-off">
+                    <path clip-rule="evenodd" d="M22.6928 1.55018C22.3102 1.32626 21.8209 1.45915 21.6 1.84698L19.1533 6.14375C17.4864 5.36351 15.7609 4.96457 14.0142 4.96457C9.32104 4.96457 4.781 7.84644 1.11993 13.2641L1.10541 13.2854L1.09271 13.3038C0.970762 13.4784 0.967649 13.6837 1.0921 13.8563C3.79364 17.8691 6.97705 20.4972 10.3484 21.6018L8.39935 25.0222C8.1784 25.4101 8.30951 25.906 8.69214 26.1299L9.03857 26.3326C9.4212 26.5565 9.91046 26.4237 10.1314 26.0358L23.332 2.86058C23.553 2.47275 23.4219 1.97684 23.0392 1.75291L22.6928 1.55018ZM18.092 8.00705C16.7353 7.40974 15.3654 7.1186 14.0142 7.1186C10.6042 7.1186 7.07416 8.97311 3.93908 12.9239C3.63812 13.3032 3.63812 13.8561 3.93908 14.2354C6.28912 17.197 8.86102 18.9811 11.438 19.689L12.7855 17.3232C11.2462 16.8322 9.97333 15.4627 9.97333 13.5818C9.97333 11.2026 11.7969 9.27368 14.046 9.27368C15.0842 9.27368 16.0317 9.68468 16.7511 10.3612L18.092 8.00705ZM15.639 12.3137C15.2926 11.7767 14.7231 11.4277 14.046 11.4277C12.9205 11.4277 12 12.3906 12 13.5802C12 14.3664 12.8432 15.2851 13.9024 15.3624L15.639 12.3137Z" fill="#fff" fill-rule="evenodd"/>
+                    <path d="M14.6873 22.1761C19.1311 21.9148 23.4056 19.0687 26.8864 13.931C26.9593 13.8234 27 13.7121 27 13.5797C27 13.4535 26.965 13.3481 26.8956 13.2455C25.5579 11.2677 24.1025 9.62885 22.5652 8.34557L21.506 10.2052C22.3887 10.9653 23.2531 11.87 24.0894 12.9239C24.3904 13.3032 24.3904 13.8561 24.0894 14.2354C21.5676 17.4135 18.7903 19.2357 16.0254 19.827L14.6873 22.1761Z" fill="#fff"/>    
+                  </g>
+                </svg>
+              </button>
+            </span>
+
+            <button id="btnAuth" class="btn">解鎖</button>
+            <span id="gate" class="pill">鎖定</span>
+          </div>
+                    
+          <!-- 麥克風狀態列 -->
+          <div class="row" id="micRow">
+            <label>輸入裝置</label>
+            <select id="micSelect" style="min-width: 145px; max-width: 145px;"></select>
+            <button id="btnProbeMic" class="btn">檢測</button>
+            <span id="micStatus" class="pill warn">未檢測</span>
+          </div>
+
+          <div class="row">
+            <label>字幕顯示</label>
+            <select id="viewMode" style="min-width: 145px;">
+              <option value="orig" selected>僅原文</option>
+              <option value="en">僅英文</option>
+              <option value="ja">僅日文</option>
+              <option value="all">全部</option>
+            </select>
+            <button id="btnStart" class="btn" disabled>開始</button>
+            <button id="btnStop" class="btn-ghost" disabled>停止</button>
+          </div>
+
+          <!-- 桌面限定工具區 -->
+          <div class="desk-only panel">
+            <div class="panel-sec">
+              <div class="panel-title"><b>語音識別設定</b></div>
+
+              <div class="tune-grid">
+                <label class="panel-label hint">
+                  穩定部分結果門檻
+                  <code id="val-stable">2</code>
+                  <i class="i-info" data-tip="連續多少次 partial 一致才推送。數值越大，更新越慢但更穩。建議 1–5，預設 2。"></i>
+                </label>
+                <input id="stableThr" type="range" min="1" max="5" step="1" value="2">
+
+                <label class="panel-label hint">
+                  切段靜音（ms）
+                  <code id="val-sil">1000</code>
+                  <i class="i-info" data-tip="一次話語結束的靜音長度。越小切得越短、句子較碎。建議 600–2000ms。"></i>
+                </label>
+                <input id="segSil" type="range" min="200" max="3000" step="100" value="1000">
+
+                <label class="panel-label hint">
+                  起始靜音（ms）
+                  <code id="val-init">5000</code>
+                  <i class="i-info" data-tip="開頭可容忍的靜音時間。越小越快判定無聲啟動/超時。建議 3000–8000ms。"></i>
+                </label>
+                <input id="initSil" type="range" min="1000" max="15000" step="500" value="5000">
+              </div>
+
+              <div class="panel-row">
+                <button id="btnApplyCfg" class="btn-ghost">套用到下一次開始</button>
+                <button id="btnResetCfg" class="btn-ghost">重設</button>
+              </div>
+            </div>
+
+            <div class="panel-sec">
+              <div class="panel-title"><b>字幕操作</b></div>
+              <div class="panel-row">
+                <button id="btnClear" class="btn-ghost">清除字幕</button>
+                <button id="btnExport" class="btn-ghost">匯出 .txt</button>
+              </div>
+            </div>
+          </div>
+          <!-- toast container -->
+          <div id="toasts" class="toasts" aria-live="polite" aria-atomic="true"></div>
         </div>
       </section>
 
       <!-- 右：字幕卡 -->
       <section class="card">
-        <div id="partial" class="">等待語音中<span class="blink">…</span></div>
-        <div id="final"></div>
+        <div class="card-body">
+          <div id="partial">等待語音中<span class="blink">……</span></div>
+          <div id="final"></div>
+        </div>
       </section>
     </div>
   </div>
-  <!-- Azure Speech SDK（只載這一份） -->
+  <!-- Azure Speech SDK -->
   <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
-  <!-- 你的 App 腳本 -->
+  <!-- Cloudflare backend handle -->
   <script defer src="./azure-speach.js"></script>
+  <!-- password eye function -->
+  <script>
+    (function() {
+      const pass = document.getElementById('pass');
+      const btn  = document.getElementById('togglePass');
+
+      if (pass && btn) {
+        btn.addEventListener('click', () => {
+          const show = pass.type === 'password';
+          pass.type = show ? 'text' : 'password';
+          btn.classList.toggle('on', show);
+          btn.setAttribute('aria-pressed', String(show));
+          btn.title = show ? '隱藏密碼' : '顯示密碼';
+        });
+      }
+    })();
+  </script>
 </body>
 </html>
