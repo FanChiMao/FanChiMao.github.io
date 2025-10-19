@@ -252,7 +252,7 @@ $btnStop.addEventListener('click', stop);
 
 
 const TUNE_KEY = 'speech_tuning_v1';
-const defaults = { stable: 2, segSil: 1000, initSil: 5000 };
+const defaults = { stable: 3, segSil: 1000, initSil: 5000 };
 let tuning = { ...defaults, ...JSON.parse(localStorage.getItem(TUNE_KEY) || '{}') };
 
 // 綁定 UI

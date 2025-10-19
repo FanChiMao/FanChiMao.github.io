@@ -89,10 +89,11 @@ body{
     min-height: 0;
     display: flex;
     flex-direction: column;
+    overflow: auto;
   }
 
   /* 字幕框本身照舊：flex:1 + overflow:auto（你已設定） */
-  /* #final { flex:1; min-height:0; overflow:auto; } */
+   #final { flex:1; min-height:0; overflow:auto; }
 }
 
 /* 卡片與內容區 */
@@ -114,6 +115,7 @@ body{
   display:flex;
   flex-direction:column;
   min-height:0;
+  overflow-y: auto;
 }
 
 .row{
