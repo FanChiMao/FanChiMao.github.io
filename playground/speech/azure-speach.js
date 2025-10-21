@@ -19,8 +19,6 @@ const transcript = [];
 document.addEventListener('DOMContentLoaded', () => {
   const view = document.getElementById('viewMode');
   view?.addEventListener('change', renderFinal);
-  document.getElementById('partial')?.classList.add('show');
-  detectMicrophone();
   document.getElementById('btnProbeMic')?.addEventListener('click', detectMicrophone);
   renderFinal();
 });
@@ -387,6 +385,11 @@ function stopStream(s) { try { s.getTracks().forEach(t => t.stop()); } catch(_){
 function setMicPill(kind, text){
   const el = document.getElementById('micStatus');
   if (!el) return;
+
+  // 狀態沒變就直接回（不吐 toast）
+  if (__last.kind === kind && __last.text === text) return;
+  __last = { kind, text };
+  
   el.classList.remove('ok','warn','err');
   el.classList.add(kind === 'ok' ? 'ok' : kind === 'err' ? 'err' : 'warn');
   el.textContent = text;
