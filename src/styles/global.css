@@ -17,6 +17,8 @@
   --accent: #0a74c2;
   --accent-2: #6d4dff;
   --accent-soft: rgb(10 116 194 / 0.1);
+  --scroll-thumb: rgb(15 23 42 / 0.22);
+  --scroll-thumb-hover: rgb(15 23 42 / 0.4);
   --accent-contrast: #ffffff;
   --gold: #a86a0c;
   --gold-soft: rgb(214 158 46 / 0.14);
@@ -56,6 +58,8 @@
   --accent: #5cc6ff;
   --accent-2: #a68bff;
   --accent-soft: rgb(92 198 255 / 0.12);
+  --scroll-thumb: rgb(255 255 255 / 0.18);
+  --scroll-thumb-hover: rgb(255 255 255 / 0.34);
   --accent-contrast: #04121f;
   --gold: #f4c55a;
   --gold-soft: rgb(244 197 90 / 0.12);
@@ -89,6 +93,26 @@ html {
   scroll-padding-top: calc(var(--nav-h) + 12px);
   background: var(--bg);
   interpolate-size: allow-keywords;
+  /* Thin scrollbars that follow the theme (Firefox, Chrome 121+, Edge). */
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) transparent;
+}
+
+/* Safari and older Chromium fall back to the -webkit- pseudo-elements. */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--scroll-thumb) padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scroll-thumb-hover);
 }
 
 body {

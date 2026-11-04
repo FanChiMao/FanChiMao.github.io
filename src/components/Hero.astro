@@ -1,9 +1,8 @@
 ---
 import { Image } from 'astro:assets';
 import { Icon } from 'astro-icon/components';
-import bg1 from '@/assets/hero/1.webp';
-import bg2 from '@/assets/hero/2.webp';
-import bg3 from '@/assets/hero/3.webp';
+import bg from '@/assets/hero/1.webp';
+import figure from '@/assets/hero/3.webp';
 import { ui, type Locale } from '@/i18n/ui';
 import { site } from '@/lib/site';
 
@@ -12,7 +11,7 @@ interface Props {
 }
 const { lang } = Astro.props;
 const t = ui[lang].hero;
-const backgrounds = [bg1, bg2, bg3];
+const pp = t.pipe;
 
 /** Seamless sine path spanning two periods of the viewBox so it can loop via translateX. */
 function wave(width: number, amp: number, len: number, y: number) {
@@ -24,96 +23,215 @@ function wave(width: number, amp: number, len: number, y: number) {
   return d;
 }
 const words = t.name.split(' ');
+
+/*
+ * Hand-labelled detections on hero/3.webp, in the image's own pixel space (682 x 720).
+ * cx/cy = box centre, w/h = size, a = rotation in degrees (oriented boxes).
+ */
+const W = figure.width;
+const H = figure.height;
+const sx = W / 682;
+const sy = H / 720;
+const dets = [
+  { cls: 'text', score: 0.99, cx: 393, cy: 154, w: 250, h: 92, a: 0, color: '#4ade80' },
+  { cls: 'cup', score: 0.95, cx: 531, cy: 296, w: 72, h: 48, a: 0, color: '#f4c55a' },
+  { cls: 'cup', score: 0.91, cx: 533, cy: 347, w: 72, h: 52, a: 0, color: '#f4c55a' },
+  { cls: 'person', score: 0.97, cx: 331, cy: 454, w: 178, h: 404, a: 0, color: '#5cc6ff' },
+  { cls: 'playing_card', score: 0.92, cx: 528, cy: 450, w: 62, h: 86, a: 0, color: '#f87171' },
+  { cls: 'cup', score: 0.88, cx: 267, cy: 467, w: 40, h: 46, a: -8, color: '#f4c55a' },
+  { cls: 'guitar', score: 0.89, cx: 530, cy: 561, w: 132, h: 40, a: -42, color: '#a78bfa' },
+].map((d) => ({ ...d, cx: d.cx * sx, cy: d.cy * sy, w: d.w * sx, h: d.h * sy }));
+// Scan order = top of the (rotated) box, so boxes appear as the scan line reaches them.
+const order = dets.map((d) => (d.cy - Math.max(d.h, Math.abs(Math.sin((d.a * Math.PI) / 180)) * d.w) / 2) / H);
+
+/* Tiny fully connected network: one input per detection -> 5 -> 5 -> outputs. */
+const NW = 560;
+const NH = 150;
+const layers = [dets.length, 5, 5, pp.classes.length];
+const lx = layers.map((_, i) => 24 + (i * (NW - 48)) / (layers.length - 1));
+const ly = (n: number) => Array.from({ length: n }, (_, j) => (NH * (j + 1)) / (n + 1));
+const nodes = layers.map((n, i) => ly(n).map((y) => ({ x: lx[i], y })));
+const edges = nodes.slice(0, -1).map((from, i) => from.flatMap((a) => nodes[i + 1].map((b) => ({ a, b }))));
+const label = (d: (typeof dets)[number]) => `${d.cls} ${d.score.toFixed(2)}${d.a ? ` · ${d.a}°` : ''}`;
+/* Tags sit above each box's axis-aligned bounds and are kept inside the image. */
+const TAG_H = 27;
+const tags = dets.map((d) => {
+  const r = (d.a * Math.PI) / 180;
+  const hw = (Math.abs(d.w * Math.cos(r)) + Math.abs(d.h * Math.sin(r))) / 2;
+  const hh = (Math.abs(d.w * Math.sin(r)) + Math.abs(d.h * Math.cos(r))) / 2;
+  const w = label(d).length * 12.6 + 14;
+  const x = Math.min(Math.max(0, d.cx - hw), W - w);
+  const top = d.cy - hh - TAG_H - 4;
+  return { x, y: top < 0 ? d.cy - hh + 4 : top, w };
+});
 ---
 
-<section class="hero" id="home" aria-label="Intro">
-  <div class="hero__bg" aria-hidden="true">
-    {
-      backgrounds.map((src, i) => (
-        <Image
-          src={src}
-          alt=""
-          widths={[960, 1600, 2400]}
-          sizes="100vw"
-          quality={70}
-          loading={i === 0 ? 'eager' : 'lazy'}
-          fetchpriority={i === 0 ? 'high' : 'auto'}
-          style={`--d:${i * 7}s`}
-        />
-      ))
-    }
-    <div class="hero__shade"></div>
+<section class="hero" id="home" aria-label="Intro" data-hero>
+  <div class="hero__stage">
+    <div class="hero__bg" aria-hidden="true">
+      <Image src={bg} alt="" widths={[960, 1600, 2400]} sizes="100vw" quality={70} loading="eager" fetchpriority="high" />
+      <div class="hero__shade"></div>
+    </div>
+
+    <div class="hero__grid container">
+      <div class="hero__content">
+        <p class="hero__eyebrow">
+          <span class="pulse" aria-hidden="true"></span>
+          {t.position}
+        </p>
+
+        <h1 class="hero__title">
+          {
+            words.map((w, i) => (
+              <>
+                <span class="word" style={`--w:${i}`}>
+                  {w}
+                </span>{' '}
+              </>
+            ))
+          }
+        </h1>
+
+        <p class="hero__rotator" data-rotator aria-live="polite">
+          {t.rotate.map((r, i) => <span class:list={['rot', { 'is-active': i === 0 }]} aria-hidden={i === 0 ? undefined : 'true'}>{r}</span>)}
+        </p>
+
+        <div class="hero__taglines">
+          {t.taglines.map((line) => <p>{line}</p>)}
+        </div>
+
+        <div class="hero__cta">
+          <a class="btn btn--primary" href="#competitions">
+            <Icon name="lucide:trophy" />
+            {t.competitions}
+          </a>
+          <a class="btn btn--glass" href={site.github} target="_blank" rel="noopener">
+            <Icon name="mdi:github" />
+            {t.github}
+          </a>
+          <a class="btn btn--glass" href={site.linkedin.url} target="_blank" rel="noopener">
+            <Icon name="mdi:linkedin" />
+            {t.linkedin}
+          </a>
+        </div>
+
+        <div class="hero__interests">
+          <span class="hero__interests-label">{t.interestsLabel}</span>
+          <ul>
+            {
+              t.interests.map((label, i) => (
+                <li style={`--k:${i}`}>
+                  <Icon name={site.interestIcons[i]} />
+                  {label}
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+
+      <!-- Inference pipeline: scroll drives detection (stage 1) then classification (stage 2). -->
+      <figure class="pipe" data-pipe style="--scan: 0; --net: 0" aria-label={pp.aria}>
+        <header class="pipe__hud">
+          <span class="pipe__dot" aria-hidden="true"></span>
+          <span class="pipe__status" data-status data-ready={pp.ready} data-detect={pp.detecting} data-classify={pp.classifying} data-done={pp.done}>{pp.ready}</span>
+          <span class="pipe__stats">
+            <span>{pp.objects} <b data-count>0</b></span>
+            <span>{pp.latency} <b data-ms>–</b></span>
+          </span>
+        </header>
+
+        <div class="pipe__row">
+          <div class="pipe__view" style={`aspect-ratio: ${W} / ${H}`}>
+            <Image src={figure} alt={pp.alt} widths={[360, 540, 720]} sizes="(min-width: 900px) 340px, 60vw" quality={78} loading="eager" />
+            <div class="pipe__scanned" aria-hidden="true"></div>
+            <div class="pipe__scan" aria-hidden="true"></div>
+            <svg class="pipe__boxes" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+              {
+                dets.map((d, i) => (
+                  <g class="det" data-det={i} data-at={order[i].toFixed(3)} style={`--c:${d.color}`}>
+                    <rect class="det__box" x={-d.w / 2} y={-d.h / 2} width={d.w} height={d.h} rx="3" pathLength="1" transform={`translate(${d.cx} ${d.cy}) rotate(${d.a})`} />
+                    <g class="det__tag" transform={`translate(${tags[i].x} ${tags[i].y})`}>
+                      <rect x="0" y="0" width={tags[i].w} height={TAG_H} rx="4" />
+                      <text x="7" y={TAG_H - 8}>
+                        {label(d)}
+                      </text>
+                    </g>
+                  </g>
+                ))
+              }
+            </svg>
+          </div>
+
+          <ol class="pipe__log" aria-label={pp.detections}>
+            {
+              dets.map((d, i) => (
+                <li data-log={i} style={`--c:${d.color}`}>
+                  <span class="pipe__swatch" aria-hidden="true"></span>
+                  <span class="pipe__cls">{d.cls}</span>
+                  <span class="pipe__score">{d.score.toFixed(2)}</span>
+                  {d.a !== 0 && <span class="pipe__angle">{d.a}°</span>}
+                </li>
+              ))
+            }
+          </ol>
+        </div>
+
+        <svg class="pipe__net" viewBox={`0 0 ${NW} ${NH}`} aria-hidden="true">
+          {
+            edges.map((group, i) => (
+              <g class="net__edges" data-layer={i + 1}>
+                {group.map((e) => (
+                  <line x1={e.a.x} y1={e.a.y} x2={e.b.x} y2={e.b.y} />
+                ))}
+              </g>
+            ))
+          }
+          {
+            nodes.map((col, i) => (
+              <g class="net__nodes" data-layer={i}>
+                {col.map((n, j) => (
+                  <circle cx={n.x} cy={n.y} r={i === 0 ? 6 : 5} style={i === 0 ? `--c:${dets[j].color}` : undefined} data-in={i === 0 ? j : undefined} />
+                ))}
+              </g>
+            ))
+          }
+        </svg>
+
+        <ol class="pipe__out" aria-label={pp.output}>
+          {
+            pp.classes.map((c, i) => (
+              <li class:list={{ 'is-top': i === 0 }} data-out={pp.probs[i]}>
+                <span class="pipe__label">{c}</span>
+                <span class="pipe__bar"><span></span></span>
+                <span class="pipe__prob" data-prob>0.00</span>
+              </li>
+            ))
+          }
+        </ol>
+
+        <p class="pipe__hint" aria-hidden="true">
+          <Icon name="lucide:mouse" />
+          {pp.hint}
+        </p>
+      </figure>
+    </div>
+
+    <svg class="hero__wave" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
+      <path class="w w1" d={wave(1440, 18, 240, 60)}></path>
+      <path class="w w2" d={wave(1440, 10, 180, 66)}></path>
+      <path class="w w3" d={wave(1440, 26, 360, 56)}></path>
+    </svg>
+
+    <a class="hero__scroll" href="#about" aria-label={t.scroll}>
+      <span>{t.scroll}</span>
+      <Icon name="lucide:arrow-down" />
+    </a>
   </div>
-
-  <div class="hero__content container">
-    <p class="hero__eyebrow">
-      <span class="pulse" aria-hidden="true"></span>
-      {t.position}
-    </p>
-
-    <h1 class="hero__title">
-      {
-        words.map((w, i) => (
-          <>
-            <span class="word" style={`--w:${i}`}>
-              {w}
-            </span>{' '}
-          </>
-        ))
-      }
-    </h1>
-
-    <p class="hero__rotator" data-rotator aria-live="polite">
-      {t.rotate.map((r, i) => <span class:list={['rot', { 'is-active': i === 0 }]} aria-hidden={i === 0 ? undefined : 'true'}>{r}</span>)}
-    </p>
-
-    <div class="hero__taglines">
-      {t.taglines.map((line) => <p>{line}</p>)}
-    </div>
-
-    <div class="hero__cta">
-      <a class="btn btn--primary" href="#competitions">
-        <Icon name="lucide:trophy" />
-        {t.competitions}
-      </a>
-      <a class="btn btn--glass" href={site.github} target="_blank" rel="noopener">
-        <Icon name="mdi:github" />
-        {t.github}
-      </a>
-      <a class="btn btn--glass" href={site.linkedin.url} target="_blank" rel="noopener">
-        <Icon name="mdi:linkedin" />
-        {t.linkedin}
-      </a>
-    </div>
-
-    <div class="hero__interests">
-      <span class="hero__interests-label">{t.interestsLabel}</span>
-      <ul>
-        {
-          t.interests.map((label, i) => (
-            <li style={`--k:${i}`}>
-              <Icon name={site.interestIcons[i]} />
-              {label}
-            </li>
-          ))
-        }
-      </ul>
-    </div>
-  </div>
-
-  <svg class="hero__wave" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
-    <path class="w w1" d={wave(1440, 18, 240, 60)}></path>
-    <path class="w w2" d={wave(1440, 10, 180, 66)}></path>
-    <path class="w w3" d={wave(1440, 26, 360, 56)}></path>
-  </svg>
-
-  <a class="hero__scroll" href="#about" aria-label={t.scroll}>
-    <span>{t.scroll}</span>
-    <Icon name="lucide:arrow-down" />
-  </a>
 </section>
 
 <script>
+  // ---- Rotating subtitle
   const root = document.querySelector<HTMLElement>('[data-rotator]');
   const items = root ? Array.from(root.querySelectorAll<HTMLElement>('.rot')) : [];
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -127,21 +245,123 @@ const words = t.name.split(' ');
       items[i].removeAttribute('aria-hidden');
     }, 3600);
   }
+
+  // ---- Scroll-driven inference pipeline
+  const hero = document.querySelector<HTMLElement>('[data-hero]')!;
+  const pipe = hero.querySelector<HTMLElement>('[data-pipe]')!;
+  const dets = Array.from(pipe.querySelectorAll<SVGGElement>('[data-det]'));
+  const logs = Array.from(pipe.querySelectorAll<HTMLElement>('[data-log]'));
+  const inputs = Array.from(pipe.querySelectorAll<SVGCircleElement>('[data-in]'));
+  const edgeLayers = Array.from(pipe.querySelectorAll<SVGGElement>('.net__edges'));
+  const nodeLayers = Array.from(pipe.querySelectorAll<SVGGElement>('.net__nodes'));
+  const outs = Array.from(pipe.querySelectorAll<HTMLElement>('[data-out]'));
+  const status = pipe.querySelector<HTMLElement>('[data-status]')!;
+  const count = pipe.querySelector<HTMLElement>('[data-count]')!;
+  const ms = pipe.querySelector<HTMLElement>('[data-ms]')!;
+  const pinned = matchMedia('(min-width: 900px)');
+
+  const clamp = (v: number) => Math.min(1, Math.max(0, v));
+  const seg = (p: number, a: number, b: number) => clamp((p - a) / (b - a));
+  const ease = (x: number) => 1 - Math.pow(1 - x, 3);
+
+  /** 0..1 progress. Desktop: through the pinned hero. Mobile: as the panel crosses the viewport. */
+  function progress() {
+    if (reduce) return 1;
+    const vh = innerHeight;
+    if (pinned.matches) {
+      const r = hero.getBoundingClientRect();
+      return clamp(-r.top / Math.max(1, r.height - vh));
+    }
+    const r = pipe.getBoundingClientRect();
+    return clamp((vh * 0.92 - r.top) / (r.height + vh * 0.25));
+  }
+
+  let last = -1;
+  function render() {
+    const p = progress();
+    if (Math.abs(p - last) < 0.0005) return;
+    last = p;
+    const scan = seg(p, 0.04, 0.5);
+    const net = seg(p, 0.52, 0.94);
+    pipe.style.setProperty('--scan', scan.toFixed(4));
+    pipe.style.setProperty('--net', net.toFixed(4));
+    pipe.classList.toggle('is-scanning', scan > 0 && scan < 1);
+    pipe.classList.toggle('is-started', p > 0.02);
+
+    // Stage 1: boxes, log rows and input nodes switch on as the scan line passes them.
+    let found = 0;
+    dets.forEach((d, i) => {
+      const on = scan >= Number(d.dataset.at) + 0.02;
+      if (on) found++;
+      d.classList.toggle('is-on', on);
+      logs[i]?.classList.toggle('is-on', on);
+      inputs[i]?.classList.toggle('is-on', on);
+    });
+    count.textContent = String(found);
+    ms.textContent = scan > 0 ? `${Math.round(6 + scan * 17 + net * 4)} ms` : '–';
+
+    // Stage 2: light layers in turn, then fill the softmax.
+    edgeLayers.forEach((g, i) => g.classList.toggle('is-on', net > 0.08 + i * 0.24));
+    nodeLayers.forEach((g, i) => i > 0 && g.classList.toggle('is-on', net > 0.2 + (i - 1) * 0.24));
+    const fill = ease(seg(net, 0.72, 1));
+    outs.forEach((o) => {
+      const v = Number(o.dataset.out) * fill;
+      o.style.setProperty('--v', v.toFixed(4));
+      o.querySelector('[data-prob]')!.textContent = v.toFixed(2);
+    });
+    pipe.classList.toggle('is-done', net >= 1);
+
+    status.textContent = (net >= 1 ? status.dataset.done : net > 0 ? status.dataset.classify : scan > 0 ? status.dataset.detect : status.dataset.ready) ?? '';
+  }
+
+  let queued = false;
+  const onScroll = () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => {
+      queued = false;
+      render();
+    });
+  };
+  addEventListener('scroll', onScroll, { passive: true });
+  addEventListener('resize', () => {
+    last = -1;
+    onScroll();
+  });
+  pinned.addEventListener('change', () => {
+    last = -1;
+    onScroll();
+  });
+  render();
 </script>
 
 <style>
   .hero {
     position: relative;
+    color: var(--hero-ink);
+    background: #03060d;
+    isolation: isolate;
+  }
+  .hero__stage {
+    position: relative;
     min-height: 100svh;
     display: grid;
     align-items: center;
-    color: var(--hero-ink);
     overflow: hidden;
-    isolation: isolate;
-    background: #03060d;
+  }
+  /* Desktop: pin the stage while the extra scroll height runs the pipeline. */
+  @media (min-width: 900px) and (prefers-reduced-motion: no-preference) {
+    .hero {
+      height: 240svh;
+    }
+    .hero__stage {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+    }
   }
 
-  /* ---- Background: crossfade + Ken Burns */
+  /* ---- Background: one slow Ken Burns plate */
   .hero__bg {
     position: absolute;
     inset: 0;
@@ -153,67 +373,37 @@ const words = t.name.split(' ');
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0;
-    animation: kenburns 21s var(--d) infinite linear backwards;
-  }
-  .hero__bg :global(img:first-of-type) {
-    animation-name: kenburns-first;
+    animation: kenburns 30s ease-in-out infinite alternate;
   }
   @keyframes kenburns {
-    0% {
-      opacity: 0;
-      transform: scale(1.14) translate3d(1%, 0, 0);
+    from {
+      transform: scale(1.04);
     }
-    6% {
-      opacity: 1;
-    }
-    33% {
-      opacity: 1;
-    }
-    40% {
-      opacity: 0;
-      transform: scale(1.02) translate3d(-1%, -1%, 0);
-    }
-    100% {
-      opacity: 0;
-    }
-  }
-  /* First slide starts visible so there is no blank frame on load. */
-  @keyframes kenburns-first {
-    0% {
-      opacity: 1;
-      transform: scale(1.14) translate3d(1%, 0, 0);
-    }
-    33% {
-      opacity: 1;
-    }
-    40% {
-      opacity: 0;
-      transform: scale(1.02) translate3d(-1%, -1%, 0);
-    }
-    94% {
-      opacity: 0;
-      transform: scale(1.14) translate3d(1%, 0, 0);
-    }
-    100% {
-      opacity: 1;
-      transform: scale(1.14) translate3d(1%, 0, 0);
+    to {
+      transform: scale(1.16) translate3d(-1.5%, -1%, 0);
     }
   }
   .hero__shade {
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(120% 80% at 15% 40%, rgb(3 6 13 / 0.35), rgb(3 6 13 / 0.85) 75%),
-      linear-gradient(180deg, rgb(3 6 13 / 0.45) 0%, transparent 30%, rgb(3 6 13 / 0.6) 85%, var(--bg) 100%);
+      radial-gradient(120% 80% at 15% 40%, rgb(3 6 13 / 0.5), rgb(3 6 13 / 0.9) 75%),
+      linear-gradient(180deg, rgb(3 6 13 / 0.55) 0%, transparent 30%, rgb(3 6 13 / 0.6) 85%, var(--bg) 100%);
   }
 
-  /* ---- Content */
-  .hero__content {
-    padding-block: calc(var(--nav-h) + 3rem) 9rem;
+  .hero__grid {
     display: grid;
-    gap: 1.4rem;
-    max-width: var(--container);
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: clamp(2rem, 4vw, 4rem);
+    align-items: center;
+    padding-block: calc(var(--nav-h) + 1.5rem) 6.5rem;
+  }
+
+  /* ---- Text */
+  .hero__content {
+    display: grid;
+    gap: 1.1rem;
+    min-width: 0;
   }
   .hero__eyebrow {
     display: inline-flex;
@@ -250,12 +440,11 @@ const words = t.name.split(' ');
       opacity: 0;
     }
   }
-
   .hero__title {
-    font-size: clamp(2.6rem, 7.6vw, 5.6rem);
+    font-size: clamp(2.5rem, 5vw, 4.4rem);
     font-weight: 700;
     letter-spacing: -0.04em;
-    line-height: 1;
+    line-height: 1.02;
   }
   .word {
     display: inline-block;
@@ -268,11 +457,10 @@ const words = t.name.split(' ');
       filter: blur(10px);
     }
   }
-
   .hero__rotator {
     display: grid;
     font-family: var(--font-display);
-    font-size: clamp(1.4rem, 3.6vw, 2.4rem);
+    font-size: clamp(1.3rem, 2.6vw, 2rem);
     font-weight: 600;
     letter-spacing: -0.02em;
     min-height: 1.3em;
@@ -298,12 +486,11 @@ const words = t.name.split(' ');
     transform: none;
     filter: none;
   }
-
   .hero__taglines {
     display: grid;
     gap: 0.2rem;
-    max-width: 44rem;
-    font-size: clamp(1rem, 1.6vw, 1.15rem);
+    max-width: 36rem;
+    font-size: clamp(0.98rem, 1.4vw, 1.08rem);
     color: rgb(255 255 255 / 0.82);
     animation: rise 0.9s 0.75s var(--ease-out) both;
   }
@@ -311,7 +498,7 @@ const words = t.name.split(' ');
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
-    margin-top: 0.4rem;
+    margin-top: 0.3rem;
     animation: rise 0.9s 0.9s var(--ease-out) both;
   }
   @keyframes rise {
@@ -320,15 +507,14 @@ const words = t.name.split(' ');
       transform: translateY(20px);
     }
   }
-
   .hero__interests {
-    margin-top: 1.2rem;
+    margin-top: 0.6rem;
     display: grid;
-    gap: 0.7rem;
+    gap: 0.6rem;
   }
   .hero__interests-label {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: rgb(255 255 255 / 0.6);
@@ -337,22 +523,21 @@ const words = t.name.split(' ');
   .hero__interests ul {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.45rem;
     margin: 0;
     padding: 0;
     list-style: none;
-    max-width: 52rem;
   }
   .hero__interests li {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
-    padding: 0.35rem 0.8rem;
+    gap: 0.4rem;
+    padding: 0.3rem 0.75rem;
     border-radius: 999px;
     border: 1px solid rgb(255 255 255 / 0.14);
     background: rgb(255 255 255 / 0.07);
     backdrop-filter: blur(8px);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: rgb(255 255 255 / 0.9);
     animation: rise 0.7s calc(1.05s + var(--k) * 0.05s) var(--ease-out) both;
     transition:
@@ -364,9 +549,301 @@ const words = t.name.split(' ');
     transform: translateY(-2px);
   }
   .hero__interests :global(svg) {
-    width: 16px;
-    height: 16px;
+    width: 15px;
+    height: 15px;
     opacity: 0.85;
+  }
+
+  /* ---- Inference panel (always dark: it sits on the dark hero in both themes) */
+  .pipe {
+    --line: rgb(255 255 255 / 0.12);
+    --dim: rgb(255 255 255 / 0.55);
+    position: relative;
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: rgb(7 11 22 / 0.72);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 30px 80px -30px rgb(0 0 0 / 0.8);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: rgb(255 255 255 / 0.85);
+    animation: rise 1s 0.5s var(--ease-out) both;
+  }
+  .pipe__hud {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+  .pipe__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 10px #4ade80;
+  }
+  .pipe.is-scanning .pipe__dot,
+  .pipe:not(.is-done).is-started .pipe__dot {
+    background: #f4c55a;
+    box-shadow: 0 0 10px #f4c55a;
+    animation: blink 0.8s steps(2) infinite;
+  }
+  @keyframes blink {
+    50% {
+      opacity: 0.3;
+    }
+  }
+  .pipe__status {
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .pipe__stats {
+    display: flex;
+    gap: 0.9rem;
+    margin-left: auto;
+    color: var(--dim);
+  }
+  .pipe__stats b {
+    color: #fff;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pipe__row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: start;
+  }
+  .pipe__view {
+    position: relative;
+    height: clamp(210px, 36svh, 360px);
+    overflow: hidden;
+    border-radius: 10px;
+    background: #e8e4df;
+  }
+  .pipe__view > :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  /* Region already scanned gets a faint grid tint; the scan line sits at its edge. */
+  .pipe__scanned {
+    position: absolute;
+    inset: 0 0 auto;
+    height: calc(var(--scan) * 100%);
+    background:
+      linear-gradient(rgb(92 198 255 / 0.08), rgb(92 198 255 / 0.08)),
+      repeating-linear-gradient(0deg, rgb(92 198 255 / 0.12) 0 1px, transparent 1px 14px),
+      repeating-linear-gradient(90deg, rgb(92 198 255 / 0.12) 0 1px, transparent 1px 14px);
+    pointer-events: none;
+  }
+  .pipe__scan {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--scan) * 100%);
+    height: 2px;
+    background: #5cc6ff;
+    box-shadow:
+      0 0 12px 2px rgb(92 198 255 / 0.8),
+      0 -24px 30px rgb(92 198 255 / 0.25);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .pipe.is-scanning .pipe__scan {
+    opacity: 1;
+  }
+  .pipe__boxes {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .det__box {
+    fill: color-mix(in srgb, var(--c) 10%, transparent);
+    stroke: var(--c);
+    stroke-width: 3.5;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    opacity: 0;
+    transition:
+      stroke-dashoffset 0.6s var(--ease-out),
+      opacity 0.2s;
+  }
+  .det__tag {
+    opacity: 0;
+    transition: opacity 0.3s 0.35s;
+  }
+  .det__tag rect {
+    fill: var(--c);
+  }
+  .det__tag text {
+    font-family: var(--font-mono);
+    font-size: 21px;
+    font-weight: 700;
+    fill: #071019;
+  }
+  .det.is-on .det__box {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  .det.is-on .det__tag {
+    opacity: 1;
+  }
+
+  .pipe__log {
+    display: grid;
+    gap: 0.3rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .pipe__log li {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.28rem 0.45rem;
+    border-radius: 6px;
+    background: rgb(255 255 255 / 0.04);
+    opacity: 0.25;
+    transform: translateX(6px);
+    transition:
+      opacity 0.35s,
+      transform 0.35s var(--ease-out),
+      background-color 0.35s;
+  }
+  .pipe__log li.is-on {
+    opacity: 1;
+    transform: none;
+    background: color-mix(in srgb, var(--c) 12%, transparent);
+  }
+  .pipe__swatch {
+    width: 8px;
+    height: 8px;
+    flex: none;
+    border-radius: 2px;
+    background: var(--c);
+  }
+  .pipe__cls {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pipe__score {
+    margin-left: auto;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+  }
+  .pipe__angle {
+    color: var(--dim);
+  }
+
+  /* Network */
+  .pipe__net {
+    width: 100%;
+    height: auto;
+    max-height: 18svh;
+  }
+  .net__edges line {
+    stroke: rgb(255 255 255 / 0.08);
+    stroke-width: 1;
+    transition: stroke 0.5s;
+  }
+  .net__edges.is-on line {
+    stroke: rgb(92 198 255 / 0.45);
+    stroke-dasharray: 4 6;
+    animation: flow 0.9s linear infinite;
+  }
+  @keyframes flow {
+    to {
+      stroke-dashoffset: -10;
+    }
+  }
+  .net__nodes circle {
+    fill: #0b1424;
+    stroke: rgb(255 255 255 / 0.25);
+    stroke-width: 1.5;
+    transition:
+      fill 0.4s,
+      stroke 0.4s;
+  }
+  .net__nodes circle[data-in].is-on {
+    fill: var(--c);
+    stroke: var(--c);
+  }
+  .net__nodes.is-on circle {
+    fill: #5cc6ff;
+    stroke: #bfe9ff;
+  }
+
+  /* Softmax output */
+  .pipe__out {
+    display: grid;
+    gap: 0.3rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .pipe__out li {
+    display: grid;
+    grid-template-columns: minmax(8.5rem, auto) minmax(0, 1fr) 2.6rem;
+    gap: 0.6rem;
+    align-items: center;
+    color: var(--dim);
+  }
+  .pipe__out li.is-top {
+    color: #fff;
+    font-weight: 600;
+  }
+  .pipe__bar {
+    height: 6px;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.08);
+    overflow: hidden;
+  }
+  .pipe__bar span {
+    display: block;
+    width: calc(var(--v, 0) * 100%);
+    height: 100%;
+    border-radius: inherit;
+    background: rgb(255 255 255 / 0.35);
+  }
+  .pipe__out li.is-top .pipe__bar span {
+    background: linear-gradient(90deg, #5cc6ff, #a78bfa);
+  }
+  .pipe.is-done .pipe__out li.is-top {
+    color: #7dd3fc;
+  }
+  .pipe__prob {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pipe__hint {
+    position: absolute;
+    left: 50%;
+    bottom: -2.4rem;
+    translate: -50% 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+    color: rgb(255 255 255 / 0.6);
+    transition: opacity 0.4s;
+  }
+  .pipe__hint :global(svg) {
+    width: 14px;
+    height: 14px;
+    animation: bob 1.8s var(--ease-in-out) infinite;
+  }
+  .pipe.is-started .pipe__hint {
+    opacity: 0;
   }
 
   /* ---- 52 Hz wave */
@@ -378,12 +855,13 @@ const words = t.name.split(' ');
     height: 90px;
     pointer-events: none;
     overflow: visible;
+    z-index: -1;
   }
   .w {
     fill: none;
     stroke-linecap: round;
     transform-box: view-box;
-    animation: flow linear infinite;
+    animation: wave-flow linear infinite;
   }
   .w1 {
     stroke: rgb(125 211 252 / 0.55);
@@ -400,7 +878,7 @@ const words = t.name.split(' ');
     stroke-width: 1;
     animation-duration: 22s;
   }
-  @keyframes flow {
+  @keyframes wave-flow {
     to {
       transform: translateX(-720px);
     }
@@ -431,12 +909,31 @@ const words = t.name.split(' ');
     }
   }
 
-  @media (max-width: 640px) {
-    .hero__content {
-      padding-bottom: 8rem;
+  @media (max-width: 899px) {
+    .hero__grid {
+      grid-template-columns: 1fr;
+      padding-block: calc(var(--nav-h) + 2rem) 7rem;
     }
-    .hero__interests li {
-      font-size: 0.78rem;
+    .pipe__view {
+      height: auto;
+      width: min(58vw, 300px);
+    }
+    .pipe__hint {
+      display: none;
+    }
+  }
+  @media (max-width: 480px) {
+    .pipe__row {
+      grid-template-columns: 1fr;
+    }
+    .pipe__view {
+      width: 100%;
+    }
+    .pipe__log {
+      grid-template-columns: 1fr 1fr;
+    }
+    .pipe__out li {
+      grid-template-columns: minmax(6.5rem, auto) minmax(0, 1fr) 2.4rem;
     }
   }
 </style>
