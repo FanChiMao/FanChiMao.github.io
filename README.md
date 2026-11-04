@@ -27,6 +27,8 @@ Requires Node 24 (see `.nvmrc`).
 | Education | `src/content/education/*.json` |
 | Before/after restoration slider (Publications) | `src/components/RestorationDemo.astro` + image pairs in `src/assets/restoration/` |
 | GitHub star counts (fetched at build; hidden if the API fails) | `src/lib/github.ts` |
+| Social preview images (1200x630, one per language) | `public/og/*.png`, regenerate with `npx -y -p puppeteer-core node scripts/og.mjs` |
+| Structured data (schema.org Person, WebSite, ScholarlyArticle) | `src/components/StructuredData.astro` |
 | Photo albums | `src/content/albums/*.json` + photos in `src/assets/gallery/<album>/` |
 | Standalone apps (not processed by Astro) | `public/playground/` |
 | Content schema (validated at build time) | `src/content.config.ts` |

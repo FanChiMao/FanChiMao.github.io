@@ -11,6 +11,7 @@ import Education from '@/components/Education.astro';
 import GalleryTeaser from '@/components/GalleryTeaser.astro';
 import Contact from '@/components/Contact.astro';
 import Footer from '@/components/Footer.astro';
+import StructuredData from '@/components/StructuredData.astro';
 import type { Locale } from '@/i18n/ui';
 
 interface Props {
@@ -20,6 +21,7 @@ const { lang } = Astro.props;
 ---
 
 <Base {lang} path="/">
+  <StructuredData slot="head" {lang} />
   <Nav {lang} path="/" home />
   <main id="main">
     <Hero {lang} />

@@ -1,0 +1,72 @@
+---
+/**
+ * schema.org JSON-LD for the home page: who this site is about (Person), the site itself
+ * (WebSite) and the publications (ScholarlyArticle). Everything is derived from the same
+ * content the page renders, so the two cannot drift apart.
+ */
+import { getImage } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import profile from '@/assets/profile.jpg';
+import { localeMeta, localePath, ui, type Locale } from '@/i18n/ui';
+import { site } from '@/lib/site';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const t = ui[lang];
+const origin = Astro.site!.origin;
+const abs = (p: string) => new URL(p, Astro.site).href;
+
+const photo = await getImage({ src: profile, width: 800, format: 'jpg' });
+const asus = (await getCollection('experience')).find((e) => e.data.end === null)?.data;
+const schools = (await getCollection('education')).sort((a, b) => a.data.order - b.data.order);
+const pubs = (await getCollection('publications')).sort((a, b) => a.data.order - b.data.order);
+
+const personId = `${origin}/#person`;
+const strip = (html: string) => html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+
+const graph = [
+  {
+    '@type': 'Person',
+    '@id': personId,
+    name: site.name,
+    alternateName: ['Jonathan Fan', 'Chi-Mao (Jonathan) Fan', site.nameZh, '52hzfan', 'FanChiMao'],
+    url: abs(localePath(lang, '/')),
+    image: abs(photo.src),
+    jobTitle: asus?.role[lang] ?? 'AI R&D Engineer',
+    worksFor: { '@type': 'Organization', name: 'ASUSTeK COMPUTER INC.', url: 'https://www.asus.com/' },
+    alumniOf: schools.map((s) => ({ '@type': 'CollegeOrUniversity', name: s.data.school.en })),
+    award: ['2022 IEEE Taipei Section Best Dissertation Award'],
+    knowsAbout: [...site.focus, ...site.stack],
+    email: `mailto:${site.email}`,
+    sameAs: site.socials.map((s) => s.href),
+    description: t.meta.description,
+  },
+  {
+    '@type': 'WebSite',
+    '@id': `${origin}/#website`,
+    url: `${origin}/`,
+    name: `${site.name} · ${site.nameZh}`,
+    inLanguage: Object.values(localeMeta).map((m) => m.htmlLang),
+    author: { '@id': personId },
+    publisher: { '@id': personId },
+  },
+  ...pubs.map(({ data }) => ({
+    '@type': 'ScholarlyArticle',
+    headline: data.title.en,
+    ...(lang !== 'en' && data.title[lang] !== data.title.en ? { alternativeHeadline: data.title[lang] } : {}),
+    author: { '@id': personId },
+    datePublished: String(data.year),
+    description: data.venue.en,
+    url: data.links.paper,
+    sameAs: [data.links.arxiv, data.links.code].filter(Boolean),
+    abstract: strip(data.abstract.en),
+  })),
+];
+
+// Escape "<" so the JSON can never close the script element early.
+const json = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(/</g, '\\u003c');
+---
+
+<script is:inline type="application/ld+json" set:html={json} />
