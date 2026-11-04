@@ -25,8 +25,9 @@ function wave(width: number, amp: number, len: number, y: number) {
 const words = t.name.split(' ');
 
 /*
- * Hand-labelled detections on hero/3.webp, in the image's own pixel space (682 x 720).
- * cx/cy = box centre, w/h = size, a = rotation in degrees (oriented boxes).
+ * Hand-labelled oriented boxes on hero/3.webp, in the image's own pixel space (682 x 720).
+ * cx/cy = box centre, w/h = size in the object's upright frame,
+ * a = orientation in degrees, 0-359 clockwise; an upright (axis-aligned) box is 0.
  */
 const W = figure.width;
 const H = figure.height;
@@ -38,11 +39,20 @@ const dets = [
   { cls: 'cup', score: 0.91, cx: 533, cy: 347, w: 72, h: 52, a: 0, color: '#f4c55a' },
   { cls: 'person', score: 0.97, cx: 331, cy: 454, w: 178, h: 404, a: 0, color: '#5cc6ff' },
   { cls: 'playing_card', score: 0.92, cx: 528, cy: 450, w: 62, h: 86, a: 0, color: '#f87171' },
-  { cls: 'cup', score: 0.88, cx: 267, cy: 467, w: 40, h: 46, a: -8, color: '#f4c55a' },
-  { cls: 'guitar', score: 0.89, cx: 530, cy: 561, w: 132, h: 40, a: -42, color: '#a78bfa' },
-].map((d) => ({ ...d, cx: d.cx * sx, cy: d.cy * sy, w: d.w * sx, h: d.h * sy }));
-// Scan order = top of the (rotated) box, so boxes appear as the scan line reaches them.
-const order = dets.map((d) => (d.cy - Math.max(d.h, Math.abs(Math.sin((d.a * Math.PI) / 180)) * d.w) / 2) / H);
+  { cls: 'cup', score: 0.88, cx: 267, cy: 467, w: 40, h: 46, a: 0, color: '#f4c55a' },
+  // Neck points up-right: the upright guitar rotated 43 degrees clockwise.
+  { cls: 'guitar', score: 0.89, cx: 535, cy: 563.5, w: 58, h: 124, a: 43, color: '#a78bfa' },
+]
+  .map((d) => ({ ...d, cx: d.cx * sx, cy: d.cy * sy, w: d.w * sx, h: d.h * sy }))
+  .map((d) => {
+    // Half extents of the rotated box's axis-aligned bounds.
+    const r = (d.a * Math.PI) / 180;
+    const hw = (Math.abs(d.w * Math.cos(r)) + Math.abs(d.h * Math.sin(r))) / 2;
+    const hh = (Math.abs(d.w * Math.sin(r)) + Math.abs(d.h * Math.cos(r))) / 2;
+    return { ...d, name: pp.cls[d.cls as keyof typeof pp.cls], hw, hh };
+  });
+// Scan order = top of each box's bounds, so boxes appear as the scan line reaches them.
+const order = dets.map((d) => (d.cy - d.hh) / H);
 
 /* Tiny fully connected network: one input per detection -> 5 -> 5 -> outputs. */
 const NW = 560;
@@ -52,17 +62,15 @@ const lx = layers.map((_, i) => 24 + (i * (NW - 48)) / (layers.length - 1));
 const ly = (n: number) => Array.from({ length: n }, (_, j) => (NH * (j + 1)) / (n + 1));
 const nodes = layers.map((n, i) => ly(n).map((y) => ({ x: lx[i], y })));
 const edges = nodes.slice(0, -1).map((from, i) => from.flatMap((a) => nodes[i + 1].map((b) => ({ a, b }))));
-const label = (d: (typeof dets)[number]) => `${d.cls} ${d.score.toFixed(2)}${d.a ? ` · ${d.a}°` : ''}`;
-/* Tags sit above each box's axis-aligned bounds and are kept inside the image. */
+const label = (d: (typeof dets)[number]) => `${d.name} ${d.score.toFixed(2)} · ${d.a}°`;
+/* Tags sit above each box's bounds and are kept inside the image. CJK glyphs are ~full width. */
 const TAG_H = 27;
+const textWidth = (str: string) => [...str].reduce((w, ch) => w + (ch.codePointAt(0)! > 0x2e80 ? 21 : 12.6), 0);
 const tags = dets.map((d) => {
-  const r = (d.a * Math.PI) / 180;
-  const hw = (Math.abs(d.w * Math.cos(r)) + Math.abs(d.h * Math.sin(r))) / 2;
-  const hh = (Math.abs(d.w * Math.sin(r)) + Math.abs(d.h * Math.cos(r))) / 2;
-  const w = label(d).length * 12.6 + 14;
-  const x = Math.min(Math.max(0, d.cx - hw), W - w);
-  const top = d.cy - hh - TAG_H - 4;
-  return { x, y: top < 0 ? d.cy - hh + 4 : top, w };
+  const w = textWidth(label(d)) + 14;
+  const x = Math.min(Math.max(0, d.cx - d.hw), W - w);
+  const top = d.cy - d.hh - TAG_H - 4;
+  return { x, y: top < 0 ? d.cy - d.hh + 4 : top, w };
 });
 ---
 
@@ -168,15 +176,17 @@ const tags = dets.map((d) => {
               dets.map((d, i) => (
                 <li data-log={i} style={`--c:${d.color}`}>
                   <span class="pipe__swatch" aria-hidden="true"></span>
-                  <span class="pipe__cls">{d.cls}</span>
+                  <span class="pipe__cls">{d.name}</span>
                   <span class="pipe__score">{d.score.toFixed(2)}</span>
-                  {d.a !== 0 && <span class="pipe__angle">{d.a}°</span>}
+                  <span class="pipe__angle">{d.a}°</span>
                 </li>
               ))
             }
           </ol>
         </div>
 
+        <div class="pipe__stage2">
+          <div class="pipe__stage2-inner">
         <svg class="pipe__net" viewBox={`0 0 ${NW} ${NH}`} aria-hidden="true">
           {
             edges.map((group, i) => (
@@ -209,6 +219,8 @@ const tags = dets.map((d) => {
             ))
           }
         </ol>
+          </div>
+        </div>
 
         <p class="pipe__hint" aria-hidden="true">
           <Icon name="lucide:mouse" />
@@ -298,6 +310,8 @@ const tags = dets.map((d) => {
       inputs[i]?.classList.toggle('is-on', on);
     });
     count.textContent = String(found);
+    pipe.classList.toggle('has-dets', found > 0);
+    pipe.classList.toggle('is-classify', net > 0);
     ms.textContent = scan > 0 ? `${Math.round(6 + scan * 17 + net * 4)} ms` : '–';
 
     // Stage 2: light layers in turn, then fill the softmax.
@@ -561,6 +575,7 @@ const tags = dets.map((d) => {
     position: relative;
     display: grid;
     gap: 0.75rem;
+    min-width: 0;
     margin: 0;
     padding: 0.9rem;
     border: 1px solid var(--line);
@@ -612,15 +627,18 @@ const tags = dets.map((d) => {
     font-variant-numeric: tabular-nums;
   }
 
+  /* Image starts centred; the log column opens beside it as detections arrive. */
   .pipe__row {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 0.75rem;
-    align-items: start;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .pipe__view {
+    flex: none;
   }
   .pipe__view {
     position: relative;
-    height: clamp(210px, 36svh, 360px);
+    height: clamp(200px, 32svh, 330px);
     overflow: hidden;
     border-radius: 10px;
     background: #e8e4df;
@@ -699,29 +717,40 @@ const tags = dets.map((d) => {
 
   .pipe__log {
     display: grid;
+    align-content: start;
     gap: 0.3rem;
+    width: 0;
     margin: 0;
     padding: 0;
+    overflow: hidden;
     list-style: none;
+    transition:
+      width 0.55s var(--ease-out),
+      margin 0.55s var(--ease-out);
   }
+  .pipe.has-dets .pipe__log {
+    width: 10.25rem;
+    margin-left: 0.65rem;
+  }
+  /* Rows exist only once their object has been detected, in detection order. */
   .pipe__log li {
-    display: flex;
+    display: none;
     align-items: center;
     gap: 0.4rem;
+    min-width: 10.25rem;
     padding: 0.28rem 0.45rem;
     border-radius: 6px;
-    background: rgb(255 255 255 / 0.04);
-    opacity: 0.25;
-    transform: translateX(6px);
-    transition:
-      opacity 0.35s,
-      transform 0.35s var(--ease-out),
-      background-color 0.35s;
+    background: color-mix(in srgb, var(--c) 12%, transparent);
   }
   .pipe__log li.is-on {
-    opacity: 1;
-    transform: none;
-    background: color-mix(in srgb, var(--c) 12%, transparent);
+    display: flex;
+    animation: log-in 0.35s var(--ease-out);
+  }
+  @keyframes log-in {
+    from {
+      opacity: 0;
+      transform: translateX(10px);
+    }
   }
   .pipe__swatch {
     width: 8px;
@@ -742,6 +771,26 @@ const tags = dets.map((d) => {
   }
   .pipe__angle {
     color: var(--dim);
+  }
+
+  /* Stage 2 (network + softmax) unfolds only after every box is on the image. */
+  .pipe__stage2 {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+      grid-template-rows 0.6s var(--ease-out),
+      opacity 0.45s 0.1s;
+  }
+  .pipe.is-classify .pipe__stage2 {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+  .pipe__stage2-inner {
+    display: grid;
+    gap: 0.75rem;
+    min-height: 0;
+    overflow: hidden;
   }
 
   /* Network */
@@ -924,13 +973,23 @@ const tags = dets.map((d) => {
   }
   @media (max-width: 480px) {
     .pipe__row {
-      grid-template-columns: 1fr;
+      flex-direction: column;
+      align-items: stretch;
     }
     .pipe__view {
       width: 100%;
     }
-    .pipe__log {
+    .pipe__log,
+    .pipe.has-dets .pipe__log {
       grid-template-columns: 1fr 1fr;
+      width: auto;
+      margin: 0;
+    }
+    .pipe.has-dets .pipe__log {
+      margin-top: 0.6rem;
+    }
+    .pipe__log li {
+      min-width: 0;
     }
     .pipe__out li {
       grid-template-columns: minmax(6.5rem, auto) minmax(0, 1fr) 2.4rem;
