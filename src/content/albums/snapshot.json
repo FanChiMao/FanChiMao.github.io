@@ -1,6 +1,7 @@
 {
   "order": 3,
   "emoji": "📸",
+  "categories": ["everyday"],
   "draft": true,
   "title": {
     "en": "Snapshot",

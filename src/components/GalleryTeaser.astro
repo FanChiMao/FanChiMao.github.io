@@ -20,7 +20,7 @@ const albums = (await getCollection('albums', ({ data }) => !data.draft)).sort((
       {albums.map((album, i) => <AlbumCard {lang} {album} index={i} />)}
     </div>
     <div class="gallery-cta" data-reveal>
-      <a class="btn" href={localePath(lang, '/gallery/')}>
+      <a class="btn" href={localePath(lang, '/personal/gallery/')}>
         <Icon name="lucide:images" />
         {t.gallery.open}
       </a>

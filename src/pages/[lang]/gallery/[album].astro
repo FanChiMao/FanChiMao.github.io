@@ -1,16 +1,13 @@
 ---
+// Moved: albums live under /<lang>/personal/gallery/ now.
 import { getCollection } from 'astro:content';
-import AlbumPage from '@/views/AlbumPage.astro';
-import { locales, defaultLocale, type Locale } from '@/i18n/ui';
+import Redirect from '@/components/Redirect.astro';
+import { locales, defaultLocale } from '@/i18n/ui';
 
 export async function getStaticPaths() {
   const albums = await getCollection('albums', ({ data }) => !data.draft);
-  return locales
-    .filter((l) => l !== defaultLocale)
-    .flatMap((lang) => albums.map((album) => ({ params: { lang, album: album.id }, props: { album } })));
+  return locales.filter((l) => l !== defaultLocale).flatMap((lang) => albums.map((album) => ({ params: { lang, album: album.id } })));
 }
-const { album } = Astro.props;
-const lang = Astro.params.lang as Locale;
 ---
 
-<AlbumPage {lang} {album} />
+<Redirect to={`/${Astro.params.lang}/personal/gallery/${Astro.params.album}/`} />

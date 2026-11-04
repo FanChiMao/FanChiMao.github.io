@@ -1,6 +1,7 @@
 {
   "order": 0,
   "emoji": "🌌",
+  "categories": ["astro"],
   "title": {
     "en": "Starry Sky",
     "zh-tw": "星空",

@@ -15,7 +15,7 @@
 /** Containers that are compared and patched. */
 const ROOTS = ['[data-nav]', '#main', 'footer.footer'];
 /** Attributes owned by scripts at runtime, never copied from the fetched page. */
-const RUNTIME_ATTRS = new Set(['class', 'style', 'open', 'aria-expanded', 'width', 'height']);
+const RUNTIME_ATTRS = new Set(['class', 'style', 'open', 'aria-expanded', 'aria-pressed', 'hidden', 'width', 'height']);
 /** Localised attributes that may be present in one locale and absent in another. */
 const OPTIONAL_ATTRS = new Set(['aria-current', 'title', 'aria-label', 'lang', 'hreflang']);
 /** Subtrees not compared: their content is script-generated or locale-independent. */
@@ -112,7 +112,10 @@ export async function swapLanguage(url: string, { push = true } = {}): Promise<b
   if (push) {
     // Mark the entry we leave so Back can swap back instead of reloading.
     history.replaceState({ ...(history.state ?? {}), langSwap: true }, '');
-    history.pushState({ langSwap: true }, '', url);
+    // Keep in-page state carried by the hash (e.g. a gallery filter).
+    const to = new URL(url, location.href);
+    if (!to.hash) to.hash = location.hash;
+    history.pushState({ langSwap: true }, '', to);
   }
   syncHead(doc);
   for (const p of patches) p();

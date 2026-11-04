@@ -24,12 +24,13 @@ let back: { href: string; label: string; aria: string } | undefined;
 
 if (world === 'personal') {
   const p = personalUi[lang].nav;
-  const here = (to: string) => path === to;
+  // Sub-pages (an album) keep their chapter highlighted.
+  const here = (to: string) => (to === '/personal/' ? path === to : path.startsWith(to));
   brand = { href: localePath(lang, '/personal/'), label: '52Hz Fan', aria: p.brandLabel };
   items = (
     [
       ['/personal/', p.home],
-      ['/gallery/', p.gallery],
+      ['/personal/gallery/', p.gallery],
       ['/personal/journey/', p.journey],
       ['/personal/companion/', p.companion],
       ['/personal/achievements/', p.achievements],

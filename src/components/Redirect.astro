@@ -1,0 +1,28 @@
+---
+/**
+ * Static redirect page for a moved URL (GitHub Pages has no server redirects).
+ * Meta refresh + canonical tell crawlers where the page lives now; the script
+ * keeps any #hash (e.g. a gallery filter) and replaces the history entry.
+ */
+interface Props {
+  /** Destination path, with trailing slash, e.g. '/personal/gallery/ramen/'. */
+  to: string;
+}
+const { to } = Astro.props;
+const abs = new URL(to, Astro.site).href;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Moved to {to}</title>
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={abs} />
+    <meta http-equiv="refresh" content={`0;url=${to}`} />
+    <script is:inline define:vars={{ to }}>location.replace(to + location.hash);</script>
+  </head>
+  <body>
+    <a href={to}>{abs}</a>
+  </body>
+</html>

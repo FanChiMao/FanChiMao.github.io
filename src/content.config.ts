@@ -101,11 +101,16 @@ const education = defineCollection({
   }),
 });
 
+/** Gallery filter categories (labels live in i18n/personal.ts). */
+export const albumCategories = ['astro', 'drone', 'landscape', 'city', 'everyday'] as const;
+
 const albums = defineCollection({
   loader: glob({ pattern: '*.json', base: './src/content/albums' }),
   schema: z.object({
     order: z.number(),
     emoji: z.string(),
+    /** One or more filter categories; an album shows under each. */
+    categories: z.array(z.enum(albumCategories)).min(1),
     draft: z.boolean().optional(),
     title: t,
     cover: asset,

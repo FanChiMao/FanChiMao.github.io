@@ -1,6 +1,7 @@
 {
   "order": 5,
   "emoji": "🐈",
+  "categories": ["everyday"],
   "draft": true,
   "title": {
     "en": "Animals",

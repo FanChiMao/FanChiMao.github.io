@@ -1,6 +1,7 @@
 {
   "order": 2,
   "emoji": "🍜",
+  "categories": ["everyday"],
   "title": {
     "en": "Ramen",
     "zh-tw": "拉麵",

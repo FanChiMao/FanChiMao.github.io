@@ -15,7 +15,7 @@ const t = ui[lang].gallery;
 const { id, data } = album;
 ---
 
-<a class="album" href={localePath(lang, `/gallery/${id}/`)} data-reveal style={`--i:${index}`}>
+<a class="album" href={localePath(lang, `/personal/gallery/${id}/`)} data-categories={data.categories.join(" ")} data-reveal style={`--i:${index}`}>
   <Image
     src={asset(data.cover)}
     alt=""

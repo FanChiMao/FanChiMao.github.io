@@ -1,69 +1,128 @@
 ---
 import { getCollection } from 'astro:content';
-import { Icon } from 'astro-icon/components';
-import Base from '@/layouts/Base.astro';
-import Nav from '@/components/Nav.astro';
-import Footer from '@/components/Footer.astro';
+import PersonalLayout from '@/layouts/PersonalLayout.astro';
 import AlbumCard from '@/components/AlbumCard.astro';
-import { localePath, ui, type Locale } from '@/i18n/ui';
+import { ui, type Locale } from '@/i18n/ui';
+import { personalUi } from '@/i18n/personal';
+import { albumCategories } from '@/content.config';
 
 interface Props {
   lang: Locale;
 }
 const { lang } = Astro.props;
 const t = ui[lang];
-const path = '/gallery/';
+const p = personalUi[lang];
+const path = '/personal/gallery/';
 const albums = (await getCollection('albums', ({ data }) => !data.draft)).sort((a, b) => a.data.order - b.data.order);
+// Only offer categories that actually have albums.
+const used = albumCategories.filter((c) => albums.some((a) => a.data.categories.includes(c)));
 ---
 
-<Base {lang} {path} title={t.gallery.title} description={t.gallery.subtitle}>
-  <Nav {lang} {path} />
-  <main id="main" class="gallery-page">
+<PersonalLayout {lang} {path} title={p.chapters.gallery.name} description={t.gallery.subtitle} overlay={false}>
+  <div class="gallery-page">
     <header class="container gallery-head">
-      <a class="back" href={localePath(lang, '/')}><Icon name="lucide:arrow-left" />{t.gallery.back}</a>
-      <h1 data-reveal>{t.gallery.title}</h1>
-      <p data-reveal style="--i:1">{t.gallery.subtitle}</p>
+      <p class="pw-kicker" data-reveal>{p.chapters.gallery.kind}</p>
+      <h1 class="serif" data-reveal style="--i:1">{p.chapters.gallery.name}</h1>
+      <p class="gallery-head__sub" data-reveal style="--i:2">{t.gallery.subtitle}</p>
     </header>
-    <div class="container albums">
+
+    {
+      used.length > 1 && (
+        <div class="container filters" role="group" aria-label={p.gallery.filter} data-filters hidden>
+          <button type="button" data-filter="all" aria-pressed="true">
+            {p.gallery.all}
+          </button>
+          {used.map((c) => (
+            <button type="button" data-filter={c} aria-pressed="false">
+              {p.gallery.categories[c]}
+            </button>
+          ))}
+        </div>
+      )
+    }
+
+    <div class="container albums" data-albums>
       {albums.map((album, i) => <AlbumCard {lang} {album} index={i} />)}
     </div>
-  </main>
-  <Footer {lang} {path} />
-</Base>
+  </div>
+</PersonalLayout>
+
+<script>
+  // Category filter. Without JS the buttons stay hidden and every album shows.
+  // The choice lives in the URL hash (e.g. #astro) so it can be linked.
+  const bar = document.querySelector<HTMLElement>('[data-filters]');
+  const cards = [...document.querySelectorAll<HTMLElement>('[data-albums] [data-categories]')];
+  if (bar) {
+    bar.hidden = false;
+    const buttons = [...bar.querySelectorAll<HTMLButtonElement>('[data-filter]')];
+    const apply = (cat: string) => {
+      if (!buttons.some((b) => b.dataset.filter === cat)) cat = 'all';
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === cat)));
+      cards.forEach((c) => (c.hidden = cat !== 'all' && !c.dataset.categories!.split(' ').includes(cat)));
+    };
+    bar.addEventListener('click', (ev) => {
+      const b = (ev.target as Element).closest<HTMLButtonElement>('[data-filter]');
+      if (!b) return;
+      const cat = b.dataset.filter!;
+      history.replaceState(history.state, '', cat === 'all' ? location.pathname : `#${cat}`);
+      apply(cat);
+    });
+    apply(location.hash.slice(1) || 'all');
+  }
+</script>
 
 <style>
   .gallery-page {
-    padding-top: calc(var(--nav-h) + 2.5rem);
-    padding-bottom: 4rem;
+    padding-top: calc(var(--nav-h) + 3rem);
+    padding-bottom: 5rem;
   }
   .gallery-head {
     display: grid;
-    gap: 0.9rem;
-    margin-bottom: 2.5rem;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
   }
   .gallery-head h1 {
-    font-size: clamp(2.4rem, 6vw, 4rem);
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    line-height: 1;
   }
-  .gallery-head p {
+  .gallery-head__sub {
     color: var(--muted);
     font-size: 1.1rem;
     max-width: 40rem;
   }
-  .back {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    width: fit-content;
-    color: var(--muted);
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.75rem;
+  }
+  .filters[hidden] {
+    display: none;
+  }
+  .filters button {
+    padding: 0.45rem 1rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-2);
     font-size: 0.9rem;
-    transition: color 0.2s, gap 0.25s var(--ease-out);
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      border-color 0.2s;
   }
-  .back:hover {
-    color: var(--accent);
-    gap: 0.65rem;
+  .filters button:hover {
+    border-color: var(--accent);
+    color: var(--text);
   }
-  .back :global(svg) {
-    width: 16px;
+  .filters button[aria-pressed='true'] {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+  .albums > :global([hidden]) {
+    display: none;
   }
   .albums {
     display: grid;

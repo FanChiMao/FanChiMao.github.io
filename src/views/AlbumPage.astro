@@ -2,10 +2,9 @@
 import { Image, getImage } from 'astro:assets';
 import { Icon } from 'astro-icon/components';
 import { getCollection, type CollectionEntry } from 'astro:content';
-import Base from '@/layouts/Base.astro';
-import Nav from '@/components/Nav.astro';
-import Footer from '@/components/Footer.astro';
+import PersonalLayout from '@/layouts/PersonalLayout.astro';
 import { localePath, ui, type Locale } from '@/i18n/ui';
+import { personalUi } from '@/i18n/personal';
 import { asset } from '@/lib/assets';
 
 interface Props {
@@ -14,8 +13,9 @@ interface Props {
 }
 const { lang, album } = Astro.props;
 const t = ui[lang];
+const p = personalUi[lang];
 const { id, data } = album;
-const path = `/gallery/${id}/`;
+const path = `/personal/gallery/${id}/`;
 const title = data.title[lang];
 
 const photos = await Promise.all(
@@ -29,19 +29,18 @@ const others = (await getCollection('albums', ({ data: d, id: other }) => !d.dra
 const vt = `album-${id.replace(/_/g, '-')}`;
 ---
 
-<Base {lang} {path} {title} description={`${data.emoji} ${title} — ${t.gallery.photos(data.photos.length)}`}>
-  <Nav {lang} {path} />
-  <main id="main" class="album-page">
+<PersonalLayout {lang} {path} {title} description={`${data.emoji} ${title} — ${t.gallery.photos(data.photos.length)}`}>
+  <div class="album-page">
     <header class="album-hero">
       <Image src={asset(data.cover)} alt="" widths={[960, 1600, 2400]} sizes="100vw" quality={70} loading="eager" style={`view-transition-name: ${vt}`} />
       <div class="album-hero__shade"></div>
       <div class="container album-hero__text">
         <nav class="crumbs" aria-label="Breadcrumb">
-          <a href={localePath(lang, '/')}>{t.gallery.back}</a>
+          <a href={localePath(lang, '/personal/')}>52Hz Fan</a>
           <span aria-hidden="true">/</span>
-          <a href={localePath(lang, '/gallery/')}>{t.gallery.allAlbums}</a>
+          <a href={localePath(lang, '/personal/gallery/')}>{p.chapters.gallery.name}</a>
         </nav>
-        <h1><span aria-hidden="true">{data.emoji}</span> {title}</h1>
+        <h1 class="serif"><span aria-hidden="true">{data.emoji}</span> {title}</h1>
         <p>{t.gallery.photos(data.photos.length)}</p>
       </div>
     </header>
@@ -79,7 +78,7 @@ const vt = `album-${id.replace(/_/g, '-')}`;
         others.length > 0 && (
           <nav class="others" aria-label={t.gallery.allAlbums}>
             {others.map((o) => (
-              <a class="card spotlight other" href={localePath(lang, `/gallery/${o.id}/`)}>
+              <a class="card spotlight other" href={localePath(lang, `/personal/gallery/${o.id}/`)}>
                 <span class="other__emoji">{o.data.emoji}</span>
                 <span>
                   <strong>{o.data.title[lang]}</strong>
@@ -92,9 +91,8 @@ const vt = `album-${id.replace(/_/g, '-')}`;
         )
       }
     </div>
-  </main>
-  <Footer {lang} {path} />
-</Base>
+  </div>
+</PersonalLayout>
 
 <script>
   import PhotoSwipeLightbox from 'photoswipe/lightbox';

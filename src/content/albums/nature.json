@@ -1,6 +1,7 @@
 {
   "order": 4,
   "emoji": "🌳",
+  "categories": ["landscape"],
   "draft": true,
   "title": {
     "en": "Nature",

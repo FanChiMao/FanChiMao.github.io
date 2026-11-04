@@ -1,12 +1,12 @@
 ---
+// Moved: albums live under /personal/gallery/ now.
 import { getCollection } from 'astro:content';
-import AlbumPage from '@/views/AlbumPage.astro';
+import Redirect from '@/components/Redirect.astro';
 
 export async function getStaticPaths() {
   const albums = await getCollection('albums', ({ data }) => !data.draft);
-  return albums.map((album) => ({ params: { album: album.id }, props: { album } }));
+  return albums.map((album) => ({ params: { album: album.id } }));
 }
-const { album } = Astro.props;
 ---
 
-<AlbumPage lang="en" {album} />
+<Redirect to={`/personal/gallery/${Astro.params.album}/`} />

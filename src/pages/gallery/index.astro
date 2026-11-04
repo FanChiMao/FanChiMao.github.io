@@ -1,5 +1,6 @@
 ---
-import GalleryIndex from '@/views/GalleryIndex.astro';
+// Moved: the gallery lives in the personal world now.
+import Redirect from '@/components/Redirect.astro';
 ---
 
-<GalleryIndex lang="en" />
+<Redirect to="/personal/gallery/" />

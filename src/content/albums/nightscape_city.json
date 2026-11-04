@@ -1,6 +1,7 @@
 {
   "order": 1,
   "emoji": "🌃",
+  "categories": ["city"],
   "title": {
     "en": "Nightscape City",
     "zh-tw": "夜景",

@@ -11,7 +11,8 @@ export default defineConfig({
   integrations: [
     icon({ include: { lucide: ['*'], mdi: ['github', 'linkedin', 'facebook', 'instagram', 'youtube', 'skateboarding'] } }),
     sitemap({
-      filter: (page) => !page.includes('/playground/'),
+      // Skip standalone apps and the old gallery URLs (now redirects).
+      filter: (page) => !page.includes('/playground/') && !/^\/(?:(?:zh-tw|zh-cn|ja)\/)?gallery\//.test(new URL(page).pathname),
       i18n: {
         defaultLocale: 'en',
         locales: { en: 'en', 'zh-tw': 'zh-TW', 'zh-cn': 'zh-CN', ja: 'ja' },

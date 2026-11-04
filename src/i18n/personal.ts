@@ -63,6 +63,11 @@ const en = {
     kicker: 'Off the clock',
     title: 'Other frequencies',
   },
+  gallery: {
+    filter: 'Filter albums',
+    all: 'All',
+    categories: { astro: 'Astrophotography', drone: 'Drone', landscape: 'Landscapes', city: 'City & Night', everyday: 'Everyday Moments' },
+  },
   stub: {
     soon: 'This chapter is still being written.',
     back: 'Back to the surface',
@@ -88,7 +93,7 @@ const zhTw: PersonalUI = {
   },
   deeper: {
     kicker: '你已經看過我在做什麼。',
-    title: '但我不只是這樣。',
+    title: '想更了解我',
     lead: '在演算法之外，還有另一個世界。',
     cta: '再深入一點？',
     diving: '正在潛入個人世界…',
@@ -125,6 +130,11 @@ const zhTw: PersonalUI = {
     kicker: '下班之後',
     title: '其他的頻率',
   },
+  gallery: {
+    filter: '篩選相簿',
+    all: '全部',
+    categories: { astro: '星空攝影', drone: '空拍', landscape: '風景', city: '城市與夜景', everyday: '日常片刻' },
+  },
   stub: {
     soon: '這一章還在撰寫中。',
     back: '回到水面',
@@ -148,7 +158,7 @@ const zhCn: PersonalUI = {
   },
   deeper: {
     kicker: '你已经看过我在做什么。',
-    title: '但我不只是这样。',
+    title: '想更了解我',
     lead: '在算法之外，还有另一个世界。',
     cta: '再深入一点？',
     diving: '正在潜入个人世界…',
@@ -184,6 +194,11 @@ const zhCn: PersonalUI = {
   frequencies: {
     kicker: '下班之后',
     title: '其他的频率',
+  },
+  gallery: {
+    filter: '筛选相册',
+    all: '全部',
+    categories: { astro: '星空摄影', drone: '航拍', landscape: '风景', city: '城市与夜景', everyday: '日常片刻' },
   },
   stub: {
     soon: '这一章还在撰写中。',
@@ -245,6 +260,11 @@ const ja: PersonalUI = {
     kicker: 'オフの時間',
     title: 'ほかの周波数',
   },
+  gallery: {
+    filter: 'アルバムを絞り込む',
+    all: 'すべて',
+    categories: { astro: '星景写真', drone: 'ドローン', landscape: '風景', city: '街と夜景', everyday: '日常のひとこま' },
+  },
   stub: {
     soon: 'この章はまだ執筆中です。',
     back: '水面に戻る',
@@ -255,7 +275,7 @@ export const personalUi: Record<Locale, PersonalUI> = { en, 'zh-tw': zhTw, 'zh-c
 
 /** Chapters of the personal world, in display order. `path` is locale-agnostic. */
 export const chapters = [
-  { id: 'gallery', path: '/gallery/', nav: 'gallery' },
+  { id: 'gallery', path: '/personal/gallery/', nav: 'gallery' },
   { id: 'journey', path: '/personal/journey/', nav: 'journey' },
   { id: 'companion', path: '/personal/companion/', nav: 'companion' },
   { id: 'secrets', path: '/personal/achievements/', nav: 'achievements' },
