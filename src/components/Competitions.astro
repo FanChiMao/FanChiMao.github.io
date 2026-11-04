@@ -1,4 +1,5 @@
 ---
+import { getImage } from 'astro:assets';
 import { Icon } from 'astro-icon/components';
 import { getCollection } from 'astro:content';
 import Carousel from './Carousel.astro';
@@ -13,6 +14,13 @@ const { lang } = Astro.props;
 const t = ui[lang];
 const INITIAL = 4;
 const items = (await getCollection('competitions')).sort((a, b) => a.data.order - b.data.order);
+const certificates = new Map<string, string>();
+for (const c of items) {
+  if (c.data.certificate) {
+    const img = await getImage({ src: asset(c.data.certificate), width: 1600, format: 'webp', quality: 82 });
+    certificates.set(c.id, img.src);
+  }
+}
 ---
 
 <section class="section" id="competitions">
@@ -20,7 +28,7 @@ const items = (await getCollection('competitions')).sort((a, b) => a.data.order 
     <SectionHead index={5} title={t.headings.competitions} />
     <div class="comp-grid" data-comp-grid>
       {
-        items.map(({ data }, i) => (
+        items.map(({ id, data }, i) => (
           <article class="card spotlight comp" data-reveal style={`--i:${i % 2}`} data-extra={i >= INITIAL ? '' : undefined}>
             {data.images?.length ? (
               <Carousel images={data.images.map(asset)} alt={data.title[lang]} labels={t.a11y} fit={data.images[0].endsWith('.png') ? 'contain' : 'cover'} />
@@ -46,6 +54,12 @@ const items = (await getCollection('competitions')).sort((a, b) => a.data.order 
                   {t.competitions.code}
                   <Icon name="lucide:arrow-up-right" />
                 </a>
+                {certificates.has(id) && (
+                  <a class="btn btn--sm" href={certificates.get(id)} data-image={certificates.get(id)} data-title={`${data.title[lang]} · ${t.publications.certificate}`}>
+                    <Icon name="lucide:award" />
+                    {t.publications.certificate}
+                  </a>
+                )}
                 {data.video && (
                   <a class="btn btn--sm" href={`https://www.youtube.com/watch?v=${data.video}`} data-video={data.video} data-title={data.title[lang]}>
                     <Icon name="lucide:play" />

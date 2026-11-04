@@ -14,10 +14,10 @@
     "ja": "AI 技術を用いて、バドミントンの試合におけるシャトルの位置と軌道を解析します。"
   },
   "achievement": {
-    "en": "Top 25% of 439 teams",
-    "zh-tw": "439 隊中前 25%",
-    "zh-cn": "439 队中前 25%",
-    "ja": "439チーム中 上位25%"
+    "en": "Team result: top 25% of 439 teams",
+    "zh-tw": "團隊成果：439 隊中前 25%",
+    "zh-cn": "团队成果：439 队中前 25%",
+    "ja": "チーム成績：439チーム中 上位25%"
   },
   "repo": "https://github.com/FanChiMao/Competition-2023-PyTorch-Badminton",
   "images": [
@@ -26,5 +26,6 @@
     "competitions/badminton-2023/3.webp",
     "competitions/badminton-2023/4.webp",
     "competitions/badminton-2023/5.webp"
-  ]
+  ],
+  "certificate": "certificates/badminton-2023.png"
 }
