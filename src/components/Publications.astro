@@ -3,6 +3,8 @@ import { getImage } from 'astro:assets';
 import { Icon } from 'astro-icon/components';
 import { getCollection } from 'astro:content';
 import SectionHead from './SectionHead.astro';
+import RestorationDemo from './RestorationDemo.astro';
+import { formatStars, starsFor } from '@/lib/github';
 import { ui, type Locale } from '@/i18n/ui';
 import { asset } from '@/lib/assets';
 
@@ -12,6 +14,7 @@ interface Props {
 const { lang } = Astro.props;
 const t = ui[lang];
 const pubs = (await getCollection('publications')).sort((a, b) => a.data.order - b.data.order);
+const stars = new Map(await Promise.all(pubs.map(async (p) => [p.id, await starsFor(p.data.links.code)] as const)));
 
 const certificates = new Map<string, string>();
 for (const p of pubs) {
@@ -25,6 +28,7 @@ for (const p of pubs) {
 <section class="section" id="publications">
   <div class="container">
     <SectionHead index={3} title={t.headings.publications} />
+    <RestorationDemo {lang} />
     <ol class="pubs">
       {
         pubs.map(({ id, data }, i) => (
@@ -83,6 +87,12 @@ for (const p of pubs) {
                     <a class="btn btn--sm" href={data.links.code} target="_blank" rel="noopener">
                       <Icon name="mdi:github" />
                       {t.publications.code}
+                      {stars.get(id) !== undefined && (
+                    <span class="stars" aria-label={t.github.stars(stars.get(id)!)} title={t.github.stars(stars.get(id)!)}>
+                      <Icon name="lucide:star" />
+                      {formatStars(stars.get(id)!)}
+                    </span>
+                  )}
                     </a>
                   )}
                   {data.links.video && (

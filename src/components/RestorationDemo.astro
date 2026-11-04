@@ -1,0 +1,363 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import { Icon } from 'astro-icon/components';
+import { ui, type Locale } from '@/i18n/ui';
+import { asset } from '@/lib/assets';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const d = ui[lang].demo;
+
+/** Result / degraded pairs from the thesis visual comparisons (https://tentativegithub.github.io/). */
+const tasks = [
+  { key: 'denoise', icon: 'lucide:sparkles', dataset: 'Kodak24', before: 'DN_3_noisy.png', after: 'DN_3_result.png' },
+  { key: 'deblur', icon: 'lucide:move', dataset: 'GoPro', before: 'DB_1_blur.png', after: 'DB_1_result.png' },
+  { key: 'derain', icon: 'lucide:cloud-rain', dataset: 'RainDrop', before: 'DRD_1_rain.png', after: 'DRD_1_result.png' },
+  { key: 'dehaze', icon: 'lucide:cloud-fog', dataset: 'D-Haze', before: 'DH_1_haze.png', after: 'DH_1_result.png' },
+  { key: 'lowlight', icon: 'lucide:moon-star', dataset: 'LOL', before: 'LL_1_LL.png', after: 'LL_1_result.png' },
+  { key: 'retouch', icon: 'lucide:wand-sparkles', dataset: d.ownPhoto, before: 'RT_1_input.jpg', after: 'RT_1_output.png' },
+] as const;
+const img = (f: string): ImageMetadata => asset(`restoration/${f}`);
+---
+
+<div class="demo card" data-demo data-reveal>
+  <header class="demo__head">
+    <div>
+      <p class="demo__kicker">
+        <Icon name="lucide:split-square-horizontal" />
+        {d.kicker}
+      </p>
+      <h3 class="demo__title">{d.title}</h3>
+    </div>
+    <a class="btn btn--sm" href="https://tentativegithub.github.io/" target="_blank" rel="noopener">
+      {d.more}
+      <Icon name="lucide:arrow-up-right" />
+    </a>
+  </header>
+
+  <div class="demo__tabs" role="tablist" aria-label={d.title}>
+    {
+      tasks.map((task, i) => (
+        <button class="demo__tab" type="button" role="tab" id={`demo-tab-${task.key}`} aria-controls={`demo-panel-${task.key}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>
+          <Icon name={task.icon} />
+          {d.tasks[task.key]}
+        </button>
+      ))
+    }
+  </div>
+
+  {
+    tasks.map((task, i) => {
+      const before = img(task.before);
+      const after = img(task.after);
+      return (
+        <div class="demo__panel" role="tabpanel" id={`demo-panel-${task.key}`} aria-labelledby={`demo-tab-${task.key}`} hidden={i !== 0}>
+          <div class="ba" data-ba style={`--pos: 50%; --ratio: ${(after.width / after.height).toFixed(4)}`}>
+            <Image class="ba__img" src={after} alt={`${d.tasks[task.key]}: ${d.after}`} widths={[480, 800, 1200]} sizes="(min-width: 1100px) 1000px, 100vw" quality={88} loading={i === 0 ? 'eager' : 'lazy'} />
+            <div class="ba__before" aria-hidden="true">
+              <Image class="ba__img" src={before} alt="" widths={[480, 800, 1200]} sizes="(min-width: 1100px) 1000px, 100vw" quality={88} loading={i === 0 ? 'eager' : 'lazy'} />
+            </div>
+            <span class="ba__label ba__label--before">{d.before}</span>
+            <span class="ba__label ba__label--after">{d.after}</span>
+            <span class="ba__line" aria-hidden="true">
+              <span class="ba__knob">
+                <Icon name="lucide:chevrons-left-right" />
+              </span>
+            </span>
+            <input class="ba__range" type="range" min="0" max="100" step="0.5" value="50" aria-label={`${d.tasks[task.key]}: ${d.hint}`} />
+          </div>
+          <p class="demo__meta">
+            <span>{task.dataset}</span>
+            <span>{d.hint}</span>
+          </p>
+        </div>
+      );
+    })
+  }
+</div>
+
+<script>
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.querySelectorAll<HTMLElement>('[data-demo]').forEach((demo) => {
+    const tabs = Array.from(demo.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    const panels = Array.from(demo.querySelectorAll<HTMLElement>('[role="tabpanel"]'));
+
+    // Slider: the range input drives --pos; the "before" layer is clipped to the left of it.
+    demo.querySelectorAll<HTMLElement>('[data-ba]').forEach((ba) => {
+      const range = ba.querySelector<HTMLInputElement>('.ba__range')!;
+      const set = (v: number) => ba.style.setProperty('--pos', `${v}%`);
+      range.addEventListener('input', () => {
+        ba.classList.add('is-touched');
+        set(Number(range.value));
+      });
+    });
+
+    // A short sweep the first time the demo scrolls into view hints that it can be dragged.
+    const sweep = (ba: HTMLElement) => {
+      if (reduce || ba.classList.contains('is-touched')) return;
+      const range = ba.querySelector<HTMLInputElement>('.ba__range')!;
+      const keys = [50, 22, 78, 50];
+      const dur = 2200;
+      const t0 = performance.now();
+      const ease = (x: number) => (1 - Math.cos(Math.PI * x)) / 2;
+      const tick = (now: number) => {
+        if (ba.classList.contains('is-touched')) return;
+        const p = Math.min(1, (now - t0) / dur);
+        const seg = Math.min(keys.length - 2, Math.floor(p * (keys.length - 1)));
+        const local = p * (keys.length - 1) - seg;
+        const v = keys[seg] + (keys[seg + 1] - keys[seg]) * ease(local);
+        ba.style.setProperty('--pos', `${v}%`);
+        range.value = String(v);
+        if (p < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    };
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          io.disconnect();
+          const first = demo.querySelector<HTMLElement>('[role="tabpanel"]:not([hidden]) [data-ba]');
+          if (first) setTimeout(() => sweep(first), 500);
+        }
+      },
+      { threshold: 0.5 },
+    );
+    io.observe(demo);
+
+    // Tabs with arrow-key navigation (WAI-ARIA tabs pattern).
+    const select = (i: number, focus = false) => {
+      tabs.forEach((t, j) => {
+        const on = i === j;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+        panels[j].hidden = !on;
+      });
+      if (focus) tabs[i].focus();
+    };
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => select(i));
+      tab.addEventListener('keydown', (ev) => {
+        const n = tabs.length;
+        const next = { ArrowRight: (i + 1) % n, ArrowLeft: (i - 1 + n) % n, Home: 0, End: n - 1 }[ev.key];
+        if (next === undefined) return;
+        ev.preventDefault();
+        select(next, true);
+      });
+    });
+  });
+</script>
+
+<style>
+  .demo {
+    display: grid;
+    gap: 1.1rem;
+    margin-bottom: 2rem;
+    padding: clamp(1rem, 2.6vw, 1.5rem);
+  }
+  .demo__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+  }
+  .demo__kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .demo__kicker :global(svg) {
+    width: 15px;
+    height: 15px;
+  }
+  .demo__title {
+    margin-top: 0.2rem;
+    font-size: clamp(1.2rem, 2.4vw, 1.45rem);
+  }
+  .demo__head .btn :global(svg) {
+    width: 0.9em;
+  }
+
+  .demo__tabs {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 0 -0.25rem;
+    padding: 0.1rem 0.25rem;
+  }
+  .demo__tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .demo__tab {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.42rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--text-2);
+    font: inherit;
+    font-size: 0.86rem;
+    cursor: pointer;
+    transition:
+      background-color 0.25s,
+      color 0.25s,
+      border-color 0.25s;
+  }
+  .demo__tab :global(svg) {
+    width: 15px;
+    height: 15px;
+  }
+  .demo__tab:hover {
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+  .demo__tab[aria-selected='true'] {
+    background: var(--accent-soft);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .demo__panel:not([hidden]) {
+    animation: panel-in 0.45s var(--ease-out);
+  }
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+
+  /* ---- Before / after slider */
+  .ba {
+    position: relative;
+    /* Keep the image's own aspect ratio but never taller than ~70% of the viewport. */
+    width: min(100%, calc(70svh * var(--ratio)));
+    aspect-ratio: var(--ratio);
+    margin-inline: auto;
+    overflow: hidden;
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    user-select: none;
+    touch-action: pan-y;
+  }
+  .ba :global(.ba__img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+  }
+  .ba__before {
+    position: absolute;
+    inset: 0;
+    clip-path: inset(0 calc(100% - var(--pos)) 0 0);
+  }
+  .ba__line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--pos);
+    width: 2px;
+    translate: -50% 0;
+    background: #fff;
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.2), 0 0 12px rgb(0 0 0 / 0.35);
+    pointer-events: none;
+  }
+  .ba__knob {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.92);
+    color: #0b1424;
+    box-shadow: 0 6px 18px rgb(0 0 0 / 0.35);
+    transition: scale 0.2s var(--ease-out);
+  }
+  .ba__knob :global(svg) {
+    width: 22px;
+    height: 22px;
+  }
+  .ba:hover .ba__knob,
+  .ba:has(.ba__range:focus-visible) .ba__knob {
+    scale: 1.1;
+  }
+  .ba:has(.ba__range:focus-visible) .ba__knob {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .ba__label {
+    position: absolute;
+    top: 0.75rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    background: rgb(5 9 18 / 0.6);
+    backdrop-filter: blur(6px);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+  .ba__label--before {
+    left: 0.75rem;
+  }
+  .ba__label--after {
+    right: 0.75rem;
+  }
+  /* The real control: a transparent range input stretched over the image. */
+  .ba__range {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: ew-resize;
+    appearance: none;
+  }
+  .ba__range::-webkit-slider-thumb {
+    appearance: none;
+    width: 44px;
+    height: 100vh;
+  }
+  .ba__range::-moz-range-thumb {
+    width: 44px;
+    height: 100vh;
+    border: 0;
+  }
+
+  .demo__meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    margin-top: 0.7rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .demo__meta span:first-child {
+    font-family: var(--font-mono);
+  }
+</style>

@@ -266,6 +266,26 @@ button {
   line-height: 1.4;
   white-space: nowrap;
 }
+/* GitHub star count inside a button */
+.stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: 0.15rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: var(--gold-soft);
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-size: 0.75em;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.stars svg {
+  width: 0.95em;
+  height: 0.95em;
+  fill: currentColor;
+}
 .chip--accent {
   border-color: color-mix(in srgb, var(--accent) 35%, transparent);
   background: var(--accent-soft);

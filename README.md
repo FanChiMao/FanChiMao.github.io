@@ -25,6 +25,8 @@ Requires Node 24 (see `.nvmrc`).
 | Competitions | `src/content/competitions/*.json` + images in `src/assets/competitions/<id>/` |
 | Publications | `src/content/publications/*.json` + previews in `public/media/papers/` |
 | Education | `src/content/education/*.json` |
+| Before/after restoration slider (Publications) | `src/components/RestorationDemo.astro` + image pairs in `src/assets/restoration/` |
+| GitHub star counts (fetched at build; hidden if the API fails) | `src/lib/github.ts` |
 | Photo albums | `src/content/albums/*.json` + photos in `src/assets/gallery/<album>/` |
 | Standalone apps (not processed by Astro) | `public/playground/` |
 | Content schema (validated at build time) | `src/content.config.ts` |
@@ -72,5 +74,5 @@ Old URLs (`index_tw.html`, `index_ch.html`, `index_jp.html`, `gallery/main.html`
 
 ## Deploy
 
-`.github/workflows/deploy.yml` builds and publishes on every push to `main`.
+`.github/workflows/deploy.yml` builds and publishes on every push to `main`, and every Monday so the GitHub star counts stay fresh.
 One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**. The custom domain is kept via `public/CNAME`.

@@ -6,6 +6,7 @@ import profile from '@/assets/profile.jpg';
 import SectionHead from './SectionHead.astro';
 import { ui, type Locale } from '@/i18n/ui';
 import { site } from '@/lib/site';
+import { totalStars } from '@/lib/github';
 
 interface Props {
   lang: Locale;
@@ -15,12 +16,14 @@ const t = ui[lang];
 const pubs = await getCollection('publications');
 const patents = await getCollection('patents');
 const comps = await getCollection('competitions');
-const stats = [
+const starTotal = await totalStars();
+const stats: { value: number; label: string; suffix?: string }[] = [
   { value: pubs.length, label: t.stats.papers },
   { value: patents.length, label: t.stats.patents },
   // Not every competition has a card here, so show it as a lower bound.
   { value: comps.length, label: t.stats.competitions, suffix: '+' },
 ];
+if (starTotal !== undefined) stats.push({ value: starTotal, label: t.github.total });
 ---
 
 <section class="section about" id="about">
@@ -156,7 +159,7 @@ const stats = [
   }
   .about__stats {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
     gap: 1rem;
     margin: 2rem 0 0;
     padding: 1.25rem 0 0;

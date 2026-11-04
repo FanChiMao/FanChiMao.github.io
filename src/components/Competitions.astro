@@ -6,6 +6,7 @@ import Carousel from './Carousel.astro';
 import SectionHead from './SectionHead.astro';
 import { ui, type Locale } from '@/i18n/ui';
 import { asset } from '@/lib/assets';
+import { formatStars, starsFor } from '@/lib/github';
 
 interface Props {
   lang: Locale;
@@ -14,6 +15,7 @@ const { lang } = Astro.props;
 const t = ui[lang];
 const INITIAL = 4;
 const items = (await getCollection('competitions')).sort((a, b) => a.data.order - b.data.order);
+const stars = new Map(await Promise.all(items.map(async (c) => [c.id, await starsFor(c.data.repo)] as const)));
 const certificates = new Map<string, string>();
 for (const c of items) {
   if (c.data.certificate) {
@@ -52,6 +54,12 @@ for (const c of items) {
                 <a class="btn btn--sm comp__link" href={data.repo} target="_blank" rel="noopener">
                   <Icon name="mdi:github" />
                   {t.competitions.code}
+                  {stars.get(id) !== undefined && (
+                    <span class="stars" aria-label={t.github.stars(stars.get(id)!)} title={t.github.stars(stars.get(id)!)}>
+                      <Icon name="lucide:star" />
+                      {formatStars(stars.get(id)!)}
+                    </span>
+                  )}
                   <Icon name="lucide:arrow-up-right" />
                 </a>
                 {certificates.has(id) && (
