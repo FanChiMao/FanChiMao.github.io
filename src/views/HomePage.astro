@@ -12,6 +12,7 @@ import GoDeeper from '@/components/GoDeeper.astro';
 import Contact from '@/components/Contact.astro';
 import Footer from '@/components/Footer.astro';
 import StructuredData from '@/components/StructuredData.astro';
+import { site } from '@/lib/site';
 import type { Locale } from '@/i18n/ui';
 
 interface Props {
@@ -33,11 +34,17 @@ const { lang } = Astro.props;
     <Education {lang} />
     <Contact {lang} />
   </main>
-  <!-- The ending: "Go Deeper?" and the footer share exactly one screen, like the hero. -->
-  <div class="finale">
-    <GoDeeper {lang} />
-    <Footer {lang} path="/" visitors abyss />
-  </div>
+  {
+    site.personalEntry ? (
+      // The ending: "Go Deeper?" and the footer share exactly one screen, like the hero.
+      <div class="finale">
+        <GoDeeper {lang} />
+        <Footer {lang} path="/" visitors abyss />
+      </div>
+    ) : (
+      <Footer {lang} path="/" visitors />
+    )
+  }
 </Base>
 
 <style>
