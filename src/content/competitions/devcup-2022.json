@@ -1,17 +1,17 @@
 {
-  "order": 2,
+  "order": 1,
   "year": 2022,
   "title": {
-    "en": "Music Transcription",
-    "zh-tw": "音訊轉譜",
-    "zh-cn": "音频转谱",
-    "ja": "音声譜面変換"
+    "en": "CyberAudio: Music Transcription",
+    "zh-tw": "CyberAudio：音訊轉譜",
+    "zh-cn": "CyberAudio：音频转谱",
+    "ja": "CyberAudio：音楽の自動採譜"
   },
   "description": {
-    "en": "Developed an AI application integrating source separation and audio transcription to convert music input into sheet music. Awarded 3rd place in Intel DevCUP.",
-    "zh-tw": "整合音源分離與音訊轉錄的AI模型應用程式,將輸入的音樂轉換成樂譜。 取得 Intel DevCUP 第三名。",
-    "zh-cn": "整合音源分离与音频转录的 AI 模型应用程序，将输入的音乐转换为乐谱。获得 Intel DevCUP 第三名。",
-    "ja": "音源分離と音声転写を統合した AI アプリケーションを開発し、音楽入力を楽譜に変換。Intel DevCUP にて第3位を受賞。"
+    "en": "Combined source separation, music transcription, and OpenVINO to separate the instruments in a song and produce MIDI and sheet music. Team result: 3rd place at Intel DevCUP 2022.",
+    "zh-tw": "結合音源分離、音樂轉錄與 OpenVINO，將歌曲中的音源分離並產生 MIDI 與樂譜。團隊成果：Intel DevCUP 2022 第 3 名。",
+    "zh-cn": "结合音源分离、音乐转录与 OpenVINO，将歌曲中的音源分离并生成 MIDI 与乐谱。团队成果：Intel DevCUP 2022 第 3 名。",
+    "ja": "音源分離、自動採譜、OpenVINO を組み合わせ、曲の各パートを分離して MIDI と楽譜を生成。チーム成績：Intel DevCUP 2022 第3位。"
   },
   "repo": "https://github.com/FanChiMao/Competition-2022-OpenVINO-Devcup",
   "images": [

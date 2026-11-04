@@ -1,13 +1,13 @@
 {
   "order": 1,
   "year": 2022,
-  "venueShort": "IEEE Taipei Section",
+  "venueShort": "Master’s Thesis",
   "award": true,
   "venue": {
-    "en": "IEEE Taipei Section Best Paper Awards (IEEE 2022)",
-    "zh-tw": "IEEE 台北分會最佳論文獎 (2022)",
-    "zh-cn": "IEEE 台北分会最佳论文奖 (IEEE 2022)",
-    "ja": "IEEE Taipei Section 最優秀論文賞 (IEEE 2022)"
+    "en": "Master’s thesis, NCHU · 2022 IEEE Taipei Section Best Dissertation Award",
+    "zh-tw": "國立中興大學碩士論文 · 2022 IEEE 台北分會最佳碩博士論文獎",
+    "zh-cn": "国立中兴大学硕士论文 · 2022 IEEE 台北分会最佳硕博士论文奖",
+    "ja": "国立中興大学 修士論文 · 2022 IEEE Taipei Section 最優秀修士・博士論文賞"
   },
   "title": {
     "en": "Image Restoration using Improved Hierarchical Encoder-Decoder Networks with Selective Residual Blocks",

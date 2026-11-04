@@ -1,17 +1,17 @@
 {
-  "order": 3,
+  "order": 2,
   "year": 2022,
   "title": {
-    "en": "Orchid Classification",
-    "zh-tw": "蘭花分類",
-    "zh-cn": "兰花分类",
-    "ja": "蘭の分類"
+    "en": "Orchid Species Classification",
+    "zh-tw": "蘭花種類辨識",
+    "zh-cn": "兰花种类识别",
+    "ja": "ランの種類分類"
   },
   "description": {
-    "en": "Used various ensemble enhancement methods to integrate 7 different classification models for orchid category prediction. Achieved 18th place among 743 teams in Taiwan.",
-    "zh-tw": "利用不同合奏增強方式,整合7種不同的分類模型以預測蘭花種類。 於全國 743 組參賽隊伍中得到第 18 名的成績。",
-    "zh-cn": "利用不同的集成增强方法，整合 7 种不同的分类模型来预测兰花种类。于全台 743 支参赛队伍中获得第 18 名。",
-    "ja": "7種類の分類モデルをさまざまなアンサンブル手法で統合し、蘭の品種を予測。全国743チーム中、第18位を獲得しました。"
+    "en": "Combined 7 classification models with ensemble methods to predict orchid species. Our team ranked 18th among 275 participating teams and received a Project Office Award Certificate from AI CUP.",
+    "zh-tw": "以多種集成方法整合 7 個分類模型預測蘭花種類。團隊於 275 支實際參賽隊伍中排名第 18，並獲 AI CUP 計畫辦公室獎狀。",
+    "zh-cn": "以多种集成方法整合 7 个分类模型预测兰花种类。团队于 275 支实际参赛队伍中排名第 18，并获 AI CUP 计划办公室奖状。",
+    "ja": "7つの分類モデルをアンサンブル手法で組み合わせ、ランの種類を予測。チームは実際に参加した275チーム中18位となり、AI CUP プロジェクトオフィス賞状を受け取りました。"
   },
   "repo": "https://github.com/FanChiMao/Competition-2022-Pytorch-Orchid_Classification",
   "images": [

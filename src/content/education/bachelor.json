@@ -1,10 +1,11 @@
 {
   "order": 1,
+  "period": "Sep 2016–Jun 2020",
   "degree": {
-    "en": "Bachelor's Degree in Electrical Engineering",
-    "zh-tw": "電機工程學系 學士學位",
-    "zh-cn": "电气工程系 学士学位",
-    "ja": "電気工学専攻 学士課程修了"
+    "en": "Bachelor of Science (B.S.), Electrical Engineering",
+    "zh-tw": "電機工程學系 學士",
+    "zh-cn": "电机工程学系 学士",
+    "ja": "電気工学 学士（B.S.）"
   },
   "school": {
     "en": "Yuan Ze University (YZU)",
@@ -13,9 +14,9 @@
     "ja": "元智大学"
   },
   "description": {
-    "en": "Bachelor's degree in Electrical Engineering with a focus on Electronics, Circuitry, and Electromagnetism, as well as coursework in basic software courses such as data structures and C programming. Graduation project involved developing an Android app using JavaScript, SQL, and socket connections. Passionate about software development and leveraging programming skills to create functional and useful applications.",
-    "zh-tw": "大學畢業於元智大學電機工程學系,主修電子、電路與電磁學,也包含基礎的程式課程包括: 資料結構、C語言等。 畢業專題針對 Android 手機應用程式開發,利用了 JavaScript,SQL 與 socket連線等技術,也藉有此專題發現自己相較於偏向硬體的技術,更喜歡軟體的開發。",
-    "zh-cn": "本科毕业于元智大学电气工程系，主修电子学、电路与电磁学，并学习了数据结构、C 语言等基础编程课程。毕业设计为 Android 手机应用开发，使用了 JavaScript、SQL 和 socket 通信等技术。通过这个项目，我发现相比于偏向硬件的技术，我更喜欢软件开发领域。",
-    "ja": "元智大学の電気工学科を卒業。主に電子回路、電磁気学を学びながら、データ構造や C 言語などの基礎的なプログラミングも修得しました。卒業研究では、Android スマートフォン向けアプリの開発に取り組み、JavaScript、SQL、ソケット通信などの技術を使用しました。このプロジェクトを通して、ハードウェアよりもソフトウェア開発に対する興味と適性があることに気付きました。"
+    "en": "Coursework in electronics, circuits, and electromagnetics, plus data structures and C programming. My capstone was a classroom interaction Android app built with socket networking and SQLite. That project is where I found I enjoy software more than hardware.",
+    "zh-tw": "主修電子、電路與電磁學，也修習資料結構、C 語言等程式課程。畢業專題為即時課堂互動的 Android App，使用 socket 連線與 SQLite。也是透過這個專題，發現自己比起硬體更喜歡軟體開發。",
+    "zh-cn": "主修电子、电路与电磁学，也修习数据结构、C 语言等编程课程。毕业设计为实时课堂互动的 Android App，使用 socket 连接与 SQLite。也是通过这个项目，发现自己比起硬件更喜欢软件开发。",
+    "ja": "電子回路、回路理論、電磁気学を中心に学び、データ構造や C 言語などのプログラミングも履修。卒業研究ではソケット通信と SQLite を使った授業インタラクション用の Android アプリを開発し、ハードウェアよりソフトウェア開発が好きだと気づきました。"
   }
 }

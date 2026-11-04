@@ -8,16 +8,18 @@ interface Props {
   alt: string;
   labels: { prev: string; next: string; goTo: string };
   sizes?: string;
+  /** CSS aspect-ratio of each slide. */
+  ratio?: string;
 }
-const { images, alt, labels, sizes = '(min-width: 1000px) 540px, 100vw' } = Astro.props;
+const { images, alt, labels, sizes = '(min-width: 1000px) 540px, 100vw', ratio = '16 / 10' } = Astro.props;
 ---
 
-<div class="carousel" data-carousel>
+<div class="carousel" data-carousel style={`--ratio: ${ratio}`}>
   <ul class="carousel__track" tabindex="0" aria-label={alt}>
     {
       images.map((src, i) => (
         <li class="carousel__slide" aria-label={`${i + 1} / ${images.length}`}>
-          <Image src={src} alt={`${alt} — ${i + 1}`} widths={[480, 800, 1200]} {sizes} quality={72} loading="lazy" />
+          <Image src={src} alt={`${alt} (${i + 1})`} widths={[480, 800, 1200]} {sizes} quality={72} loading="lazy" />
         </li>
       ))
     }
@@ -108,7 +110,7 @@ const { images, alt, labels, sizes = '(min-width: 1000px) 540px, 100vw' } = Astr
   .carousel__slide {
     flex: 0 0 100%;
     scroll-snap-align: start;
-    aspect-ratio: 16 / 10;
+    aspect-ratio: var(--ratio, 16 / 10);
     overflow: hidden;
   }
   .carousel__slide :global(img) {

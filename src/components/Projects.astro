@@ -1,0 +1,372 @@
+---
+import { Icon } from 'astro-icon/components';
+import { getCollection } from 'astro:content';
+import Carousel from './Carousel.astro';
+import SectionHead from './SectionHead.astro';
+import { ui, type Locale } from '@/i18n/ui';
+import { asset } from '@/lib/assets';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const t = ui[lang];
+const all = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const featured = all.filter((p) => p.data.featured);
+const more = all.filter((p) => !p.data.featured);
+---
+
+<section class="section" id="projects">
+  <div class="container">
+    <SectionHead index={2} title={t.headings.projects} />
+
+    <ol class="features">
+      {
+        featured.map(({ data }, i) => (
+          <li data-reveal style={`--i:${i % 2}`}>
+            <article class:list={['card spotlight feature', { 'feature--flip': i % 2 === 1 }]}>
+              <div class="feature__media">
+                {data.images?.length ? (
+                  <Carousel images={data.images.map(asset)} alt={data.title[lang]} labels={t.a11y} ratio={data.images[0].endsWith('.png') ? '1600 / 832' : '16 / 10'} sizes="(min-width: 1000px) 620px, 100vw" />
+                ) : (
+                  <div class="feature__art" aria-hidden="true">
+                    <div class="feature__grid" />
+                    <Icon name={data.icon ?? 'lucide:sparkles'} />
+                    <ul>
+                      {data.tech.slice(0, 4).map((x) => (
+                        <li>{x}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              <div class="feature__body">
+                <p class="feature__kind">
+                  <span class="badge">{data.period}</span>
+                  <span>{data.kind[lang]}</span>
+                </p>
+                <h3 class="feature__title">{data.title[lang]}</h3>
+                {data.achievement && (
+                  <p class="feature__achievement">
+                    <Icon name="lucide:trophy" />
+                    {data.achievement[lang]}
+                  </p>
+                )}
+                <p class="feature__summary">{data.summary[lang]}</p>
+                {data.description && <p class="feature__desc">{data.description[lang]}</p>}
+                {data.role && (
+                  <p class="feature__role">
+                    <span>{t.projects.role}</span>
+                    {data.role[lang]}
+                  </p>
+                )}
+                <ul class="feature__tech" aria-label="Tech">
+                  {data.tech.map((x) => (
+                    <li class="chip">{x}</li>
+                  ))}
+                </ul>
+                <div class="feature__actions">
+                  <a class="btn btn--sm btn--primary" href={data.repo} target="_blank" rel="noopener">
+                    <Icon name="mdi:github" />
+                    {t.projects.code}
+                  </a>
+                  {data.video && (
+                    <a class="btn btn--sm" href={`https://www.youtube.com/watch?v=${data.video}`} data-video={data.video} data-title={data.title[lang]}>
+                      <Icon name="lucide:play" />
+                      {t.projects.demo}
+                    </a>
+                  )}
+                </div>
+              </div>
+            </article>
+          </li>
+        ))
+      }
+    </ol>
+
+    {
+      more.length > 0 && (
+        <div class="more">
+          <h3 class="more__title" data-reveal>
+            {t.projects.more}
+          </h3>
+          <ul class="more__list">
+            {more.map(({ data }, i) => (
+              <li data-reveal style={`--i:${i}`}>
+                <a class="card spotlight more__card" href={data.repo} target="_blank" rel="noopener">
+                  <span class="more__meta">
+                    <span>{data.kind[lang]}</span>
+                    <span>{data.period}</span>
+                  </span>
+                  <strong>{data.title[lang]}</strong>
+                  <span class="more__summary">{data.summary[lang]}</span>
+                  <span class="more__tech">{data.tech.join(' · ')}</span>
+                  <Icon name="lucide:arrow-up-right" class="more__arrow" />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .features {
+    display: grid;
+    gap: 1.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .feature {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    overflow: hidden;
+    transition:
+      transform 0.4s var(--ease-out),
+      box-shadow 0.4s var(--ease-out),
+      border-color 0.4s;
+  }
+  .feature:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--border-strong);
+  }
+  .feature--flip .feature__media {
+    order: 2;
+  }
+  .feature__media {
+    display: grid;
+    align-content: center;
+    min-width: 0;
+    padding: clamp(0.9rem, 2.2vw, 1.4rem);
+    background:
+      radial-gradient(80% 60% at 50% 50%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 75%),
+      var(--surface-2);
+  }
+  .feature__media :global(.carousel) {
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+  }
+  .feature__media:has(.feature__art) {
+    align-content: stretch;
+    padding: 0;
+  }
+
+  /* Placeholder art for projects without screenshots */
+  .feature__art {
+    position: relative;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 1.25rem;
+    height: 100%;
+    min-height: 260px;
+    overflow: hidden;
+    isolation: isolate;
+    background:
+      radial-gradient(60% 70% at 30% 30%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 70%),
+      radial-gradient(50% 60% at 80% 80%, color-mix(in srgb, var(--accent-2) 30%, transparent), transparent 70%),
+      var(--surface-2);
+  }
+  .feature__grid {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: radial-gradient(closest-side, #000, transparent);
+    animation: drift 18s linear infinite;
+  }
+  @keyframes drift {
+    to {
+      background-position: 28px 28px;
+    }
+  }
+  .feature__art > :global(svg) {
+    width: 72px;
+    height: 72px;
+    color: var(--accent);
+    filter: drop-shadow(0 8px 24px color-mix(in srgb, var(--accent) 45%, transparent));
+  }
+  .feature__art ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0 1.5rem;
+    list-style: none;
+  }
+  .feature__art li {
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-elev);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-2);
+  }
+
+  .feature__body {
+    display: grid;
+    gap: 0.8rem;
+    align-content: start;
+    justify-items: start;
+    padding: clamp(1.4rem, 3vw, 2rem);
+  }
+  .feature__kind {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .feature__title {
+    font-size: clamp(1.25rem, 2.2vw, 1.5rem);
+    line-height: 1.25;
+  }
+  .feature__achievement {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    background: var(--gold-soft);
+    color: var(--gold);
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+  .feature__achievement :global(svg) {
+    width: 16px;
+    height: 16px;
+  }
+  .feature__summary {
+    color: var(--text-2);
+  }
+  .feature__desc {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .feature__role {
+    font-size: 0.92rem;
+    color: var(--text-2);
+  }
+  .feature__role span {
+    margin-right: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .feature__tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.2rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .feature__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.4rem;
+  }
+
+  .more {
+    margin-top: 3rem;
+  }
+  .more__title {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    color: var(--text-2);
+  }
+  .more__list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .more__card {
+    position: relative;
+    display: grid;
+    gap: 0.4rem;
+    height: 100%;
+    padding: 1.2rem 3rem 1.2rem 1.3rem;
+    transition:
+      transform 0.3s var(--ease-out),
+      border-color 0.3s;
+  }
+  .more__card:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-strong);
+  }
+  .more__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  .more__card strong {
+    font-family: var(--font-display);
+    font-size: 1.02rem;
+    line-height: 1.35;
+  }
+  .more__summary {
+    color: var(--text-2);
+    font-size: 0.9rem;
+  }
+  .more__tech {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .more__card :global(.more__arrow) {
+    position: absolute;
+    top: 1.2rem;
+    right: 1.1rem;
+    width: 18px;
+    color: var(--muted);
+    transition:
+      transform 0.25s var(--ease-out),
+      color 0.25s;
+  }
+  .more__card:hover :global(.more__arrow) {
+    color: var(--accent);
+    transform: translate(2px, -2px);
+  }
+
+  @media (max-width: 900px) {
+    .feature {
+      grid-template-columns: 1fr;
+    }
+    .feature--flip .feature__media {
+      order: 0;
+    }
+    .feature__art {
+      min-height: 200px;
+    }
+    .more__list {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .feature__grid {
+      animation: none;
+    }
+  }
+</style>

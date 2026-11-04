@@ -16,8 +16,68 @@ const experience = defineCollection({
     end: z.number().nullable(),
     company: t,
     role: t,
+    /** Department, location and start date line. */
+    org: t.optional(),
     description: t,
-    tags: tList,
+    /** Products worked on within this role, newest first. */
+    products: z.array(z.object({ name: z.string(), period: z.string(), focus: t, points: tList })).optional(),
+    /** Other contributions in this role. */
+    highlights: tList.optional(),
+    tags: z.array(z.string()),
+  }),
+});
+
+const projects = defineCollection({
+  loader: glob({ pattern: '*.json', base: './src/content/projects' }),
+  schema: z.object({
+    order: z.number(),
+    /** Featured projects get a large card; the rest go to "More projects". */
+    featured: z.boolean(),
+    period: z.string(),
+    kind: t,
+    title: t,
+    summary: t,
+    description: t.optional(),
+    role: t.optional(),
+    /** Must be backed by a public source (e.g. the repo README). */
+    achievement: t.optional(),
+    tech: z.array(z.string()),
+    repo: z.url(),
+    /** YouTube video id */
+    video: z.string().optional(),
+    images: z.array(asset).optional(),
+    /** Icon shown when there are no screenshots. */
+    icon: z.string().optional(),
+  }),
+});
+
+const patents = defineCollection({
+  loader: glob({ pattern: '*.json', base: './src/content/patents' }),
+  schema: z.object({
+    order: z.number(),
+    title: t,
+    /** Publication (grant) number, e.g. TWM681536U */
+    publicationNumber: z.string(),
+    applicationNumber: z.string(),
+    filingDate: z.iso.date(),
+    publicationDate: z.iso.date(),
+    applicant: z.string(),
+    /** Fill in only once the permanent public URL has been verified. */
+    officialUrl: z.url().nullable(),
+  }),
+});
+
+const honors = defineCollection({
+  loader: glob({ pattern: '*.json', base: './src/content/honors' }),
+  schema: z.object({
+    order: z.number(),
+    year: z.number(),
+    title: t,
+    detail: t,
+    /** Team results must be labelled as such. */
+    team: z.boolean(),
+    /** In-page anchor or external evidence link. */
+    href: z.string().optional(),
   }),
 });
 
@@ -46,6 +106,7 @@ const publications = defineCollection({
     abstract: t,
     links: z.object({
       paper: z.url(),
+      arxiv: z.url().optional(),
       code: z.url().optional(),
       /** YouTube video id */
       video: z.string().optional(),
@@ -60,6 +121,7 @@ const education = defineCollection({
   loader: glob({ pattern: '*.json', base: './src/content/education' }),
   schema: z.object({
     order: z.number(),
+    period: z.string(),
     degree: t,
     school: t,
     /** Trusted HTML */
@@ -79,4 +141,4 @@ const albums = defineCollection({
   }),
 });
 
-export const collections = { experience, competitions, publications, education, albums };
+export const collections = { experience, projects, competitions, publications, patents, honors, education, albums };

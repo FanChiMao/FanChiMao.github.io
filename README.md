@@ -19,8 +19,11 @@ Requires Node 24 (see `.nvmrc`).
 | What | Where |
 | --- | --- |
 | UI text in all 4 languages (nav, headings, hero, about, buttons…) | `src/i18n/ui.ts` |
-| Email, phone, résumé link, social links, skills | `src/lib/site.ts` |
-| Work experience | `src/content/experience/*.json` |
+| Email, phone, résumé link, social links, focus areas, core stack | `src/lib/site.ts` |
+| Selected projects (`featured: true`) and "More projects" | `src/content/projects/*.json` + screenshots in `src/assets/projects/<id>/` |
+| Work experience, incl. per-product periods | `src/content/experience/*.json` |
+| Patents (set `officialUrl` only after verifying the permanent link) | `src/content/patents/*.json` |
+| Awards list (mark team results with `"team": true`) | `src/content/honors/*.json` |
 | Competitions | `src/content/competitions/*.json` + images in `src/assets/competitions/<id>/` |
 | Publications | `src/content/publications/*.json` + previews in `public/media/papers/` |
 | Education | `src/content/education/*.json` |

@@ -20,26 +20,9 @@
     "zh-cn": "硕士二年级期间，我收到了来自工业技术研究院信息与通信研究所的面试邀请，进入 Android 系统开发团队实习。我学习并实操了将 Android 镜像文件刷写至开发板的技巧，加深了对 Android 操作系统架构及应用安装流程的理解。",
     "ja": "大学院2年目に、台湾の工業技術研究院 情報通信研究所から面接の招待を受け、Androidシステム開発チームの支援を担当しました。Androidのイメージファイルを開発ボードに書き込む手法を学び、実践する中で、Android OSのアーキテクチャやアプリインストールの仕組みについての理解を深めました。"
   },
-  "tags": {
-    "en": [
-      "C",
-      "Android Development",
-      "Embedded Systems"
-    ],
-    "zh-tw": [
-      "C",
-      "Android 開發",
-      "嵌入式系統"
-    ],
-    "zh-cn": [
-      "C",
-      "Android 开发",
-      "嵌入式系统"
-    ],
-    "ja": [
-      "C",
-      "Android開発",
-      "組み込みシステム"
-    ]
-  }
+  "tags": [
+    "C",
+    "Android Development",
+    "Embedded Systems"
+  ]
 }

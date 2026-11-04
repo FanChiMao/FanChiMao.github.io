@@ -27,10 +27,8 @@ export const site = {
     'lucide:camera',
     'lucide:shapes',
   ],
-  skills: {
-    languages: ['Python', 'C / C++', 'C#', 'JavaScript', 'HTML / CSS'],
-    ai: ['PyTorch', 'TensorFlow', 'OpenCV', 'OpenVINO', 'Image Restoration', 'Object Detection & Tracking'],
-    tools: ['Git / GitLab', 'Android', 'Embedded Systems'],
-  },
+  /** Shown in About. Keep these short; project cards list their own tech. */
+  focus: ['Computer Vision', 'Deep Learning', 'Oriented Object Detection', 'Image Restoration', 'Anomaly Detection', 'Object Tracking', 'Signal Analysis', 'AI Product Integration'],
+  stack: ['Python', 'PyTorch', 'FastAPI', 'PostgreSQL', 'Vue 3', 'TypeScript'],
   clustrmaps: 'HYO7zzkolzYzN5D-YRL2t4qZkV5snbeKywIK6D79vqc',
 } as const;

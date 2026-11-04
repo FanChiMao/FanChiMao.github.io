@@ -11,13 +11,13 @@ interface Props {
 const { lang, path, home = false } = Astro.props;
 const t = ui[lang];
 const homeHref = localePath(lang, '/');
-const sections = ['about', 'experience', 'competitions', 'publications', 'education', 'skills', 'gallery', 'contact'] as const;
+const sections = ['about', 'projects', 'experience', 'publications', 'patents', 'awards', 'education', 'gallery', 'contact'] as const;
 const href = (id: string) => (home ? `#${id}` : `${homeHref}#${id}`);
 ---
 
 <header class="nav" data-nav data-home={home ? '' : undefined}>
   <div class="nav__inner container">
-    <a class="nav__brand" href={homeHref} aria-label="Chi-Mao Fan — home">
+    <a class="nav__brand" href={homeHref} aria-label="Chi-Mao Fan, home">
       <span class="nav__logo" aria-hidden="true">
         <svg viewBox="0 0 32 32"><path d="M2 16c3 0 3-8 6-8s3 16 6 16 3-16 6-16 3 16 6 16 3-8 4-8" /></svg>
       </span>

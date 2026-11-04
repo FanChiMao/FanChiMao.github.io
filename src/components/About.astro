@@ -13,11 +13,12 @@ interface Props {
 const { lang } = Astro.props;
 const t = ui[lang];
 const pubs = await getCollection('publications');
-const comps = await getCollection('competitions');
+const patents = await getCollection('patents');
+const honors = await getCollection('honors');
 const stats = [
   { value: pubs.length, label: t.stats.papers },
-  { value: comps.length, label: t.stats.competitions },
-  { value: 2022, label: t.stats.award, plain: true },
+  { value: patents.length, label: t.stats.patents },
+  { value: honors.length, label: t.stats.awards },
 ];
 ---
 
@@ -39,13 +40,30 @@ const stats = [
           stats.map((s) => (
             <div>
               <dt>{s.label}</dt>
-              <dd data-count={s.plain ? undefined : s.value}>{s.value}</dd>
+              <dd data-count={s.value}>{s.value}</dd>
             </div>
           ))
         }
       </dl>
 
-      <ul class="about__socials" data-reveal style="--i:4">
+      <div class="about__toolbox" data-reveal style="--i:4">
+        <div>
+          <h3>{t.toolbox.core}</h3>
+          <ul>{site.focus.map((s) => <li class="chip">{s}</li>)}</ul>
+        </div>
+        <div>
+          <h3>{t.toolbox.stack}</h3>
+          <ul>{site.stack.map((s) => <li class="chip chip--accent">{s}</li>)}</ul>
+        </div>
+      </div>
+
+      <ul class="about__socials" data-reveal style="--i:5">
+        <li>
+          <a class="btn btn--sm" href={site.resume} target="_blank" rel="noopener">
+            <Icon name="lucide:file-text" />
+            {t.toolbox.resume}
+          </a>
+        </li>
         {
           site.socials.map((s) => (
             <li>
@@ -89,10 +107,11 @@ const stats = [
     display: grid;
     grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
     gap: clamp(2.5rem, 6vw, 5rem);
-    align-items: center;
+    align-items: start;
   }
   .about__photo {
-    position: relative;
+    position: sticky;
+    top: calc(var(--nav-h) + 2rem);
     aspect-ratio: 4 / 5;
     border-radius: 28px;
   }
@@ -161,7 +180,30 @@ const stats = [
     font-size: 0.85rem;
     color: var(--muted);
   }
+  .about__toolbox {
+    display: grid;
+    gap: 1.1rem;
+    margin-top: 1.75rem;
+  }
+  .about__toolbox h3 {
+    margin-bottom: 0.55rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .about__toolbox ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
   .about__socials {
+    align-items: center;
     display: flex;
     flex-wrap: wrap;
     gap: 0.35rem;
@@ -181,6 +223,8 @@ const stats = [
       grid-template-columns: 1fr;
     }
     .about__photo {
+      position: relative;
+      top: auto;
       max-width: 300px;
     }
   }

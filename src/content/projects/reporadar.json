@@ -1,0 +1,44 @@
+{
+  "order": 0,
+  "featured": true,
+  "period": "2026–",
+  "kind": {
+    "en": "Open-source AI desktop app",
+    "zh-tw": "個人開源工具 · AI 桌面應用程式",
+    "zh-cn": "个人开源工具 · AI 桌面应用程序",
+    "ja": "個人オープンソース · AIデスクトップアプリ"
+  },
+  "title": {
+    "en": "RepoRadar: AI-Powered GitHub & GitLab Issue Intelligence",
+    "zh-tw": "RepoRadar：AI 驅動的 GitHub／GitLab Issue 分析工具",
+    "zh-cn": "RepoRadar：AI 驱动的 GitHub／GitLab Issue 分析工具",
+    "ja": "RepoRadar：AIで GitHub／GitLab の Issue を分析するツール"
+  },
+  "summary": {
+    "en": "An Electron desktop app that brings GitHub and GitLab issues, discussions, and related PRs/MRs into one workspace. It adds AI issue summaries, RAG chat, analytics, scheduled synchronization, and Markdown/HTML/PDF reports.",
+    "zh-tw": "整合 GitHub／GitLab Issue、討論及相關 PR／MR 的 AI 桌面應用程式，提供 AI 摘要、RAG 問答、分析儀表板、排程同步與週報（Markdown／HTML／PDF）。",
+    "zh-cn": "整合 GitHub／GitLab Issue、讨论及相关 PR／MR 的 AI 桌面应用程序，提供 AI 摘要、RAG 问答、分析仪表板、定时同步与周报（Markdown／HTML／PDF）。",
+    "ja": "GitHub／GitLab の Issue、ディスカッション、関連する PR／MR をひとつの画面にまとめるデスクトップアプリ。AI要約、RAGチャット、分析ダッシュボード、定期同期、Markdown／HTML／PDF の週報を備えています。"
+  },
+  "description": {
+    "en": "TypeScript frontend and Python FastAPI backend, with automated tests, CI, and desktop packaging.",
+    "zh-tw": "前端使用 TypeScript，後端使用 Python FastAPI，並建立自動化測試、CI 及桌面封裝流程。",
+    "zh-cn": "前端使用 TypeScript，后端使用 Python FastAPI，并建立自动化测试、CI 及桌面打包流程。",
+    "ja": "フロントエンドは TypeScript、バックエンドは Python FastAPI。自動テスト、CI、デスクトップ向けパッケージングまで整備しています。"
+  },
+  "tech": [
+    "Electron",
+    "TypeScript",
+    "Python",
+    "FastAPI",
+    "LLM",
+    "RAG"
+  ],
+  "repo": "https://github.com/FanChiMao/RepoRadar",
+  "video": "UtHWj6HaNQ8",
+  "images": [
+    "projects/reporadar/dashboard-analytics.png",
+    "projects/reporadar/timeline.png",
+    "projects/reporadar/ai-chat.png"
+  ]
+}

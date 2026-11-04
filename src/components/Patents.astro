@@ -1,0 +1,205 @@
+---
+import { Icon } from 'astro-icon/components';
+import { getCollection } from 'astro:content';
+import SectionHead from './SectionHead.astro';
+import { localeMeta, ui, type Locale } from '@/i18n/ui';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const t = ui[lang];
+const p = t.patents;
+const items = (await getCollection('patents')).sort((a, b) => a.data.order - b.data.order);
+const fmt = new Intl.DateTimeFormat(localeMeta[lang].htmlLang, { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+const date = (iso: string) => fmt.format(new Date(`${iso}T00:00:00Z`));
+---
+
+<section class="section" id="patents">
+  <div class="container">
+    <SectionHead index={5} title={t.headings.patents} lead={p.lead} />
+    <ol class="patents">
+      {
+        items.map(({ data }, i) => (
+          <li data-reveal style={`--i:${i % 2}`}>
+            <article class="card spotlight patent">
+              <header class="patent__head">
+                <span class="patent__icon" aria-hidden="true">
+                  <Icon name="lucide:file-badge" />
+                </span>
+                <div>
+                  <p class="patent__type">{p.type}</p>
+                  <h3 class="patent__title">{data.title[lang]}</h3>
+                  {lang !== 'en' && data.title.en !== data.title[lang] && (
+                    <p class="patent__alt" lang="en">
+                      {data.title.en}
+                    </p>
+                  )}
+                </div>
+                <span class="badge patent__role">{p.role}</span>
+              </header>
+              <dl class="patent__facts">
+                <div class="patent__number">
+                  <dt>{p.publication}</dt>
+                  <dd>
+                    {data.officialUrl ? (
+                      <a href={data.officialUrl} target="_blank" rel="noopener" aria-label={`${data.publicationNumber}, ${p.official}`}>
+                        {data.publicationNumber}
+                        <Icon name="lucide:arrow-up-right" />
+                      </a>
+                    ) : (
+                      data.publicationNumber
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt>{p.application}</dt>
+                  <dd>{data.applicationNumber}</dd>
+                </div>
+                <div>
+                  <dt>{p.filed}</dt>
+                  <dd>
+                    <time datetime={data.filingDate}>{date(data.filingDate)}</time>
+                  </dd>
+                </div>
+                <div>
+                  <dt>{p.published}</dt>
+                  <dd>
+                    <time datetime={data.publicationDate}>{date(data.publicationDate)}</time>
+                  </dd>
+                </div>
+                <div class="patent__wide">
+                  <dt>{p.applicant}</dt>
+                  <dd>{data.applicant}</dd>
+                </div>
+              </dl>
+            </article>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .patents {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .patents > li {
+    display: grid;
+  }
+  .patent {
+    display: grid;
+    gap: 1.2rem;
+    align-content: start;
+    padding: clamp(1.25rem, 3vw, 1.6rem);
+    transition:
+      transform 0.4s var(--ease-out),
+      box-shadow 0.4s var(--ease-out),
+      border-color 0.4s;
+  }
+  .patent:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-strong);
+  }
+  .patent__head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: start;
+  }
+  .patent__icon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .patent__icon :global(svg) {
+    width: 22px;
+    height: 22px;
+  }
+  .patent__type {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .patent__title {
+    margin-top: 0.15rem;
+    font-size: 1.2rem;
+    line-height: 1.3;
+  }
+  .patent__alt {
+    margin-top: 0.1rem;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .patent__role {
+    white-space: nowrap;
+  }
+  .patent__facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem 1.25rem;
+    margin: 0;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--border);
+  }
+  .patent__facts dt {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .patent__facts dd {
+    margin: 0.1rem 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.92rem;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .patent__number dd {
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .patent__number a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+  .patent__number a :global(svg) {
+    width: 0.9em;
+  }
+  .patent__number a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .patent__wide {
+    grid-column: 1 / -1;
+  }
+  .patent__wide dd {
+    font-family: inherit;
+  }
+  @media (max-width: 860px) {
+    .patents {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 480px) {
+    .patent__head {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+    .patent__role {
+      grid-column: 2;
+      justify-self: start;
+    }
+  }
+</style>

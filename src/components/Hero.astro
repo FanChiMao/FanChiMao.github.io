@@ -23,7 +23,7 @@ function wave(width: number, amp: number, len: number, y: number) {
   }
   return d;
 }
-const words = t.greeting.split(' ');
+const words = t.name.split(' ');
 ---
 
 <section class="hero" id="home" aria-label="Intro">
@@ -72,13 +72,17 @@ const words = t.greeting.split(' ');
     </div>
 
     <div class="hero__cta">
-      <a class="btn btn--primary" href={site.resume} target="_blank" rel="noopener">
-        <Icon name="lucide:download" />
-        {t.resume}
+      <a class="btn btn--primary" href="#projects">
+        <Icon name="lucide:layers" />
+        {t.projects}
       </a>
       <a class="btn btn--glass" href={site.github} target="_blank" rel="noopener">
         <Icon name="mdi:github" />
         {t.github}
+      </a>
+      <a class="btn btn--glass" href={site.linkedin.url} target="_blank" rel="noopener">
+        <Icon name="mdi:linkedin" />
+        {t.linkedin}
       </a>
     </div>
 
@@ -248,7 +252,7 @@ const words = t.greeting.split(' ');
   }
 
   .hero__title {
-    font-size: clamp(2.9rem, 9vw, 6.5rem);
+    font-size: clamp(2.6rem, 7.6vw, 5.6rem);
     font-weight: 700;
     letter-spacing: -0.04em;
     line-height: 1;
@@ -298,7 +302,7 @@ const words = t.greeting.split(' ');
   .hero__taglines {
     display: grid;
     gap: 0.2rem;
-    max-width: 40rem;
+    max-width: 44rem;
     font-size: clamp(1rem, 1.6vw, 1.15rem);
     color: rgb(255 255 255 / 0.82);
     animation: rise 0.9s 0.75s var(--ease-out) both;

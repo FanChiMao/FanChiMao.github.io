@@ -1,0 +1,44 @@
+{
+  "order": 1,
+  "featured": true,
+  "period": "2024",
+  "kind": {
+    "en": "AI CUP 2024 · Team competition",
+    "zh-tw": "AI CUP 2024 · 團隊競賽",
+    "zh-cn": "AI CUP 2024 · 团队竞赛",
+    "ja": "AI CUP 2024 · チーム参加"
+  },
+  "title": {
+    "en": "AI CUP 2024: Low-Frame-Rate Vehicle Tracking",
+    "zh-tw": "AI CUP 2024：低影格率車輛追蹤",
+    "zh-cn": "AI CUP 2024：低帧率车辆跟踪",
+    "ja": "AI CUP 2024：低フレームレート車両追跡"
+  },
+  "summary": {
+    "en": "Vehicle tracking on extremely low-frame-rate video at 1 fps. The solution combined YOLO-based detection, detector ensembles, OSNet re-identification features, and motion-based association.",
+    "zh-tw": "針對每秒 1 張影像的低影格率追蹤情境，整合 YOLO 物件偵測、模型集成、OSNet 再辨識特徵與運動資訊。",
+    "zh-cn": "针对每秒 1 张图像的低帧率跟踪场景，整合 YOLO 目标检测、模型集成、OSNet 重识别特征与运动信息。",
+    "ja": "1 fps という極端に低いフレームレートの映像で車両を追跡。YOLO による検出、検出器のアンサンブル、OSNet の再識別特徴、動き情報による対応付けを組み合わせました。"
+  },
+  "description": {
+    "en": "Training and inference instructions, pretrained weights, and tracking demos are published for reproducibility.",
+    "zh-tw": "公開訓練與推論流程、模型權重及展示結果，方便重現競賽方案。",
+    "zh-cn": "公开训练与推理流程、模型权重及展示结果，便于复现竞赛方案。",
+    "ja": "再現できるよう、学習・推論の手順、学習済み重み、追跡デモを公開しています。"
+  },
+  "role": {
+    "en": "Contributed to the ASUS team's solution",
+    "zh-tw": "華碩團隊成員，參與競賽方案開發",
+    "zh-cn": "华硕团队成员，参与竞赛方案开发",
+    "ja": "ASUSチームのメンバーとして解法の開発に参加"
+  },
+  "achievement": {
+    "en": "Team result: 2nd place among 286 teams",
+    "zh-tw": "團隊成果：286 隊中第 2 名",
+    "zh-cn": "团队成果：286 队中第 2 名",
+    "ja": "チーム成績：286チーム中2位"
+  },
+  "tech": ["Python", "PyTorch", "YOLO", "OSNet", "Re-identification", "Object Tracking"],
+  "repo": "https://github.com/FanChiMao/Competition-2024-PyTorch-Tracking",
+  "images": ["projects/tracking-2024/0.webp", "projects/tracking-2024/1.webp", "projects/tracking-2024/2.webp", "projects/tracking-2024/3.webp", "projects/tracking-2024/4.webp", "projects/tracking-2024/5.webp"]
+}

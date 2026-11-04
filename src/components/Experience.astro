@@ -14,7 +14,7 @@ const items = (await getCollection('experience')).sort((a, b) => a.data.order - 
 
 <section class="section" id="experience">
   <div class="container">
-    <SectionHead index={2} title={t.headings.experience} />
+    <SectionHead index={3} title={t.headings.experience} />
     <ol class="timeline">
       {
         items.map(({ data }, i) => (
@@ -27,14 +27,46 @@ const items = (await getCollection('experience')).sort((a, b) => a.data.order - 
                 <div>
                   <h3 class="tl-company">{data.company[lang]}</h3>
                   <p class="tl-role">{data.role[lang]}</p>
+                  {data.org && <p class="tl-org">{data.org[lang]}</p>}
                 </div>
                 <span class="badge">
                   {data.start} – {data.end ?? t.experience.present}
                 </span>
               </header>
               <p class="tl-desc">{data.description[lang]}</p>
+              {data.products && (
+                <>
+                  <h4 class="tl-sub">{t.experience.products}</h4>
+                  <ol class="products">
+                    {data.products.map((p) => (
+                      <li class="product">
+                        <header>
+                          <strong>{p.name}</strong>
+                          <span class="product__period">{p.period.endsWith('–') ? `${p.period}${t.experience.present}` : p.period}</span>
+                        </header>
+                        <p class="product__focus">{p.focus[lang]}</p>
+                        <ul>
+                          {p.points[lang].map((pt) => (
+                            <li>{pt}</li>
+                          ))}
+                        </ul>
+                      </li>
+                    ))}
+                  </ol>
+                </>
+              )}
+              {data.highlights && (
+                <>
+                  <h4 class="tl-sub">{t.experience.other}</h4>
+                  <ul class="tl-highlights">
+                    {data.highlights[lang].map((h) => (
+                      <li>{h}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
               <ul class="tl-tags">
-                {data.tags[lang].map((tag) => (
+                {data.tags.map((tag) => (
                   <li class="chip">{tag}</li>
                 ))}
               </ul>
@@ -150,8 +182,93 @@ const items = (await getCollection('experience')).sort((a, b) => a.data.order - 
     color: var(--accent);
     font-weight: 500;
   }
+  .tl-org {
+    margin-top: 0.2rem;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
   .tl-desc {
     color: var(--text-2);
+  }
+  .tl-sub {
+    margin: 1.4rem 0 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .products {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .product {
+    position: relative;
+    padding: 1rem 1.1rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    transition:
+      border-color 0.3s,
+      transform 0.3s var(--ease-out);
+  }
+  .product::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    border-radius: 3px;
+    background: linear-gradient(var(--accent), var(--accent-2));
+    opacity: 0.7;
+  }
+  .product:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-2px);
+  }
+  .product header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.25rem 0.75rem;
+  }
+  .product strong {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+  }
+  .product__period {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--accent);
+  }
+  .product__focus {
+    margin: 0.2rem 0 0.6rem;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text-2);
+  }
+  .product ul,
+  .tl-highlights {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0;
+    padding-left: 1.1rem;
+    font-size: 0.9rem;
+    color: var(--text-2);
+  }
+  .product li::marker,
+  .tl-highlights li::marker {
+    color: var(--accent);
+  }
+  @media (max-width: 1000px) {
+    .products {
+      grid-template-columns: 1fr;
+    }
   }
   .tl-tags {
     display: flex;

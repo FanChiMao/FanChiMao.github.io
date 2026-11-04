@@ -3,59 +3,160 @@
   "start": 2022,
   "end": null,
   "company": {
-    "en": "ASUS",
-    "zh-tw": "華碩",
-    "zh-cn": "华硕",
-    "ja": "ASUS"
+    "en": "ASUSTeK COMPUTER INC.",
+    "zh-tw": "華碩電腦",
+    "zh-cn": "华硕电脑",
+    "ja": "ASUSTeK COMPUTER INC."
   },
   "role": {
-    "en": "AI R&D Software Engineer",
-    "zh-tw": "AI R&D 軟體工程師",
-    "zh-cn": "AI 研发软件工程师",
-    "ja": "AI研究開発ソフトウェアエンジニア"
+    "en": "AI R&D Engineer",
+    "zh-tw": "AI 研發工程師",
+    "zh-cn": "AI 研发工程师",
+    "ja": "AI研究開発エンジニア"
+  },
+  "org": {
+    "en": "Digital Image Technology (DIT) Product Department · Taipei, Taiwan · Since September 2022",
+    "zh-tw": "數位影像技術（DIT）產品部門 · 台灣台北 · 2022 年 9 月起",
+    "zh-cn": "数字图像技术（DIT）产品部门 · 台湾台北 · 2022 年 9 月起",
+    "ja": "Digital Image Technology（DIT）製品部門 · 台湾・台北 · 2022年9月から"
   },
   "description": {
-    "en": "As an R&D Engineer at Digital Image Technology (DIT) in ASUS, I develop and implement computer vision algorithms using AI, while collaborating with both front-end and back-end teams to create innovative solutions for clients. My technical skills, communication abilities, and project management expertise have enabled me to successfully deliver projects and provide effective solutions to clients.",
-    "zh-tw": "於華碩的數位影像技術部 (Digital Image Technology (DIT)) 擔任 AI 研發工程師，除了需要對於電腦視覺的AI演算法有一定程度理解之外,也須結合前端或後端的程式能力以建構解決方案的應用程式。",
-    "zh-cn": "在华硕数字图像技术部门（DIT）担任研发工程师期间，我负责开发与实现基于 AI 的计算机视觉算法，并与前端和后端团队协作，为客户打造创新解决方案。凭借我的技术能力、沟通技巧与项目管理经验，我成功交付多个项目，并提供高效的技术支持。",
-    "ja": "ASUSのデジタルイメージテクノロジー（DIT）部門にて、AIを活用したコンピュータビジョンアルゴリズムの開発と実装を担当し、フロントエンドとバックエンドのチームと協力しながら、顧客向けに革新的なソリューションを提供しています。技術力、コミュニケーション能力、プロジェクト管理スキルを活かし、プロジェクトを成功に導き、効果的な解決策を実現しています。"
+    "en": "I develop AI algorithms and integrate them into practical software, from model training and evaluation to backend services and frontend interfaces. The years below are the periods I mainly worked on each product.",
+    "zh-tw": "開發 AI 演算法並整合為實際可用的軟體，範圍從模型訓練與評估，到後端服務及前端介面。以下年份為我主要投入各產品的期間。",
+    "zh-cn": "开发 AI 算法并整合为实际可用的软件，范围从模型训练与评估，到后端服务及前端界面。以下年份为我主要投入各产品的期间。",
+    "ja": "AIアルゴリズムを開発し、モデルの学習・評価からバックエンドサービス、フロントエンドまで、実用的なソフトウェアとして統合しています。以下の年は、各製品に主に携わった期間です。"
   },
-  "tags": {
+  "products": [
+    {
+      "name": "AISDetector 2.0",
+      "period": "2026–",
+      "focus": {
+        "en": "Signal analysis and preprocessing",
+        "zh-tw": "訊號分析與前處理",
+        "zh-cn": "信号分析与预处理",
+        "ja": "信号解析と前処理"
+      },
+      "points": {
+        "en": [
+          "Develop backend services and model architectures for signal analysis.",
+          "Improve CI/CD pipelines and establish benchmarking workflows for model releases.",
+          "Build a preprocessing recommendation prototype that suggests suitable methods and parameters."
+        ],
+        "zh-tw": [
+          "開發訊號分析的後端服務與模型架構。",
+          "改善 CI/CD 流程，建立模型發布所需的基準測試流程。",
+          "建置前處理推薦原型，建議適合的方法及參數。"
+        ],
+        "zh-cn": [
+          "开发信号分析的后端服务与模型架构。",
+          "改善 CI/CD 流程，建立模型发布所需的基准测试流程。",
+          "构建预处理推荐原型，推荐合适的方法及参数。"
+        ],
+        "ja": [
+          "信号解析向けのバックエンドサービスとモデルアーキテクチャを開発。",
+          "CI/CDパイプラインを改善し、モデルリリースのためのベンチマーク手順を整備。",
+          "適切な前処理手法とパラメータを提案する推薦プロトタイプを構築。"
+        ]
+      }
+    },
+    {
+      "name": "AISVision 365",
+      "period": "2025–2026",
+      "focus": {
+        "en": "AI model and product integration",
+        "zh-tw": "AI 模型與產品整合",
+        "zh-cn": "AI 模型与产品整合",
+        "ja": "AIモデルと製品の統合"
+      },
+      "points": {
+        "en": [
+          "Develop frontend features and later contribute to backend development for model training, inference, and reporting.",
+          "Build model verification interfaces, including confusion matrices and result analysis.",
+          "Maintain and improve oriented and directional object detection algorithms.",
+          "Build dataset conversion tools supporting keypoints and oriented bounding boxes.",
+          "Contribute to software packaging and installation workflows."
+        ],
+        "zh-tw": [
+          "開發模型訓練、推論與報告的前端功能，後期也投入後端開發。",
+          "建置模型驗證介面，包含混淆矩陣與結果分析。",
+          "維護並持續改善旋轉與方向性物件偵測演算法。",
+          "建置支援關鍵點及旋轉框的資料集轉換工具。",
+          "參與軟體封裝與安裝流程開發。"
+        ],
+        "zh-cn": [
+          "开发模型训练、推理与报告的前端功能，后期也投入后端开发。",
+          "构建模型验证界面，包含混淆矩阵与结果分析。",
+          "维护并持续改进旋转与方向性目标检测算法。",
+          "构建支持关键点及旋转框的数据集转换工具。",
+          "参与软件打包与安装流程开发。"
+        ],
+        "ja": [
+          "モデルの学習・推論・レポートのフロントエンド機能を開発し、後期にはバックエンド開発にも参加。",
+          "混同行列や結果分析を含むモデル検証画面を構築。",
+          "回転・方向性を考慮した物体検出アルゴリズムを保守・改善。",
+          "キーポイントと回転バウンディングボックスに対応したデータセット変換ツールを構築。",
+          "ソフトウェアのパッケージングとインストール手順の開発に参加。"
+        ]
+      }
+    },
+    {
+      "name": "AISVision R6",
+      "period": "2022–2025",
+      "focus": {
+        "en": "Computer vision and algorithm development",
+        "zh-tw": "電腦視覺與演算法開發",
+        "zh-cn": "计算机视觉与算法开发",
+        "ja": "コンピュータビジョンとアルゴリズム開発"
+      },
+      "points": {
+        "en": [
+          "Develop object detection models for localization and 360° orientation estimation.",
+          "Design angle-aware loss functions, sample matching strategies, rotated NMS, and evaluation metrics.",
+          "Develop and integrate algorithms for classification, segmentation, anomaly detection, and tracking."
+        ],
+        "zh-tw": [
+          "開發物件定位與 360° 方向估計模型。",
+          "設計考量角度的損失函數、樣本匹配策略、旋轉框 NMS 與評估指標。",
+          "開發並整合影像分類、分割、異常檢測及追蹤演算法。"
+        ],
+        "zh-cn": [
+          "开发目标定位与 360° 方向估计模型。",
+          "设计考虑角度的损失函数、样本匹配策略、旋转框 NMS 与评估指标。",
+          "开发并整合图像分类、分割、异常检测及跟踪算法。"
+        ],
+        "ja": [
+          "物体の位置推定と360°方向推定を行う検出モデルを開発。",
+          "角度を考慮した損失関数、サンプルマッチング戦略、回転NMS、評価指標を設計。",
+          "画像分類、セグメンテーション、異常検知、トラッキングのアルゴリズムを開発・統合。"
+        ]
+      }
+    }
+  ],
+  "highlights": {
     "en": [
-      "Python",
-      "CSharp",
-      "C++",
-      "OpenCV",
-      "PyTorch",
-      "Tensorflow",
-      "Gitlab"
+      "Participate in AI competitions to explore new techniques and gain hands-on experience.",
+      "Read research papers and share key findings and potential applications with the team.",
+      "Proactively develop internal tools that improve R&D debugging efficiency, including log windows for AISVision R6 and AISDetector 2.0.",
+      "Lead inventor on four granted utility model patents in Taiwan."
     ],
     "zh-tw": [
-      "Python",
-      "CSharp",
-      "C++",
-      "OpenCV",
-      "PyTorch",
-      "Tensorflow",
-      "Gitlab"
+      "參與 AI 競賽，探索新技術並累積實作經驗。",
+      "閱讀研究論文，向團隊分享重點及可能的應用方向。",
+      "主動開發改善研發除錯效率的內部工具，包含 AISVision R6 與 AISDetector 2.0 的 Log Window。",
+      "擔任四件已核准台灣新型專利的主要發明人。"
     ],
     "zh-cn": [
-      "Python",
-      "CSharp",
-      "C++",
-      "OpenCV",
-      "PyTorch",
-      "Tensorflow",
-      "Gitlab"
+      "参与 AI 竞赛，探索新技术并积累实践经验。",
+      "阅读研究论文，向团队分享重点及可能的应用方向。",
+      "主动开发提升研发调试效率的内部工具，包括 AISVision R6 与 AISDetector 2.0 的 Log Window。",
+      "担任四件已核准台湾新型专利的主要发明人。"
     ],
     "ja": [
-      "Python",
-      "CSharp",
-      "C++",
-      "OpenCV",
-      "PyTorch",
-      "Tensorflow",
-      "Gitlab"
+      "AIコンテストに参加し、新しい技術を試しながら実践経験を積む。",
+      "研究論文を読み、要点と応用の可能性をチームに共有。",
+      "AISVision R6 と AISDetector 2.0 のログウィンドウなど、研究開発のデバッグ効率を高める社内ツールを自主的に開発。",
+      "台湾で登録済みの実用新案4件で主発明者を務める。"
     ]
-  }
+  },
+  "tags": ["Python", "PyTorch", "FastAPI", "PostgreSQL", "Vue 3", "TypeScript", "CI/CD"]
 }

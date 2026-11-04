@@ -73,6 +73,12 @@ for (const p of pubs) {
                     <Icon name="lucide:file-text" />
                     {t.publications.paper}
                   </a>
+                  {data.links.arxiv && (
+                    <a class="btn btn--sm" href={data.links.arxiv} target="_blank" rel="noopener">
+                      <Icon name="lucide:book-open" />
+                      arXiv
+                    </a>
+                  )}
                   {data.links.code && (
                     <a class="btn btn--sm" href={data.links.code} target="_blank" rel="noopener">
                       <Icon name="mdi:github" />

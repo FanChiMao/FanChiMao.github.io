@@ -14,7 +14,7 @@ const items = (await getCollection('education')).sort((a, b) => a.data.order - b
 
 <section class="section" id="education">
   <div class="container">
-    <SectionHead index={5} title={t.headings.education} />
+    <SectionHead index={7} title={t.headings.education} />
     <div class="edu-grid">
       {
         items.map(({ data }, i) => (
@@ -22,6 +22,7 @@ const items = (await getCollection('education')).sort((a, b) => a.data.order - b
             <span class="edu__icon" aria-hidden="true">
               <Icon name="lucide:graduation-cap" />
             </span>
+            <span class="badge edu__period">{data.period}</span>
             <h3 class="edu__degree">{data.degree[lang]}</h3>
             <p class="edu__school">{data.school[lang]}</p>
             <p class="edu__desc prose" set:html={data.description[lang]} />
@@ -33,6 +34,9 @@ const items = (await getCollection('education')).sort((a, b) => a.data.order - b
 </section>
 
 <style>
+  .edu__period {
+    justify-self: start;
+  }
   .edu-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

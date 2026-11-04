@@ -1,5 +1,5 @@
 {
-  "order": 1,
+  "order": 0,
   "year": 2023,
   "title": {
     "en": "Shuttlecock Tracking",
@@ -8,8 +8,8 @@
     "ja": "シャトル追跡"
   },
   "description": {
-    "en": "Use AI approaches to locate and analyze the Shuttlecock in badminton competition.",
-    "zh-tw": "使用AI方法來定位和分析羽毛球比賽中的羽毛球運動軌跡。",
+    "en": "Used AI methods to locate the shuttlecock and analyze its trajectory in badminton match videos.",
+    "zh-tw": "使用 AI 方法定位羽球比賽影片中的羽球，並分析其運動軌跡。",
     "zh-cn": "运用 AI 方法在羽毛球比赛中进行球的位置识别与轨迹分析。",
     "ja": "AI 技術を用いて、バドミントンの試合におけるシャトルの位置と軌道を解析します。"
   },

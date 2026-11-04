@@ -13,11 +13,40 @@ const { lang } = Astro.props;
 const t = ui[lang];
 const INITIAL = 4;
 const items = (await getCollection('competitions')).sort((a, b) => a.data.order - b.data.order);
+const honors = (await getCollection('honors')).sort((a, b) => a.data.order - b.data.order);
+const external = (href: string) => /^https?:/.test(href);
 ---
 
-<section class="section" id="competitions">
+<section class="section" id="awards">
   <div class="container">
-    <SectionHead index={3} title={t.headings.competitions} />
+    <SectionHead index={6} title={t.headings.awards} />
+    <ol class="honors">
+      {
+        honors.map(({ data }, i) => {
+          const Tag = data.href ? 'a' : 'div';
+          return (
+            <li data-reveal style={`--i:${i % 3}`}>
+              <Tag class="card spotlight honor" href={data.href} target={data.href && external(data.href) ? '_blank' : undefined} rel={data.href && external(data.href) ? 'noopener' : undefined}>
+                <span class="honor__year">{data.year}</span>
+                <span class="honor__icon" aria-hidden="true">
+                  <Icon name={i === 0 ? 'lucide:award' : 'lucide:trophy'} />
+                </span>
+                <span class="honor__text">
+                  <strong>{data.title[lang]}</strong>
+                  <span>
+                    {data.team && <span class="badge honor__team">{t.awards.team}</span>}
+                    {data.detail[lang]}
+                  </span>
+                </span>
+                {data.href && <Icon name={external(data.href) ? 'lucide:arrow-up-right' : 'lucide:arrow-down-right'} class="honor__arrow" />}
+              </Tag>
+            </li>
+          );
+        })
+      }
+    </ol>
+
+    <h3 class="comp-heading" data-reveal>{t.awards.competitions}</h3>
     <div class="comp-grid" data-comp-grid>
       {
         items.map(({ data }, i) => (
@@ -68,6 +97,84 @@ const items = (await getCollection('competitions')).sort((a, b) => a.data.order 
 </script>
 
 <style>
+  .honors {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0 0 3rem;
+    padding: 0;
+    list-style: none;
+  }
+  .honor {
+    display: grid;
+    grid-template-columns: 3.5rem auto minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    transition:
+      transform 0.3s var(--ease-out),
+      border-color 0.3s;
+  }
+  a.honor:hover {
+    transform: translateX(4px);
+    border-color: var(--border-strong);
+  }
+  .honor__year {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  .honor__icon {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--gold-soft);
+    color: var(--gold);
+  }
+  .honor__icon :global(svg) {
+    width: 18px;
+    height: 18px;
+  }
+  .honor__text {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .honor__text strong {
+    font-family: var(--font-display);
+    font-size: 1.02rem;
+    line-height: 1.35;
+  }
+  .honor__text > span {
+    color: var(--text-2);
+    font-size: 0.92rem;
+  }
+  .honor__team {
+    margin-right: 0.5rem;
+    vertical-align: 0.1em;
+  }
+  .honor :global(.honor__arrow) {
+    width: 18px;
+    color: var(--muted);
+    transition: color 0.25s;
+  }
+  a.honor:hover :global(.honor__arrow) {
+    color: var(--accent);
+  }
+  .comp-heading {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    color: var(--text-2);
+  }
+  @media (max-width: 600px) {
+    .honor {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+    .honor__year {
+      grid-column: 1 / -1;
+      margin-bottom: -0.5rem;
+    }
+  }
   .comp-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

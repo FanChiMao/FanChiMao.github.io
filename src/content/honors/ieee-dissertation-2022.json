@@ -1,0 +1,18 @@
+{
+  "order": 0,
+  "year": 2022,
+  "title": {
+    "en": "2022 IEEE Taipei Section Best Dissertation Award",
+    "zh-tw": "2022 IEEE 台北分會最佳碩博士論文獎",
+    "zh-cn": "2022 IEEE 台北分会最佳硕博士论文奖",
+    "ja": "2022 IEEE Taipei Section 最優秀修士・博士論文賞"
+  },
+  "detail": {
+    "en": "IEEE Taipei Section · Master’s thesis on image restoration · Presented January 2023",
+    "zh-tw": "IEEE 台北分會 · 碩士論文（影像修復）· 2023 年 1 月頒發",
+    "zh-cn": "IEEE 台北分会 · 硕士论文（图像修复）· 2023 年 1 月颁发",
+    "ja": "IEEE Taipei Section · 画像復元に関する修士論文 · 2023年1月授与"
+  },
+  "team": false,
+  "href": "#publications"
+}

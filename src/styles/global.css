@@ -266,6 +266,12 @@ button {
   line-height: 1.4;
   white-space: nowrap;
 }
+.chip--accent {
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+}
 
 .badge {
   display: inline-flex;
