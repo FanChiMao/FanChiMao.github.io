@@ -1,5 +1,5 @@
 {
-  "order": 5,
+  "order": 6,
   "year": 2021,
   "title": {
     "en": "Data Regression",
@@ -8,10 +8,16 @@
     "ja": "データ回帰"
   },
   "description": {
-    "en": "Used a multilayer perceptron to predict industrial data and performed on-site real-time model training based on newly provided training data. Selected as a finalist among 118 teams.",
-    "zh-tw": "利用多層感知器預測工業資料，並於現場根據新提供的訓練資料即時訓練預測模型。從 118 組中入圍決賽。",
-    "zh-cn": "使用多层感知器预测工业数据，并在现场根据新提供的训练数据实时训练模型。从 118 支队伍中入围决赛。",
-    "ja": "マルチレイヤーパーセプトロンを用いて工業データを予測し、現場で新たに提供された訓練データに基づきリアルタイムでモデルを再学習。118チームの中から決勝に進出。"
+    "en": "Predicted industrial data with a multilayer perceptron, then retrained the model on site in real time with newly provided training data.",
+    "zh-tw": "利用多層感知器預測工業資料，並於現場根據新提供的訓練資料即時訓練預測模型。",
+    "zh-cn": "使用多层感知器预测工业数据，并在现场根据新提供的训练数据实时训练模型。",
+    "ja": "マルチレイヤーパーセプトロンで工業データを予測し、現場で新たに提供された学習データを使ってモデルをリアルタイムに再学習しました。"
+  },
+  "achievement": {
+    "en": "Top 25% of 118 teams",
+    "zh-tw": "118 隊中前 25%",
+    "zh-cn": "118 队中前 25%",
+    "ja": "118チーム中 上位25%"
   },
   "repo": "https://github.com/FanChiMao/Competition-2021-Pytorch-Reggression",
   "images": [

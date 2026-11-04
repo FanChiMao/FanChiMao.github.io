@@ -12,7 +12,7 @@ export const site = {
     { label: 'LinkedIn', icon: 'mdi:linkedin', href: 'https://www.linkedin.com/in/chi-mao-fan/' },
     { label: 'Facebook', icon: 'mdi:facebook', href: 'https://www.facebook.com/52hzfan' },
     { label: 'Instagram', icon: 'mdi:instagram', href: 'https://www.instagram.com/52hzfan' },
-    { label: 'X (Twitter)', icon: 'mdi:twitter', href: 'https://twitter.com/Fan_R_Mao' },
+    { label: 'X', icon: 'x', href: 'https://x.com/52hzfan' },
     { label: 'YouTube', icon: 'mdi:youtube', href: 'https://www.youtube.com/@52hzfan' },
   ],
   /** Icons for the hero interests, in the same order as ui.hero.interests. */

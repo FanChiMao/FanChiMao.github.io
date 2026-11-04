@@ -55,6 +55,8 @@ const competitions = defineCollection({
     /** Team results must be labelled as such, e.g. "Team result: 2nd of 286". */
     achievement: t.optional(),
     repo: z.url(),
+    /** YouTube video id for a demo button */
+    video: z.string().optional(),
     /** Photos; without them the card shows an icon placeholder. */
     images: z.array(asset).optional(),
     icon: z.string().optional(),

@@ -1,0 +1,24 @@
+{
+  "order": 0,
+  "year": 2026,
+  "title": {
+    "en": "RepoRadar: AI Issue Intelligence",
+    "zh-tw": "RepoRadar：AI Issue 分析工具",
+    "zh-cn": "RepoRadar：AI Issue 分析工具",
+    "ja": "RepoRadar：AI による Issue 分析"
+  },
+  "description": {
+    "en": "ASUS internal AI Agent competition. An Electron desktop app that brings GitHub and GitLab issues, discussions, and related PRs/MRs into one workspace, with AI summaries, RAG chat, analytics, scheduled sync, and Markdown/HTML/PDF reports. TypeScript frontend, Python FastAPI backend.",
+    "zh-tw": "華碩內部 AI Agent 競賽。整合 GitHub／GitLab Issue、討論及相關 PR／MR 的 Electron 桌面應用程式，提供 AI 摘要、RAG 問答、分析儀表板、排程同步與 Markdown／HTML／PDF 週報。前端 TypeScript，後端 Python FastAPI。",
+    "zh-cn": "华硕内部 AI Agent 竞赛。整合 GitHub／GitLab Issue、讨论及相关 PR／MR 的 Electron 桌面应用程序，提供 AI 摘要、RAG 问答、分析仪表板、定时同步与 Markdown／HTML／PDF 周报。前端 TypeScript，后端 Python FastAPI。",
+    "ja": "ASUS 社内 AI Agent コンテスト。GitHub／GitLab の Issue、ディスカッション、関連 PR／MR をまとめる Electron デスクトップアプリで、AI要約、RAGチャット、分析ダッシュボード、定期同期、Markdown／HTML／PDF レポートを備えています。フロントエンドは TypeScript、バックエンドは Python FastAPI。"
+  },
+  "repo": "https://github.com/FanChiMao/RepoRadar",
+  "video": "UtHWj6HaNQ8",
+  "images": [
+    "competitions/reporadar-2026/banner.png",
+    "competitions/reporadar-2026/dashboard-analytics.png",
+    "competitions/reporadar-2026/timeline.png",
+    "competitions/reporadar-2026/ai-chat.png"
+  ]
+}

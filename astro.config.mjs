@@ -9,7 +9,7 @@ export default defineConfig({
   compressHTML: true,
   build: { format: 'directory' },
   integrations: [
-    icon({ include: { lucide: ['*'], mdi: ['github', 'linkedin', 'facebook', 'instagram', 'twitter', 'youtube', 'skateboarding'] } }),
+    icon({ include: { lucide: ['*'], mdi: ['github', 'linkedin', 'facebook', 'instagram', 'youtube', 'skateboarding'] } }),
     sitemap({
       filter: (page) => !page.includes('/playground/'),
       i18n: {

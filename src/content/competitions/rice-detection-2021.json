@@ -1,5 +1,5 @@
 {
-  "order": 6,
+  "order": 7,
   "year": 2021,
   "title": {
     "en": "Rice Plant Detection",
@@ -8,10 +8,16 @@
     "ja": "稲の株検出"
   },
   "description": {
-    "en": "Located rice plants in UAV RGB imagery with a YOLOv4 detector, in the AI CUP 2021 competition organized by the Ministry of Education and Academia Sinica. Ranked 9th among 523 teams in the university division and received an Honorable Mention.",
-    "zh-tw": "於教育部與中央研究院合辦的 AI CUP 2021 競賽中，以 YOLOv4 物件偵測模型標註無人機全彩影像中的水稻植株位置。於大專院校組 523 隊中獲第 9 名及佳作。",
-    "zh-cn": "在教育部与中央研究院合办的 AI CUP 2021 竞赛中，以 YOLOv4 目标检测模型标注无人机彩色影像中的水稻植株位置。于大专院校组 523 队中获第 9 名及佳作。",
-    "ja": "台湾教育部と中央研究院が共催する AI CUP 2021 で、YOLOv4 を使いドローンのRGB画像から稲の株の位置を検出。大学部門523チーム中9位となり、佳作を受賞しました。"
+    "en": "AI CUP 2021, organized by the Ministry of Education and Academia Sinica. Located rice plants in UAV RGB imagery with a YOLOv4 detector (university division).",
+    "zh-tw": "教育部與中央研究院合辦的 AI CUP 2021（大專院校組）。以 YOLOv4 物件偵測模型標註無人機全彩影像中的水稻植株位置。",
+    "zh-cn": "教育部与中央研究院合办的 AI CUP 2021（大专院校组）。以 YOLOv4 目标检测模型标注无人机彩色影像中的水稻植株位置。",
+    "ja": "台湾教育部と中央研究院が共催する AI CUP 2021（大学部門）。YOLOv4 を使い、ドローンのRGB画像から稲の株の位置を検出しました。"
+  },
+  "achievement": {
+    "en": "9th of 523 teams · Honorable Mention",
+    "zh-tw": "523 隊中第 9 名 · 佳作",
+    "zh-cn": "523 队中第 9 名 · 佳作",
+    "ja": "523チーム中9位 · 佳作"
   },
   "repo": "https://github.com/FanChiMao/Competition-2021-Pytorch-YOLOv4",
   "images": [

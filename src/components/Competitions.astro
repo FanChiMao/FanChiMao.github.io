@@ -23,7 +23,7 @@ const items = (await getCollection('competitions')).sort((a, b) => a.data.order 
         items.map(({ data }, i) => (
           <article class="card spotlight comp" data-reveal style={`--i:${i % 2}`} data-extra={i >= INITIAL ? '' : undefined}>
             {data.images?.length ? (
-              <Carousel images={data.images.map(asset)} alt={data.title[lang]} labels={t.a11y} />
+              <Carousel images={data.images.map(asset)} alt={data.title[lang]} labels={t.a11y} fit={data.images[0].endsWith('.png') ? 'contain' : 'cover'} />
             ) : (
               <div class="comp__art" aria-hidden="true">
                 <div class="comp__grid" />
@@ -40,11 +40,19 @@ const items = (await getCollection('competitions')).sort((a, b) => a.data.order 
                 </p>
               )}
               <p class="comp__desc">{data.description[lang]}</p>
-              <a class="btn btn--sm comp__link" href={data.repo} target="_blank" rel="noopener">
-                <Icon name="mdi:github" />
-                {t.competitions.code}
-                <Icon name="lucide:arrow-up-right" />
-              </a>
+              <div class="comp__actions">
+                <a class="btn btn--sm comp__link" href={data.repo} target="_blank" rel="noopener">
+                  <Icon name="mdi:github" />
+                  {t.competitions.code}
+                  <Icon name="lucide:arrow-up-right" />
+                </a>
+                {data.video && (
+                  <a class="btn btn--sm" href={`https://www.youtube.com/watch?v=${data.video}`} data-video={data.video} data-title={data.title[lang]}>
+                    <Icon name="lucide:play" />
+                    {t.competitions.demo}
+                  </a>
+                )}
+              </div>
             </div>
           </article>
         ))
@@ -172,8 +180,13 @@ const items = (await getCollection('competitions')).sort((a, b) => a.data.order 
     color: var(--text-2);
     font-size: 0.97rem;
   }
-  .comp__link {
+  .comp__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
     margin-top: 0.4rem;
+  }
+  .comp__link {
   }
   .comp__link :global(svg:last-child) {
     width: 0.9em;

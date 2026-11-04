@@ -1,5 +1,5 @@
 {
-  "order": 2,
+  "order": 3,
   "year": 2023,
   "title": {
     "en": "Shuttlecock Tracking",
@@ -12,6 +12,12 @@
     "zh-tw": "使用 AI 方法定位羽球比賽影片中的羽球，並分析其運動軌跡。",
     "zh-cn": "运用 AI 方法在羽毛球比赛中进行球的位置识别与轨迹分析。",
     "ja": "AI 技術を用いて、バドミントンの試合におけるシャトルの位置と軌道を解析します。"
+  },
+  "achievement": {
+    "en": "Top 25% of 439 teams",
+    "zh-tw": "439 隊中前 25%",
+    "zh-cn": "439 队中前 25%",
+    "ja": "439チーム中 上位25%"
   },
   "repo": "https://github.com/FanChiMao/Competition-2023-PyTorch-Badminton",
   "images": [

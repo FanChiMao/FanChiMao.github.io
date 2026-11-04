@@ -89,7 +89,7 @@ const en = {
     role: 'Lead inventor',
     official: 'Google Patents',
   },
-  competitions: { code: 'GitHub', more: 'Load More', less: 'Show Less' },
+  competitions: { code: 'GitHub', demo: 'Demo', more: 'Load More', less: 'Show Less' },
   publications: {
     paper: 'Paper',
     code: 'Code',
@@ -193,7 +193,7 @@ const zhTw: UI = {
     role: '主要發明人',
     official: 'Google Patents',
   },
-  competitions: { code: '程式碼', more: '載入更多', less: '收合' },
+  competitions: { code: '程式碼', demo: '展示影片', more: '載入更多', less: '收合' },
   publications: {
     paper: '論文',
     code: '程式碼',
@@ -295,7 +295,7 @@ const zhCn: UI = {
     role: '主要发明人',
     official: 'Google Patents',
   },
-  competitions: { code: 'GitHub', more: '加载更多', less: '收起' },
+  competitions: { code: 'GitHub', demo: '演示视频', more: '加载更多', less: '收起' },
   publications: {
     paper: '论文',
     code: '代码',
@@ -397,7 +397,7 @@ const ja: UI = {
     role: '主発明者',
     official: 'Google Patents',
   },
-  competitions: { code: 'GitHub', more: 'もっと見る', less: '閉じる' },
+  competitions: { code: 'GitHub', demo: 'デモ動画', more: 'もっと見る', less: '閉じる' },
   publications: {
     paper: '論文',
     code: 'コード',
