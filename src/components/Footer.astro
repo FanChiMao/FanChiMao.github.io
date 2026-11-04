@@ -59,6 +59,20 @@ const vmQuery = new URLSearchParams({ d: vm.id, w: String(vm.width), t: 'm', ...
           </figcaption>
           <div class="footer__map">
             <script is:inline type="text/javascript" id="mapmyvisitors" src={`https://mapmyvisitors.com/map.js?${vmQuery}`} onerror="this.closest('figure').remove()"></script>
+            <script is:inline>
+              // The widget renders as <a target="_top" href="http://...">; open it in a new tab instead.
+              (() => {
+                const box = document.currentScript.parentElement;
+                const fix = () => {
+                  const a = box.querySelector('#mapmyvisitors-widget');
+                  if (!a || (a.target === '_blank' && a.href.startsWith('https:'))) return;
+                  a.target = '_blank';
+                  a.rel = 'noopener';
+                  a.href = a.href.replace(/^http:/, 'https:');
+                };
+                new MutationObserver(fix).observe(box, { childList: true, subtree: true, attributes: true, attributeFilter: ['target', 'href'] });
+              })();
+            </script>
             <noscript>
               <a href={vm.page} title="Visit tracker" target="_blank" rel="noopener">
                 <img src={`https://mapmyvisitors.com/map.png?d=${vm.id}&cl=${vm.colors.cl}`} alt={t.footer.visitors} width={vm.width} loading="lazy" />
@@ -126,6 +140,17 @@ const vmQuery = new URLSearchParams({ d: vm.id, w: String(vm.width), t: 'm', ...
     border-radius: var(--radius);
     background: #0b1424;
     box-shadow: var(--shadow-sm);
+  }
+  /* The widget's colours are baked into its PNG map, so the light theme flips the whole
+     card instead of reloading the widget (a reload would count another page view).
+     invert + hue-rotate(180deg) turns navy into pale blue while keeping hues roughly intact. */
+  :global([data-theme='light']) .footer__visitors {
+    filter: invert(1) hue-rotate(180deg);
+    border-color: rgb(255 255 255 / 0.12);
+    box-shadow: none;
+  }
+  .footer__visitors {
+    transition: filter 0.4s var(--ease-out);
   }
   .footer__visitors figcaption {
     display: flex;
