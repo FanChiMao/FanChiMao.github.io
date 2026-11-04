@@ -89,7 +89,7 @@ const motes = Array.from({ length: 14 }, () => ({
 <style>
   .deeper {
     --abyss: #020814;
-    --surf-h: clamp(170px, 21vw, 300px);
+    --surf-h: clamp(80px, min(18vw, 17svh), 240px);
     /* Colours from the page background (w0) down to the water below the waves (w5). */
     --w0: var(--bg);
     --w1: #07101f;
@@ -100,7 +100,11 @@ const motes = Array.from({ length: 14 }, () => ({
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    padding: calc(var(--surf-h) + clamp(4rem, 9vw, 7rem)) 0 clamp(6rem, 12vw, 9rem);
+    /* Fills what the footer leaves of the screen; content centred below the surface. */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: calc(var(--surf-h) + clamp(0.75rem, 3svh, 2rem)) 0 clamp(1.5rem, 4svh, 3rem);
     color: #e6f1fb;
     background:
       radial-gradient(70% 45% at 50% 65%, rgb(24 92 140 / 0.28), transparent 70%),
@@ -159,7 +163,28 @@ const motes = Array.from({ length: 14 }, () => ({
   }
 
   .deeper__cta-wrap {
-    margin-top: 2.25rem;
+    margin-top: clamp(0.75rem, 3svh, 2.25rem);
+  }
+  /* Short screens: keep the whole ending (this + footer) on one screen. */
+  @media (max-height: 820px) {
+    .deeper__inner {
+      gap: 0.55rem;
+    }
+    .deeper__title {
+      font-size: clamp(1.8rem, 3.8vw, 2.8rem);
+    }
+    .deeper__lead {
+      font-size: 1rem;
+    }
+    .deeper__cta {
+      padding: 0.8rem 1.3rem 0.8rem 1.6rem;
+      font-size: 1.05rem;
+    }
+  }
+  @media (max-height: 760px) {
+    .deeper {
+      --surf-h: clamp(70px, 13svh, 120px);
+    }
   }
   .deeper__cta {
     position: relative;

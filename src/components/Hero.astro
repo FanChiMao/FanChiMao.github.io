@@ -33,6 +33,13 @@ const W = figure.width;
 const H = figure.height;
 const sx = W / 682;
 const sy = H / 720;
+/*
+ * The blister card sits right of the photo's centre (its title box is centred at x=393
+ * of 682). Show the photo cropped on the left so the card is centred; boxes keep using
+ * the photo's own pixel space via the SVG viewBox offset.
+ */
+const CROP_L = (393 * 2 - 682) * sx;
+const VW = W - CROP_L;
 const dets = [
   { cls: 'text', score: 0.99, cx: 393, cy: 154, w: 250, h: 92, a: 0, color: '#4ade80' },
   { cls: 'cup', score: 0.95, cx: 531, cy: 296, w: 72, h: 48, a: 0, color: '#f4c55a' },
@@ -69,7 +76,7 @@ const TAG_H = 27;
 const textWidth = (str: string) => [...str].reduce((w, ch) => w + (ch.codePointAt(0)! > 0x2e80 ? 21 : 12.6), 0);
 const tags = dets.map((d) => {
   const w = textWidth(label(d)) + 14;
-  const x = Math.min(Math.max(0, d.cx - d.hw), W - w);
+  const x = Math.min(Math.max(CROP_L, d.cx - d.hw), W - w);
   const top = d.cy - d.hh - TAG_H - 4;
   return { x, y: top < 0 ? d.cy - d.hh + 4 : top, w };
 });
@@ -135,11 +142,11 @@ const tags = dets.map((d) => {
         </header>
 
         <div class="pipe__row">
-          <div class="pipe__view" style={`aspect-ratio: ${W} / ${H}`}>
+          <div class="pipe__view" style={`aspect-ratio: ${VW.toFixed(1)} / ${H}`}>
             <Image src={figure} alt={pp.alt} widths={[360, 540, 720]} sizes="(min-width: 900px) 340px, 60vw" quality={78} loading="eager" />
             <div class="pipe__scanned" aria-hidden="true"></div>
             <div class="pipe__scan" aria-hidden="true"></div>
-            <svg class="pipe__boxes" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+            <svg class="pipe__boxes" viewBox={`${CROP_L.toFixed(1)} 0 ${VW.toFixed(1)} ${H}`} aria-hidden="true">
               {
                 dets.map((d, i) => (
                   <g class="det" data-det={i} data-at={order[i].toFixed(3)} style={`--c:${d.color}`}>
@@ -583,6 +590,9 @@ const tags = dets.map((d) => {
     display: block;
     width: 100%;
     height: 100%;
+    /* Cropped on the left only (see CROP_L), so the card is centred. */
+    object-fit: cover;
+    object-position: 100% 50%;
   }
   /* Region already scanned gets a faint grid tint; the scan line sits at its edge. */
   .pipe__scanned {

@@ -34,7 +34,22 @@ const { lang } = Astro.props;
     <Education {lang} />
     <GalleryTeaser {lang} />
     <Contact {lang} />
-    <GoDeeper {lang} />
   </main>
-  <Footer {lang} path="/" visitors abyss />
+  <!-- The ending: "Go Deeper?" and the footer share exactly one screen, like the hero. -->
+  <div class="finale">
+    <GoDeeper {lang} />
+    <Footer {lang} path="/" visitors abyss />
+  </div>
 </Base>
+
+<style>
+  .finale {
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
+    background: #020814;
+  }
+  .finale > :global(.deeper) {
+    flex: 1;
+  }
+</style>
