@@ -18,7 +18,8 @@ const comps = await getCollection('competitions');
 const stats = [
   { value: pubs.length, label: t.stats.papers },
   { value: patents.length, label: t.stats.patents },
-  { value: comps.length, label: t.stats.competitions },
+  // Not every competition has a card here, so show it as a lower bound.
+  { value: comps.length, label: t.stats.competitions, suffix: '+' },
 ];
 ---
 
@@ -40,7 +41,9 @@ const stats = [
           stats.map((s) => (
             <div>
               <dt>{s.label}</dt>
-              <dd data-count={s.value}>{s.value}</dd>
+              <dd>
+                <span data-count={s.value}>{s.value}</span>{s.suffix}
+              </dd>
             </div>
           ))
         }
