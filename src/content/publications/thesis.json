@@ -1,0 +1,33 @@
+{
+  "order": 1,
+  "year": 2022,
+  "venueShort": "IEEE Taipei Section",
+  "award": true,
+  "venue": {
+    "en": "IEEE Taipei Section Best Paper Awards (IEEE 2022)",
+    "zh-tw": "IEEE 台北分會最佳論文獎 (2022)",
+    "zh-cn": "IEEE 台北分会最佳论文奖 (IEEE 2022)",
+    "ja": "IEEE Taipei Section 最優秀論文賞 (IEEE 2022)"
+  },
+  "title": {
+    "en": "Image Restoration using Improved Hierarchical Encoder-Decoder Networks with Selective Residual Blocks",
+    "zh-tw": "利用可選擇性殘差塊在改良式 階層編解碼器網路實現影像修復",
+    "zh-cn": "利用可选择性残差块在改良的分层编解码网络中实现图像修复",
+    "ja": "選択可能な残差ブロックを用いた改良型階層エンコーダ-デコーダネットワークによる画像復元"
+  },
+  "abstract": {
+    "en": "In this paper, we based on light hierarchical network architecture: U-Net, and improve from Residual Dense Block (RDB) which is good at image restoration tasks but memory-consuming to an efficient block called Selective Residual Block (SRB). We also improve the hierarchical network structure U-Net by adding the gatepost feature paths which enrich more spatial feature information comparing with the traditional U-Net and have the synergy with SRB. Besides this, we also proposed a loss function which is based on two important metrics in image restoration: peak signal-to-noise (PSNR) and structural similarity index to optimize our model. Finally, proposed network could handle the <b>9 different restoration tasks</b> such as denoising, deblurring, deraining, dehazing and low-light image enhancement. Furthermore, the performances are good in terms of quantitative metrics and visual quality. <b>This paper was selected for the IEEE 2022 Taipei Section Best Master's and Ph.D. Thesis Award</b> 🎉",
+    "zh-tw": "在這篇論文當中,我們將基於 輕量型的階層式網路架構: U-Net 為基底,並改良自影像修復任務中效果很 好,但需消耗較大記憶體容量的殘差密集塊(RDB),成為一種效率更高、且 不會占據過多顯存的模塊稱為選擇性殘差塊(SRB)。 我們還改良了階層式網 路架構 U-Net,增加了門柱特徵路徑,稱為 M-Net+。 我們提出的 M-Net+相 較於傳統 U-Net,可以獲取更豐富的空間特徵資訊,並與 SRB 作結合達到相 輔相成的效果。 除此之外,我們還提出了基於影像修復中相當重要的兩個 評估指標: 峰值訊雜比(PSNR)與結構相似性(SSIM)的損失函數來優化我們 網路模型。 最終我們提出的網路架構適用於<b>9種不同的影像修復任務</b>中的去噪、去模糊、 去雨、去霧與低光源的影像增強,並在定量指標與視覺質量上取得了非常不錯的成績。 <b>此篇論文被選為 IEEE 2022 台北分會最佳碩博士論文獎</b>🎉",
+    "zh-cn": "本研究基于轻量级的 U-Net 分层网络架构，并将擅长图像修复但内存占用较高的 RDB（Residual Dense Block）改进为更高效的 可选择残差模块（SRB）。我们还在 U-Net 中引入 gatepost 特征通道，与传统 U-Net 相比，可以丰富空间特征信息， 并与 SRB 产生协同效应。此外，我们提出一种新的损失函数，结合图像修复中的两个关键指标：PSNR 与结构相似度（SSIM）， 以优化模型。最终，所提出的网络可处理 <b>9 种不同的图像修复任务</b>，如去噪、去模糊、去雨滴、去雾和低光图像增强等， 在定量评估指标与视觉质量方面均表现出色。 <b>本论文获选为 IEEE 2022 台北分会最佳硕博士论文奖</b> 🎉",
+    "ja": "本研究では、軽量な階層型ネットワーク構造 U-Net をベースに、画像復元で有効ながらもメモリ消費の多い RDB（Residual Dense Block）を より効率的な Selective Residual Block（SRB）へ改良しました。また、U-Net に「ゲートポスト特徴パス（gatepost feature paths）」を追加することで、 従来の U-Net と比べて空間的特徴をより豊かに表現でき、SRB との相乗効果も得られました。 さらに、画像復元における重要指標である PSNR および構造類似度（SSIM）に基づく損失関数を提案し、モデルの最適化を行いました。 最終的に、本ネットワークはノイズ除去、ブレ補正、雨滴除去、霧除去、低照度画像強調などを含む <b>9種類の復元タスク</b>に対応可能であり、定量評価および視覚品質の両面で優れた性能を示しました。 <b>本論文は IEEE 2022 Taipei Section 最優秀修士・博士論文賞に選出されました</b> 🎉"
+  },
+  "links": {
+    "paper": "https://hdl.handle.net/11296/a96tae",
+    "code": "https://github.com/FanChiMao/SRMNet-thesis"
+  },
+  "media": "/media/papers/thesis.webp",
+  "extraImage": {
+    "src": "papers/thesis/award.jpg",
+    "thumb": "papers/thesis/award-folder.webp"
+  }
+}

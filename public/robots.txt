@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://52hzfan.com/sitemap-index.xml

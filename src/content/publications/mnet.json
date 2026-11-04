@@ -1,0 +1,26 @@
+{
+  "order": 3,
+  "year": 2022,
+  "venueShort": "ICCE-TW 2022",
+  "venue": {
+    "en": "IEEE International Conference on Consumer Electronics-Taiwan (ICCE-TW 2022)",
+    "zh-tw": "IEEE 消費電子國際會議 (ICCE-TW 2022)",
+    "zh-cn": "IEEE 消费电子国际会议 (ICCE-TW 2022)",
+    "ja": "IEEE 国際消費電子会議 (ICCE-TW 2022)"
+  },
+  "title": {
+    "en": "Improved Hierarchical M-Net+ for Blind Image Denoising",
+    "zh-tw": "改進的層次結構 M-Net+ 用於盲圖像去噪",
+    "zh-cn": "改进的层次结构 M-Net+ 用于盲图像去噪",
+    "ja": "ブラインド画像ノイズ除去のための改良型階層構造 M-Net+"
+  },
+  "abstract": {
+    "en": "Image denoising is a long standing ill-posed prob-lem. Recently, the convolution neural networks (CNNs) gradually stand in the spotlight and almost dominated the computer vision field and had achieved impressive results in different levels of vision tasks. One of famous hierarchical CNN-backbones is the U-Net which shows awesome performance in both denoising and other areas of computer vision. However, the hierarchical architecture usually suffers from the loss of spatial information due to the repeated sampling. It seriously affects the denoising performance especially the element-wise task like denoising. In this paper, we proposed an improved hierarchical backbone: M-Net+ for image denoising to ameliorate the loss of spatial details. Furthermore, we test on two synthetic Gaussian noise datasets to demonstrate the competitive result of our model.",
+    "zh-tw": "圖像去噪是一個長期存在的 ill-posed 問題。最近，卷積神經網絡 (CNNs) 逐漸成為焦點，幾乎主導了計算機視覺領域，並在不同層次的視覺任務中取得了令人印象深刻的成果。其中一個著名的層次結構 CNN 主幹是 U-Net，它在去噪和其他計算機視覺領域表現出色。然而，層次結構通常因重複取樣而導致空間信息的丟失，這對去噪性能，尤其是像去噪這樣的逐點操作任務產生了嚴重影響。本文提出了一種改進的層次主幹模型 M-Net+ 用於圖像去噪，以改善空間細節的丟失。此外，我們在兩個合成的高斯噪聲數據集上進行了測試，展示了我們模型的競爭性結果。",
+    "zh-cn": "图像去噪是一个长期存在的 ill-posed 问题。近年来，卷积神经网络（CNN）成为研究焦点，在计算机视觉领域中占据主导地位，并在多个视觉任务中取得了显著成果。U-Net 是一个知名的层次型 CNN 主干，在去噪与其他任务中表现出色。但层次结构在反复下采样过程中往往会导致空间信息丢失，这对以像素为基础的任务（如去噪）造成严重影响。本文提出了一个改进的层次主干 M-Net+，以缓解上述問題，并在两个合成高斯噪声数据集上进行了测试，展示了良好的性能表现。",
+    "ja": "画像のノイズ除去は、長年にわたる ill-posed な課題です。近年では、畳み込みニューラルネットワーク（CNN）が注目を集め、コンピュータビジョン分野を席巻し、様々な視覚タスクで顕著な成果を上げています。その中でも有名な階層型 CNN の一つが U-Net であり、ノイズ除去を含む多くのタスクにおいて優れた性能を発揮しています。しかし、こうした階層構造は繰り返されるダウンサンプリングにより空間情報の損失を引き起こし、特にノイズ除去のようなピクセル単位の処理に深刻な影響を及ぼします。本研究では、空間情報損失の改善を目的に、画像ノイズ除去に適した改良型の階層構造 M-Net+ を提案します。2つの合成ガウスノイズデータセットでテストを行い、競争力のある結果が得られました。"
+  },
+  "links": {
+    "paper": "https://ieeexplore.ieee.org/document/9869195"
+  }
+}

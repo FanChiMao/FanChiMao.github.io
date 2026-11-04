@@ -1,0 +1,329 @@
+---
+import { Image, getImage } from 'astro:assets';
+import { Icon } from 'astro-icon/components';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Base from '@/layouts/Base.astro';
+import Nav from '@/components/Nav.astro';
+import Footer from '@/components/Footer.astro';
+import { localePath, ui, type Locale } from '@/i18n/ui';
+import { asset } from '@/lib/assets';
+
+interface Props {
+  lang: Locale;
+  album: CollectionEntry<'albums'>;
+}
+const { lang, album } = Astro.props;
+const t = ui[lang];
+const { id, data } = album;
+const path = `/gallery/${id}/`;
+const title = data.title[lang];
+
+const photos = await Promise.all(
+  data.photos.map(async (p) => {
+    const src = asset(p.src);
+    const full = await getImage({ src, width: Math.min(src.width, 2400), format: 'webp', quality: 82 });
+    return { ...p, src, full: full.src, w: Number(full.attributes.width), h: Number(full.attributes.height) };
+  }),
+);
+const others = (await getCollection('albums', ({ data: d, id: other }) => !d.draft && other !== id)).sort((a, b) => a.data.order - b.data.order);
+const vt = `album-${id.replace(/_/g, '-')}`;
+---
+
+<Base {lang} {path} {title} description={`${data.emoji} ${title} — ${t.gallery.photos(data.photos.length)}`}>
+  <Nav {lang} {path} />
+  <main id="main" class="album-page">
+    <header class="album-hero">
+      <Image src={asset(data.cover)} alt="" widths={[960, 1600, 2400]} sizes="100vw" quality={70} loading="eager" style={`view-transition-name: ${vt}`} />
+      <div class="album-hero__shade"></div>
+      <div class="container album-hero__text">
+        <nav class="crumbs" aria-label="Breadcrumb">
+          <a href={localePath(lang, '/')}>{t.gallery.back}</a>
+          <span aria-hidden="true">/</span>
+          <a href={localePath(lang, '/gallery/')}>{t.gallery.allAlbums}</a>
+        </nav>
+        <h1><span aria-hidden="true">{data.emoji}</span> {title}</h1>
+        <p>{t.gallery.photos(data.photos.length)}</p>
+      </div>
+    </header>
+
+    <div class="container">
+      <ul class="masonry" data-pswp-gallery>
+        {
+          photos.map((p, i) => (
+            <li data-reveal style={`--i:${i % 4}`}>
+              <a
+                href={p.full}
+                data-pswp-width={p.w}
+                data-pswp-height={p.h}
+                data-caption={p.caption.join('\n')}
+                data-link={p.link}
+                data-link-label={t.gallery.map}
+                aria-label={p.caption[0] ?? `${title} ${i + 1}`}
+              >
+                <Image src={p.src} alt={p.caption[0] ?? ''} widths={[400, 700, 1000]} sizes="(min-width: 1100px) 360px, (min-width: 700px) 45vw, 100vw" quality={72} loading={i < 4 ? 'eager' : 'lazy'} />
+                {p.caption.length > 0 && (
+                  <span class="masonry__cap">
+                    <strong>{p.caption[0]}</strong>
+                    {p.caption.slice(1).map((l) => (
+                      <span>{l}</span>
+                    ))}
+                  </span>
+                )}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      {
+        others.length > 0 && (
+          <nav class="others" aria-label={t.gallery.allAlbums}>
+            {others.map((o) => (
+              <a class="card spotlight other" href={localePath(lang, `/gallery/${o.id}/`)}>
+                <span class="other__emoji">{o.data.emoji}</span>
+                <span>
+                  <strong>{o.data.title[lang]}</strong>
+                  <small>{t.gallery.photos(o.data.photos.length)}</small>
+                </span>
+                <Icon name="lucide:arrow-up-right" />
+              </a>
+            ))}
+          </nav>
+        )
+      }
+    </div>
+  </main>
+  <Footer {lang} {path} />
+</Base>
+
+<script>
+  import PhotoSwipeLightbox from 'photoswipe/lightbox';
+  import 'photoswipe/style.css';
+
+  const lightbox = new PhotoSwipeLightbox({
+    gallery: '[data-pswp-gallery]',
+    children: 'a',
+    pswpModule: () => import('photoswipe'),
+    bgOpacity: 0.94,
+    showHideAnimationType: 'zoom',
+    paddingFn: (viewport) => (viewport.x < 700 ? { top: 0, bottom: 96, left: 0, right: 0 } : { top: 32, bottom: 110, left: 64, right: 64 }),
+  });
+
+  lightbox.on('uiRegister', () => {
+    lightbox.pswp?.ui?.registerElement({
+      name: 'caption',
+      order: 9,
+      isButton: false,
+      appendTo: 'root',
+      onInit: (el, pswp) => {
+        const render = () => {
+          const a = pswp.currSlide?.data.element as HTMLAnchorElement | undefined;
+          el.replaceChildren();
+          const lines = (a?.dataset.caption ?? '').split('\n').filter(Boolean);
+          lines.forEach((line, i) => {
+            const node = document.createElement(i === 0 ? 'strong' : 'span');
+            node.textContent = line;
+            el.append(node);
+          });
+          if (a?.dataset.link) {
+            const link = document.createElement('a');
+            link.href = a.dataset.link;
+            link.target = '_blank';
+            link.rel = 'noopener';
+            link.textContent = `📍 ${a.dataset.linkLabel ?? 'Map'}`;
+            el.append(link);
+          }
+          el.hidden = el.childElementCount === 0;
+        };
+        pswp.on('change', render);
+        render();
+      },
+    });
+  });
+  lightbox.init();
+</script>
+
+<style>
+  .album-hero {
+    position: relative;
+    min-height: min(62svh, 560px);
+    display: grid;
+    align-items: end;
+    color: #fff;
+    overflow: hidden;
+    isolation: isolate;
+    margin-bottom: 2.5rem;
+  }
+  .album-hero :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+  }
+  .album-hero__shade {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(180deg, rgb(3 6 13 / 0.45), rgb(3 6 13 / 0.2) 40%, rgb(3 6 13 / 0.85) 92%, var(--bg));
+  }
+  .album-hero__text {
+    display: grid;
+    gap: 0.6rem;
+    padding-block: calc(var(--nav-h) + 3rem) 2.5rem;
+  }
+  .album-hero h1 {
+    font-size: clamp(2.6rem, 7vw, 4.75rem);
+    animation: rise 0.9s 0.15s var(--ease-out) both;
+  }
+  .album-hero p {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    opacity: 0.8;
+    animation: rise 0.9s 0.3s var(--ease-out) both;
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+  }
+  .crumbs {
+    display: flex;
+    gap: 0.6rem;
+    font-size: 0.88rem;
+    opacity: 0.85;
+  }
+  .crumbs a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .masonry {
+    columns: 3 300px;
+    column-gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .masonry li {
+    break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+  .masonry a {
+    position: relative;
+    display: block;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface-2);
+    box-shadow: var(--shadow-sm);
+    cursor: zoom-in;
+  }
+  .masonry :global(img) {
+    width: 100%;
+    transition:
+      transform 0.9s var(--ease-out),
+      filter 0.5s;
+  }
+  .masonry a:hover :global(img) {
+    transform: scale(1.05);
+  }
+  .masonry__cap {
+    position: absolute;
+    inset: auto 0 0;
+    display: grid;
+    gap: 0.1rem;
+    padding: 2.5rem 1rem 0.85rem;
+    background: linear-gradient(transparent, rgb(3 6 13 / 0.85));
+    color: #fff;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+      opacity 0.35s,
+      transform 0.45s var(--ease-out);
+  }
+  .masonry__cap strong {
+    font-size: 0.92rem;
+  }
+  .masonry a:hover .masonry__cap,
+  .masonry a:focus-visible .masonry__cap {
+    opacity: 1;
+    transform: none;
+  }
+  @media (hover: none) {
+    .masonry__cap {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .others {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+    margin-top: 3rem;
+  }
+  .other {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1rem 1.2rem;
+    border-radius: var(--radius);
+    transition:
+      transform 0.3s var(--ease-out),
+      border-color 0.3s;
+  }
+  .other:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-strong);
+  }
+  .other > span:nth-child(2) {
+    display: grid;
+    flex: 1;
+  }
+  .other small {
+    color: var(--muted);
+  }
+  .other__emoji {
+    font-size: 1.6rem;
+  }
+  .other :global(svg) {
+    width: 18px;
+    color: var(--muted);
+  }
+
+  /* PhotoSwipe caption */
+  :global(.pswp__caption) {
+    position: absolute;
+    left: 50%;
+    bottom: 1.25rem;
+    translate: -50% 0;
+    display: grid;
+    justify-items: center;
+    gap: 0.15rem;
+    width: min(92vw, 640px);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    background: rgb(10 14 26 / 0.65);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    font-size: 0.85rem;
+    text-align: center;
+    line-height: 1.5;
+  }
+  :global(.pswp__caption strong) {
+    font-size: 0.98rem;
+  }
+  :global(.pswp__caption a) {
+    margin-top: 0.25rem;
+    color: #7dd3fc;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  :global(.pswp__caption[hidden]) {
+    display: none;
+  }
+</style>

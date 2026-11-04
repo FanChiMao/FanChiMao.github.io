@@ -1,0 +1,134 @@
+---
+import { Icon } from 'astro-icon/components';
+import { getCollection } from 'astro:content';
+import Carousel from './Carousel.astro';
+import SectionHead from './SectionHead.astro';
+import { ui, type Locale } from '@/i18n/ui';
+import { asset } from '@/lib/assets';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const t = ui[lang];
+const INITIAL = 4;
+const items = (await getCollection('competitions')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<section class="section" id="competitions">
+  <div class="container">
+    <SectionHead index={3} title={t.headings.competitions} />
+    <div class="comp-grid" data-comp-grid>
+      {
+        items.map(({ data }, i) => (
+          <article class="card spotlight comp" data-reveal style={`--i:${i % 2}`} data-extra={i >= INITIAL ? '' : undefined}>
+            <Carousel images={data.images.map(asset)} alt={data.title[lang]} labels={t.a11y} />
+            <div class="comp__body">
+              <span class="badge">{data.year}</span>
+              <h3 class="comp__title">{data.title[lang]}</h3>
+              <p class="comp__desc">{data.description[lang]}</p>
+              <a class="btn btn--sm comp__link" href={data.repo} target="_blank" rel="noopener">
+                <Icon name="mdi:github" />
+                {t.competitions.code}
+                <Icon name="lucide:arrow-up-right" />
+              </a>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+    {
+      items.length > INITIAL && (
+        <div class="comp-more">
+          <button class="btn" type="button" data-comp-more aria-expanded="false" data-more={t.competitions.more} data-less={t.competitions.less}>
+            <span data-label>{t.competitions.more}</span>
+            <Icon name="lucide:chevrons-down" class="comp-more__icon" />
+          </button>
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<script>
+  const grid = document.querySelector<HTMLElement>('[data-comp-grid]');
+  const btn = document.querySelector<HTMLButtonElement>('[data-comp-more]');
+  if (grid && btn) {
+    // Collapse only when JS runs, so every card stays reachable without it.
+    grid.classList.add('is-collapsed');
+    btn.addEventListener('click', () => {
+      const expand = grid.classList.contains('is-collapsed');
+      grid.classList.toggle('is-collapsed', !expand);
+      btn.setAttribute('aria-expanded', String(expand));
+      btn.querySelector('[data-label]')!.textContent = (expand ? btn.dataset.less : btn.dataset.more) ?? '';
+      // Newly shown cards are revealed by the global IntersectionObserver.
+      if (!expand) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+</script>
+
+<style>
+  .comp-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+  .comp-grid:global(.is-collapsed) [data-extra] {
+    display: none;
+  }
+  .comp {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition:
+      transform 0.4s var(--ease-out),
+      box-shadow 0.4s var(--ease-out),
+      border-color 0.4s;
+  }
+  .comp:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--border-strong);
+  }
+  .comp__body {
+    display: grid;
+    gap: 0.65rem;
+    justify-items: start;
+    padding: 1.4rem 1.5rem 1.5rem;
+    flex: 1;
+    align-content: start;
+  }
+  .comp__title {
+    font-size: 1.3rem;
+  }
+  .comp__desc {
+    color: var(--text-2);
+    font-size: 0.97rem;
+  }
+  .comp__link {
+    margin-top: 0.4rem;
+  }
+  .comp__link :global(svg:last-child) {
+    width: 0.9em;
+    transition: transform 0.25s var(--ease-out);
+  }
+  .comp__link:hover :global(svg:last-child) {
+    transform: translate(2px, -2px);
+  }
+  .comp-more {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+  .comp-more :global(.comp-more__icon) {
+    transition: transform 0.35s var(--ease-out);
+  }
+  .comp-more [aria-expanded='true'] :global(.comp-more__icon) {
+    transform: rotate(180deg);
+  }
+  @media (max-width: 800px) {
+    .comp-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

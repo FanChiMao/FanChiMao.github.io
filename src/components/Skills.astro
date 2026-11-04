@@ -1,0 +1,89 @@
+---
+import { Icon } from 'astro-icon/components';
+import SectionHead from './SectionHead.astro';
+import { ui, type Locale } from '@/i18n/ui';
+import { site } from '@/lib/site';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const t = ui[lang];
+const groups = [
+  { key: 'languages', icon: 'lucide:code', items: site.skills.languages },
+  { key: 'ai', icon: 'lucide:brain-circuit', items: site.skills.ai },
+  { key: 'tools', icon: 'lucide:sparkles', items: site.skills.tools },
+] as const;
+---
+
+<section class="section" id="skills">
+  <div class="container">
+    <SectionHead index={6} title={t.headings.skills} />
+    <div class="skills">
+      {
+        groups.map((g, i) => (
+          <article class="card spotlight skill-group" data-reveal style={`--i:${i}`}>
+            <h3>
+              <Icon name={g.icon} />
+              {t.skills.groups[g.key]}
+            </h3>
+            <ul>
+              {g.items.map((s) => (
+                <li class="chip">{s}</li>
+              ))}
+            </ul>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .skills {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+  .skill-group {
+    padding: 1.5rem;
+  }
+  .skill-group h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.1rem;
+    margin-bottom: 1.1rem;
+  }
+  .skill-group h3 :global(svg) {
+    width: 22px;
+    height: 22px;
+    color: var(--accent);
+  }
+  .skill-group ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .skill-group .chip {
+    transition:
+      border-color 0.25s,
+      color 0.25s,
+      transform 0.25s var(--ease-out),
+      background-color 0.25s;
+  }
+  .skill-group .chip:hover {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+    background: var(--accent-soft);
+    transform: translateY(-2px);
+  }
+  @media (max-width: 900px) {
+    .skills {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

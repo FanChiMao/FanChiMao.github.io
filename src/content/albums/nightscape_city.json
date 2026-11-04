@@ -1,0 +1,61 @@
+{
+  "order": 1,
+  "emoji": "🌃",
+  "title": {
+    "en": "Nightscape City",
+    "zh-tw": "夜景",
+    "zh-cn": "夜景",
+    "ja": "夜景"
+  },
+  "cover": "gallery/nightscape_city/00000.jpg",
+  "photos": [
+    {
+      "src": "gallery/nightscape_city/00000.jpg",
+      "caption": [
+        "台北圓山 圓山大飯店"
+      ]
+    },
+    {
+      "src": "gallery/nightscape_city/00001.jpg",
+      "caption": [
+        "台北北投 關渡河堤"
+      ]
+    },
+    {
+      "src": "gallery/nightscape_city/00002.jpg",
+      "caption": [
+        "台北信義 信義哥吉拉"
+      ]
+    },
+    {
+      "src": "gallery/nightscape_city/00003.jpg",
+      "caption": [
+        "新北九份 阿妹茶樓"
+      ]
+    },
+    {
+      "src": "gallery/nightscape_city/00004.jpg",
+      "caption": [
+        "台北信義 饗饗"
+      ]
+    },
+    {
+      "src": "gallery/nightscape_city/00005.jpg",
+      "caption": [
+        "台北中山 大直橋"
+      ]
+    },
+    {
+      "src": "gallery/nightscape_city/00006.jpg",
+      "caption": [
+        "台北中山 大佳河濱公園"
+      ]
+    },
+    {
+      "src": "gallery/nightscape_city/00007.jpg",
+      "caption": [
+        "台北北投 社子大橋"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+---
+import { Icon } from 'astro-icon/components';
+import { getCollection } from 'astro:content';
+import AlbumCard from './AlbumCard.astro';
+import SectionHead from './SectionHead.astro';
+import { localePath, ui, type Locale } from '@/i18n/ui';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const t = ui[lang];
+const albums = (await getCollection('albums', ({ data }) => !data.draft)).sort((a, b) => a.data.order - b.data.order);
+---
+
+<section class="section" id="gallery">
+  <div class="container">
+    <SectionHead index={7} title={t.headings.gallery} lead={t.gallery.intro} />
+    <div class="albums">
+      {albums.map((album, i) => <AlbumCard {lang} {album} index={i} />)}
+    </div>
+    <div class="gallery-cta" data-reveal>
+      <a class="btn" href={localePath(lang, '/gallery/')}>
+        <Icon name="lucide:images" />
+        {t.gallery.open}
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .albums {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+  .gallery-cta {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+  @media (max-width: 900px) {
+    .albums {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 560px) {
+    .albums {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

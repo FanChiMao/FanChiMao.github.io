@@ -1,0 +1,18 @@
+{
+  "order": 3,
+  "emoji": "📸",
+  "draft": true,
+  "title": {
+    "en": "Snapshot",
+    "zh-tw": "隨手拍",
+    "zh-cn": "随手拍",
+    "ja": "スナップ"
+  },
+  "cover": "gallery/snapshot/00000.jpg",
+  "photos": [
+    {
+      "src": "gallery/snapshot/00000.jpg",
+      "caption": []
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+---
+import { getCollection } from 'astro:content';
+import { Icon } from 'astro-icon/components';
+import Base from '@/layouts/Base.astro';
+import Nav from '@/components/Nav.astro';
+import Footer from '@/components/Footer.astro';
+import AlbumCard from '@/components/AlbumCard.astro';
+import { localePath, ui, type Locale } from '@/i18n/ui';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const t = ui[lang];
+const path = '/gallery/';
+const albums = (await getCollection('albums', ({ data }) => !data.draft)).sort((a, b) => a.data.order - b.data.order);
+---
+
+<Base {lang} {path} title={t.gallery.title} description={t.gallery.subtitle}>
+  <Nav {lang} {path} />
+  <main id="main" class="gallery-page">
+    <header class="container gallery-head">
+      <a class="back" href={localePath(lang, '/')}><Icon name="lucide:arrow-left" />{t.gallery.back}</a>
+      <h1 data-reveal>{t.gallery.title}</h1>
+      <p data-reveal style="--i:1">{t.gallery.subtitle}</p>
+    </header>
+    <div class="container albums">
+      {albums.map((album, i) => <AlbumCard {lang} {album} index={i} />)}
+    </div>
+  </main>
+  <Footer {lang} {path} />
+</Base>
+
+<style>
+  .gallery-page {
+    padding-top: calc(var(--nav-h) + 2.5rem);
+    padding-bottom: 4rem;
+  }
+  .gallery-head {
+    display: grid;
+    gap: 0.9rem;
+    margin-bottom: 2.5rem;
+  }
+  .gallery-head h1 {
+    font-size: clamp(2.4rem, 6vw, 4rem);
+  }
+  .gallery-head p {
+    color: var(--muted);
+    font-size: 1.1rem;
+    max-width: 40rem;
+  }
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    width: fit-content;
+    color: var(--muted);
+    font-size: 0.9rem;
+    transition: color 0.2s, gap 0.25s var(--ease-out);
+  }
+  .back:hover {
+    color: var(--accent);
+    gap: 0.65rem;
+  }
+  .back :global(svg) {
+    width: 16px;
+  }
+  .albums {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+  @media (max-width: 900px) {
+    .albums {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 560px) {
+    .albums {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

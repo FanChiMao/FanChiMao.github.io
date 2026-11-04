@@ -1,0 +1,203 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  images: ImageMetadata[];
+  alt: string;
+  labels: { prev: string; next: string; goTo: string };
+  sizes?: string;
+}
+const { images, alt, labels, sizes = '(min-width: 1000px) 540px, 100vw' } = Astro.props;
+---
+
+<div class="carousel" data-carousel>
+  <ul class="carousel__track" tabindex="0" aria-label={alt}>
+    {
+      images.map((src, i) => (
+        <li class="carousel__slide" aria-label={`${i + 1} / ${images.length}`}>
+          <Image src={src} alt={`${alt} — ${i + 1}`} widths={[480, 800, 1200]} {sizes} quality={72} loading="lazy" />
+        </li>
+      ))
+    }
+  </ul>
+  {
+    images.length > 1 && (
+      <>
+        <button class="carousel__btn carousel__btn--prev" type="button" data-dir="-1" aria-label={labels.prev}>
+          <Icon name="lucide:chevron-left" />
+        </button>
+        <button class="carousel__btn carousel__btn--next" type="button" data-dir="1" aria-label={labels.next}>
+          <Icon name="lucide:chevron-right" />
+        </button>
+        <div class="carousel__dots">
+          {images.map((_, i) => (
+            <button type="button" data-index={i} aria-label={`${labels.goTo} ${i + 1}`} aria-current={i === 0 ? 'true' : undefined} />
+          ))}
+        </div>
+        <span class="carousel__count" aria-hidden="true">
+          <span data-current>1</span> / {images.length}
+        </span>
+      </>
+    )
+  }
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-carousel]').forEach((root) => {
+    const track = root.querySelector<HTMLElement>('.carousel__track')!;
+    const slides = Array.from(track.children) as HTMLElement[];
+    const dots = Array.from(root.querySelectorAll<HTMLButtonElement>('.carousel__dots button'));
+    const current = root.querySelector<HTMLElement>('[data-current]');
+    if (slides.length < 2) return;
+    let index = 0;
+
+    const go = (i: number) => {
+      const n = (i + slides.length) % slides.length;
+      track.scrollTo({ left: slides[n].offsetLeft, behavior: 'smooth' });
+    };
+    root.querySelectorAll<HTMLButtonElement>('[data-dir]').forEach((b) =>
+      b.addEventListener('click', () => go(index + Number(b.dataset.dir))),
+    );
+    dots.forEach((d) => d.addEventListener('click', () => go(Number(d.dataset.index))));
+    track.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        go(index + 1);
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        go(index - 1);
+      }
+    });
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          index = slides.indexOf(e.target as HTMLElement);
+          dots.forEach((d, i) => (i === index ? d.setAttribute('aria-current', 'true') : d.removeAttribute('aria-current')));
+          if (current) current.textContent = String(index + 1);
+        }
+      },
+      { root: track, threshold: 0.6 },
+    );
+    slides.forEach((s) => io.observe(s));
+  });
+</script>
+
+<style>
+  .carousel {
+    position: relative;
+    overflow: hidden;
+    background: var(--surface-2);
+  }
+  .carousel__track {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .carousel__track::-webkit-scrollbar {
+    display: none;
+  }
+  .carousel__slide {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+  }
+  .carousel__slide :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s var(--ease-out);
+  }
+  .carousel:hover .carousel__slide :global(img) {
+    transform: scale(1.03);
+  }
+  .carousel__btn {
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(5 8 16 / 0.55);
+    color: #fff;
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    transition:
+      opacity 0.25s,
+      background-color 0.2s,
+      scale 0.2s;
+  }
+  .carousel__btn :global(svg) {
+    width: 20px;
+  }
+  .carousel__btn:hover {
+    background: rgb(5 8 16 / 0.8);
+    scale: 1.08;
+  }
+  .carousel__btn--prev {
+    left: 0.75rem;
+  }
+  .carousel__btn--next {
+    right: 0.75rem;
+  }
+  .carousel:hover .carousel__btn,
+  .carousel:focus-within .carousel__btn {
+    opacity: 1;
+  }
+  @media (hover: none) {
+    .carousel__btn {
+      opacity: 1;
+    }
+  }
+  .carousel__dots {
+    position: absolute;
+    left: 50%;
+    bottom: 0.75rem;
+    translate: -50% 0;
+    display: flex;
+    gap: 6px;
+    padding: 5px 8px;
+    border-radius: 999px;
+    background: rgb(5 8 16 / 0.4);
+    backdrop-filter: blur(6px);
+  }
+  .carousel__dots button {
+    width: 6px;
+    height: 6px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.5);
+    transition:
+      width 0.35s var(--ease-out),
+      background-color 0.35s;
+  }
+  .carousel__dots button[aria-current] {
+    width: 18px;
+    background: #fff;
+  }
+  .carousel__count {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    background: rgb(5 8 16 / 0.5);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    backdrop-filter: blur(6px);
+  }
+</style>

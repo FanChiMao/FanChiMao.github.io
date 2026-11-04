@@ -1,0 +1,234 @@
+---
+import { Icon } from 'astro-icon/components';
+import SectionHead from './SectionHead.astro';
+import { ui, type Locale } from '@/i18n/ui';
+import { site } from '@/lib/site';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const t = ui[lang];
+const c = t.contact;
+---
+
+<section class="section contact" id="contact">
+  <div class="container">
+    <SectionHead index={8} title={t.headings.contact} lead={c.intro} />
+    <div class="contact__grid">
+      <ul class="contact__list">
+        <li class="card spotlight contact__item" data-reveal="left">
+          <span class="contact__icon"><Icon name="lucide:mail" /></span>
+          <a href={`mailto:${site.email}`}>{site.email}</a>
+          <button class="icon-btn contact__copy" type="button" data-copy={site.email} data-copied={c.copied} aria-label={c.copy} title={c.copy}>
+            <Icon name="lucide:copy" class="i-copy" />
+            <Icon name="lucide:check" class="i-check" />
+          </button>
+        </li>
+        <li class="card spotlight contact__item" data-reveal="left" style="--i:1">
+          <span class="contact__icon"><Icon name="mdi:linkedin" /></span>
+          <a href={site.linkedin.url} target="_blank" rel="noopener">{site.linkedin.handle}</a>
+        </li>
+        {
+          site.phone && (
+            <li class="card spotlight contact__item" data-reveal="left" style="--i:2">
+              <span class="contact__icon">
+                <Icon name="lucide:phone" />
+              </span>
+              <a href={`tel:${site.phone.tel}`}>{site.phone.display}</a>
+            </li>
+          )
+        }
+      </ul>
+
+      <form class="card contact__form" data-contact-form data-email={site.email} data-reveal="right">
+        <div class="field-row">
+          <label class="field">
+            <span>{c.name}</span>
+            <input name="name" type="text" autocomplete="name" required />
+          </label>
+          <label class="field">
+            <span>{c.email}</span>
+            <input name="email" type="email" autocomplete="email" />
+          </label>
+        </div>
+        <label class="field">
+          <span>{c.subject}</span>
+          <input name="subject" type="text" required />
+        </label>
+        <label class="field">
+          <span>{c.message}</span>
+          <textarea name="message" rows="6" required></textarea>
+        </label>
+        <div class="contact__submit">
+          <button class="btn btn--primary" type="submit">
+            <Icon name="lucide:send" />
+            {c.send}
+          </button>
+          <p class="contact__note">{c.note}</p>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Compose a mailto: link (there is no backend on GitHub Pages).
+  const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const f = new FormData(form);
+    const get = (k: string) => String(f.get(k) ?? '').trim();
+    const body = [get('message'), '', '—', get('name'), get('email')].filter((l, i) => i < 3 || l).join('\n');
+    location.href = `mailto:${form.dataset.email}?subject=${encodeURIComponent(get('subject'))}&body=${encodeURIComponent(body)}`;
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) =>
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy!);
+        btn.classList.add('is-copied');
+        btn.title = btn.dataset.copied ?? '';
+        setTimeout(() => btn.classList.remove('is-copied'), 1800);
+      } catch {
+        location.href = `mailto:${btn.dataset.copy}`;
+      }
+    }),
+  );
+</script>
+
+<style>
+  .contact__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: start;
+  }
+  .contact__list {
+    display: grid;
+    gap: 0.9rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .contact__item {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.9rem 1rem;
+    border-radius: var(--radius);
+    transition:
+      transform 0.3s var(--ease-out),
+      border-color 0.3s;
+  }
+  .contact__item:hover {
+    transform: translateX(4px);
+    border-color: var(--border-strong);
+  }
+  .contact__item a {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-weight: 500;
+  }
+  .contact__item a:hover {
+    color: var(--accent);
+  }
+  .contact__icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .contact__icon :global(svg) {
+    width: 20px;
+    height: 20px;
+  }
+  .contact__copy {
+    position: relative;
+    flex: none;
+  }
+  .contact__copy :global(svg) {
+    position: absolute;
+    transition:
+      opacity 0.2s,
+      transform 0.3s var(--ease-out);
+  }
+  .contact__copy :global(.i-check) {
+    opacity: 0;
+    transform: scale(0.5);
+    color: #22c55e;
+  }
+  .contact__copy:global(.is-copied) :global(.i-copy) {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  .contact__copy:global(.is-copied) :global(.i-check) {
+    opacity: 1;
+    transform: none;
+  }
+
+  .contact__form {
+    display: grid;
+    gap: 1rem;
+    padding: clamp(1.25rem, 3vw, 2rem);
+  }
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .field {
+    display: grid;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-2);
+  }
+  .field input,
+  .field textarea {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-weight: 400;
+    font-size: 0.95rem;
+    resize: vertical;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
+  }
+  .field input:focus,
+  .field textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+  }
+  .contact__submit {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+  }
+  .contact__note {
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+  @media (max-width: 860px) {
+    .contact__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 520px) {
+    .field-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

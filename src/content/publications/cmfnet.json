@@ -1,0 +1,29 @@
+{
+  "order": 0,
+  "year": 2023,
+  "venueShort": "ICIP 2023",
+  "venue": {
+    "en": "IEEE International Conference on Image Processing (ICIP 2023)",
+    "zh-tw": "IEEE 影像處理國際會議 (ICIP 2023)",
+    "zh-cn": "IEEE 图像处理国际会议 (ICIP 2023)",
+    "ja": "IEEE 画像処理国際会議（ICIP 2023）"
+  },
+  "title": {
+    "en": "Compound Multi-branch Feature Fusion for Real Image Restoration",
+    "zh-tw": "複合多分支特徵融合用於真實圖像修復",
+    "zh-cn": "复合多分支特征融合用于真实图像修复",
+    "ja": "実画像復元のための複合マルチブランチ特徴融合"
+  },
+  "abstract": {
+    "en": "Image restoration is a challenging and ill-posed problem which also has been a long-standing issue. However, most of learning based restoration methods are proposed to target one degradation type which means they are lack of generalization. In this paper, we proposed a multi-branch restoration model inspired from the Human Visual System (i.e., Retinal Ganglion Cells) which can achieve multiple restoration tasks in a general framework. The experiments show that the proposed multi-branch architecture, called CMFNet, has competitive performance results on four datasets, including image deblurring, dehazing and deraindrop which are very common applications for autonomous cars.",
+    "zh-tw": "圖像修復是一個具有挑戰性且為一種 ill-posed 問題，這也是一個長期存在的問題。然而，大多數基於學習的修復方法僅針對一種類型的退化，這意味著它們缺乏泛化能力。在本文中，我們提出了一種受到人類視覺系統（即視網膜神經節細胞）啟發的多分支修復模型，該模型可以在一個通用框架中實現多種修復任務。實驗結果顯示，所提出的多分支架構，稱為CMFNet，在四個數據集上的表現具有競爭力，這些數據集包括圖像去模糊、去霧和去雨滴，這些應用在自動駕駛汽車中非常常見。",
+    "zh-cn": "图像修复是一个具有挑战性的 ill-posed 问题，也是长期以来的研究难题。然而，大多数基于学习的修复方法仅针对单一退化类型，缺乏泛化能力。本文提出了一种受人类视觉系统（例如视网膜神经节细胞）启发的多分支图像修复模型，可在统一框架下完成多种修复任务。实验结果显示，所提出的多分支架构 CMFNet 在四个数据集上均表现优异，涵盖图像去模糊、去雾和去雨滴等自驾车常见应用场景。",
+    "ja": "画像復元は困難かつ不適切な問題であり、長年にわたる課題とされています。しかし、多くの学習ベースの復元手法は特定の劣化タイプにのみ対応しており、汎用性に欠けます。本研究では、人間の視覚系（特に網膜神経節細胞）から着想を得たマルチブランチ復元モデルを提案し、汎用的なフレームワーク内で複数の復元タスクを実現します。提案する多枝構造「CMFNet」は、画像のブレ除去、霧除去、雨滴除去など、自動運転車における一般的な応用に対して、4つのデータセットで優れた性能を示しました。"
+  },
+  "links": {
+    "paper": "https://ieeexplore.ieee.org/document/10222907",
+    "code": "https://github.com/FanChiMao/CMFNet",
+    "video": "8UCxeuP2A_Q"
+  },
+  "media": "/media/papers/cmfnet.webp"
+}

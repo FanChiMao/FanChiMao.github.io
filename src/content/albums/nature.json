@@ -1,0 +1,18 @@
+{
+  "order": 4,
+  "emoji": "🌳",
+  "draft": true,
+  "title": {
+    "en": "Nature",
+    "zh-tw": "自然",
+    "zh-cn": "自然",
+    "ja": "自然"
+  },
+  "cover": "gallery/nature/00000.jpg",
+  "photos": [
+    {
+      "src": "gallery/nature/00000.jpg",
+      "caption": []
+    }
+  ]
+}

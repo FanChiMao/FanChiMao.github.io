@@ -1,0 +1,211 @@
+---
+import '@/styles/global.css';
+import { getImage } from 'astro:assets';
+import { Icon } from 'astro-icon/components';
+import profile from '@/assets/profile.jpg';
+import { locales, localeMeta, localePath, ui, type Locale } from '@/i18n/ui';
+
+interface Props {
+  lang: Locale;
+  /** Locale-agnostic path of this page, e.g. '/' or '/gallery/ramen/'. Used for hreflang + canonical. */
+  path: string;
+  title?: string;
+  description?: string;
+}
+
+const { lang, path, title, description } = Astro.props;
+const t = ui[lang];
+const pageTitle = title ? `${title} · ${t.meta.title}` : t.meta.title;
+const desc = description ?? t.meta.description;
+const site = Astro.site!;
+const canonical = new URL(localePath(lang, path), site).href;
+const og = await getImage({ src: profile, width: 1200, format: 'jpg' });
+const ogUrl = new URL(og.src, site).href;
+---
+
+<!doctype html>
+<html lang={localeMeta[lang].htmlLang} data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={desc} />
+    <meta name="author" content="Chi-Mao Fan" />
+    <meta name="keywords" content="Chi-Mao Fan, FanChiMao, 52hzfan, 范植貿, AI engineer, computer vision, image restoration, ASUS" />
+    <link rel="canonical" href={canonical} />
+    {locales.map((l) => <link rel="alternate" hreflang={localeMeta[l].htmlLang} href={new URL(localePath(l, path), site).href} />)}
+    <link rel="alternate" hreflang="x-default" href={new URL(path, site).href} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogUrl} />
+    <meta property="og:site_name" content="Chi-Mao Fan" />
+    <meta property="og:locale" content={localeMeta[lang].ogLocale} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={desc} />
+    <meta name="twitter:image" content={ogUrl} />
+
+    <link rel="icon" href="/icon.png" type="image/png" />
+    <link rel="shortcut icon" href="/icon.ico" />
+    <link rel="apple-touch-icon" href="/icon.png" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="theme-color" content="#060a14" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)" />
+
+    <script is:inline>
+      (() => {
+        const d = document.documentElement;
+        d.classList.add('js');
+        let theme = null;
+        try { theme = localStorage.getItem('theme'); } catch {}
+        if (theme !== 'light' && theme !== 'dark') theme = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        d.dataset.theme = theme;
+      })();
+    </script>
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">{t.a11y.skip}</a>
+    <div class="scroll-progress" aria-hidden="true"></div>
+    <slot />
+
+    <dialog class="media-dialog" id="media-dialog" aria-label="Media">
+      <button class="icon-btn media-dialog__close" type="button" data-dialog-close aria-label={t.a11y.close}>
+        <Icon name="lucide:x" />
+      </button>
+      <div class="media-dialog__body" data-dialog-body></div>
+    </dialog>
+
+    <script>
+      // ---- Scroll reveal
+      const reveal = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              e.target.classList.add('is-visible');
+              reveal.unobserve(e.target);
+            }
+          }
+        },
+        { rootMargin: '0px 0px -8% 0px', threshold: 0.08 },
+      );
+      document.querySelectorAll('[data-reveal]').forEach((el) => reveal.observe(el));
+
+      // ---- Cursor spotlight on cards
+      document.addEventListener(
+        'pointermove',
+        (ev) => {
+          const card = (ev.target as Element | null)?.closest?.<HTMLElement>('.spotlight');
+          if (!card) return;
+          const r = card.getBoundingClientRect();
+          card.style.setProperty('--mx', `${ev.clientX - r.left}px`);
+          card.style.setProperty('--my', `${ev.clientY - r.top}px`);
+        },
+        { passive: true },
+      );
+
+      // ---- Theme toggle (buttons carry data-theme-toggle)
+      document.querySelectorAll('[data-theme-toggle]').forEach((btn) =>
+        btn.addEventListener('click', () => {
+          const d = document.documentElement;
+          const next = d.dataset.theme === 'dark' ? 'light' : 'dark';
+          const apply = () => {
+            d.dataset.theme = next;
+            try {
+              localStorage.setItem('theme', next);
+            } catch {}
+          };
+          const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+          if (!document.startViewTransition || reduce) return apply();
+          document.startViewTransition(apply);
+        }),
+      );
+
+      // ---- Shared media dialog: [data-video="<youtube id>"] or [data-image="<url>"]
+      const dialog = document.getElementById('media-dialog') as HTMLDialogElement;
+      const body = dialog.querySelector<HTMLElement>('[data-dialog-body]')!;
+      document.addEventListener('click', (ev) => {
+        const trigger = (ev.target as Element).closest<HTMLElement>('[data-video], [data-image]');
+        if (!trigger) return;
+        ev.preventDefault();
+        body.replaceChildren();
+        if (trigger.dataset.video) {
+          const iframe = document.createElement('iframe');
+          iframe.src = `https://www.youtube-nocookie.com/embed/${trigger.dataset.video}?autoplay=1&rel=0`;
+          iframe.title = trigger.dataset.title ?? 'YouTube video';
+          iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+          iframe.allowFullscreen = true;
+          iframe.className = 'media-dialog__video';
+          body.append(iframe);
+        } else if (trigger.dataset.image) {
+          const img = document.createElement('img');
+          img.src = trigger.dataset.image;
+          img.alt = trigger.dataset.title ?? '';
+          img.className = 'media-dialog__image';
+          body.append(img);
+        }
+        dialog.showModal();
+      });
+      dialog.addEventListener('click', (ev) => {
+        if (ev.target === dialog || (ev.target as Element).closest('[data-dialog-close]')) dialog.close();
+      });
+      dialog.addEventListener('close', () => body.replaceChildren());
+    </script>
+
+    <style is:global>
+      .media-dialog {
+        width: min(100% - 2rem, 1040px);
+        max-height: calc(100dvh - 2rem);
+        padding: 52px 0 0;
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-lg);
+        background: var(--bg-elev);
+        color: var(--text);
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        opacity: 0;
+        scale: 0.96;
+        transition:
+          opacity 0.3s var(--ease-out),
+          scale 0.3s var(--ease-out),
+          overlay 0.3s allow-discrete,
+          display 0.3s allow-discrete;
+      }
+      .media-dialog[open] {
+        opacity: 1;
+        scale: 1;
+      }
+      @starting-style {
+        .media-dialog[open] {
+          opacity: 0;
+          scale: 0.96;
+        }
+      }
+      .media-dialog::backdrop {
+        background: rgb(3 6 14 / 0.75);
+        backdrop-filter: blur(6px);
+      }
+      .media-dialog__close {
+        position: absolute;
+        top: 6px;
+        right: 8px;
+        z-index: 1;
+      }
+      .media-dialog__video {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        border: 0;
+      }
+      .media-dialog__image {
+        width: 100%;
+        max-height: calc(100dvh - 2rem - 52px);
+        object-fit: contain;
+        background: #000;
+      }
+    </style>
+  </body>
+</html>

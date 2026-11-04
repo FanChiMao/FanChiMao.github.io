@@ -1,0 +1,119 @@
+---
+import { Image } from 'astro:assets';
+import { Icon } from 'astro-icon/components';
+import type { CollectionEntry } from 'astro:content';
+import { localePath, ui, type Locale } from '@/i18n/ui';
+import { asset } from '@/lib/assets';
+
+interface Props {
+  lang: Locale;
+  album: CollectionEntry<'albums'>;
+  index?: number;
+}
+const { lang, album, index = 0 } = Astro.props;
+const t = ui[lang].gallery;
+const { id, data } = album;
+---
+
+<a class="album" href={localePath(lang, `/gallery/${id}/`)} data-reveal style={`--i:${index}`}>
+  <Image
+    src={asset(data.cover)}
+    alt=""
+    widths={[400, 700, 1000]}
+    sizes="(min-width: 1000px) 360px, (min-width: 640px) 50vw, 100vw"
+    quality={70}
+    loading="lazy"
+    style={`view-transition-name: album-${id.replace(/_/g, '-')}`}
+  />
+  <span class="album__shade" aria-hidden="true"></span>
+  <span class="album__info">
+    <span class="album__emoji" aria-hidden="true">{data.emoji}</span>
+    <span class="album__title">{data.title[lang]}</span>
+    <span class="album__count">{t.photos(data.photos.length)}</span>
+  </span>
+  <span class="album__go" aria-hidden="true"><Icon name="lucide:arrow-up-right" /></span>
+</a>
+
+<style>
+  .album {
+    position: relative;
+    display: block;
+    aspect-ratio: 4 / 5;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--surface-2);
+    box-shadow: var(--shadow-md);
+    color: #fff;
+  }
+  .album :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1.2s var(--ease-out);
+  }
+  .album:hover :global(img) {
+    transform: scale(1.08);
+  }
+  .album__shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 40%, rgb(3 6 13 / 0.85));
+    transition: opacity 0.4s;
+  }
+  .album__info {
+    position: absolute;
+    left: 1.25rem;
+    right: 1.25rem;
+    bottom: 1.2rem;
+    display: grid;
+    gap: 0.15rem;
+    transition: transform 0.5s var(--ease-out);
+  }
+  .album:hover .album__info {
+    transform: translateY(-4px);
+  }
+  .album__emoji {
+    font-size: 1.6rem;
+    line-height: 1;
+    margin-bottom: 0.35rem;
+  }
+  .album__title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+  }
+  .album__count {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    opacity: 0.75;
+  }
+  .album__go {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.16);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    transform: translate(-6px, 6px);
+    transition:
+      opacity 0.35s,
+      transform 0.45s var(--ease-out);
+  }
+  .album__go :global(svg) {
+    width: 18px;
+  }
+  .album:hover .album__go,
+  .album:focus-visible .album__go {
+    opacity: 1;
+    transform: none;
+  }
+</style>

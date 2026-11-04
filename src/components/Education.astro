@@ -1,0 +1,89 @@
+---
+import { Icon } from 'astro-icon/components';
+import { getCollection } from 'astro:content';
+import SectionHead from './SectionHead.astro';
+import { ui, type Locale } from '@/i18n/ui';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const t = ui[lang];
+const items = (await getCollection('education')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<section class="section" id="education">
+  <div class="container">
+    <SectionHead index={5} title={t.headings.education} />
+    <div class="edu-grid">
+      {
+        items.map(({ data }, i) => (
+          <article class="card spotlight edu" data-reveal style={`--i:${i}`}>
+            <span class="edu__icon" aria-hidden="true">
+              <Icon name="lucide:graduation-cap" />
+            </span>
+            <h3 class="edu__degree">{data.degree[lang]}</h3>
+            <p class="edu__school">{data.school[lang]}</p>
+            <p class="edu__desc prose" set:html={data.description[lang]} />
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .edu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+  .edu {
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+    padding: clamp(1.4rem, 3vw, 2rem);
+    transition:
+      transform 0.4s var(--ease-out),
+      box-shadow 0.4s var(--ease-out);
+  }
+  .edu:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+  }
+  .edu__icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 0.5rem;
+    border-radius: 14px;
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .edu__icon :global(svg) {
+    width: 24px;
+    height: 24px;
+  }
+  .edu__degree {
+    font-size: 1.25rem;
+  }
+  .edu__school {
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .edu__desc {
+    margin-top: 0.4rem;
+    color: var(--text-2);
+    font-size: 0.95rem;
+  }
+  .edu__desc :global(strong),
+  .edu__desc :global(b) {
+    color: var(--text);
+  }
+  @media (max-width: 800px) {
+    .edu-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

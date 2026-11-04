@@ -1,0 +1,18 @@
+{
+  "order": 5,
+  "emoji": "🐈",
+  "draft": true,
+  "title": {
+    "en": "Animals",
+    "zh-tw": "動物",
+    "zh-cn": "动物",
+    "ja": "動物"
+  },
+  "cover": "gallery/animals/00000.jpg",
+  "photos": [
+    {
+      "src": "gallery/animals/00000.jpg",
+      "caption": []
+    }
+  ]
+}

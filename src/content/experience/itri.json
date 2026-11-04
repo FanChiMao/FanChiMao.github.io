@@ -1,0 +1,45 @@
+{
+  "order": 1,
+  "start": 2021,
+  "end": 2022,
+  "company": {
+    "en": "ITRI",
+    "zh-tw": "工研院",
+    "zh-cn": "工研院",
+    "ja": "工業技術研究院（ITRI）"
+  },
+  "role": {
+    "en": "Android System Software Development Intern",
+    "zh-tw": "Android 系統軟體開發實習生",
+    "zh-cn": "Android 系统软件开发实习生",
+    "ja": "Androidシステム開発インターン"
+  },
+  "description": {
+    "en": "In my second year of the master's program, I received an interview invitation from the Industrial Technology Research Institute's Information and Communications Labs, where I was responsible for supporting the Android system development team. I learned and practiced the technique of flashing Android image files onto development boards, enhancing my understanding of the Android operating system architecture and the application installation process.",
+    "zh-tw": "碩士班二年級受到工研院資通所的面試邀約，負責支援 Android 系統開發團隊，學習並實踐了燒錄 Android 映像檔到開發板的技術，增進了對 Android 操作系統架構及應用安裝過程的理解。",
+    "zh-cn": "硕士二年级期间，我收到了来自工业技术研究院信息与通信研究所的面试邀请，进入 Android 系统开发团队实习。我学习并实操了将 Android 镜像文件刷写至开发板的技巧，加深了对 Android 操作系统架构及应用安装流程的理解。",
+    "ja": "大学院2年目に、台湾の工業技術研究院 情報通信研究所から面接の招待を受け、Androidシステム開発チームの支援を担当しました。Androidのイメージファイルを開発ボードに書き込む手法を学び、実践する中で、Android OSのアーキテクチャやアプリインストールの仕組みについての理解を深めました。"
+  },
+  "tags": {
+    "en": [
+      "C",
+      "Android Development",
+      "Embedded Systems"
+    ],
+    "zh-tw": [
+      "C",
+      "Android 開發",
+      "嵌入式系統"
+    ],
+    "zh-cn": [
+      "C",
+      "Android 开发",
+      "嵌入式系统"
+    ],
+    "ja": [
+      "C",
+      "Android開発",
+      "組み込みシステム"
+    ]
+  }
+}

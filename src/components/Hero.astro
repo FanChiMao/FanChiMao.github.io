@@ -1,0 +1,438 @@
+---
+import { Image } from 'astro:assets';
+import { Icon } from 'astro-icon/components';
+import bg1 from '@/assets/hero/1.webp';
+import bg2 from '@/assets/hero/2.webp';
+import bg3 from '@/assets/hero/3.webp';
+import { ui, type Locale } from '@/i18n/ui';
+import { site } from '@/lib/site';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const t = ui[lang].hero;
+const backgrounds = [bg1, bg2, bg3];
+
+/** Seamless sine path spanning two periods of the viewBox so it can loop via translateX. */
+function wave(width: number, amp: number, len: number, y: number) {
+  let d = `M0 ${y}`;
+  for (let x = 0; x <= width * 2; x += len / 2) {
+    const dir = (x / (len / 2)) % 2 === 0 ? -1 : 1;
+    d += ` Q${x + len / 4} ${y + dir * amp} ${x + len / 2} ${y}`;
+  }
+  return d;
+}
+const words = t.greeting.split(' ');
+---
+
+<section class="hero" id="home" aria-label="Intro">
+  <div class="hero__bg" aria-hidden="true">
+    {
+      backgrounds.map((src, i) => (
+        <Image
+          src={src}
+          alt=""
+          widths={[960, 1600, 2400]}
+          sizes="100vw"
+          quality={70}
+          loading={i === 0 ? 'eager' : 'lazy'}
+          fetchpriority={i === 0 ? 'high' : 'auto'}
+          style={`--d:${i * 7}s`}
+        />
+      ))
+    }
+    <div class="hero__shade"></div>
+  </div>
+
+  <div class="hero__content container">
+    <p class="hero__eyebrow">
+      <span class="pulse" aria-hidden="true"></span>
+      {t.position}
+    </p>
+
+    <h1 class="hero__title">
+      {
+        words.map((w, i) => (
+          <>
+            <span class="word" style={`--w:${i}`}>
+              {w}
+            </span>{' '}
+          </>
+        ))
+      }
+    </h1>
+
+    <p class="hero__rotator" data-rotator aria-live="polite">
+      {t.rotate.map((r, i) => <span class:list={['rot', { 'is-active': i === 0 }]} aria-hidden={i === 0 ? undefined : 'true'}>{r}</span>)}
+    </p>
+
+    <div class="hero__taglines">
+      {t.taglines.map((line) => <p>{line}</p>)}
+    </div>
+
+    <div class="hero__cta">
+      <a class="btn btn--primary" href={site.resume} target="_blank" rel="noopener">
+        <Icon name="lucide:download" />
+        {t.resume}
+      </a>
+      <a class="btn btn--glass" href={site.github} target="_blank" rel="noopener">
+        <Icon name="mdi:github" />
+        {t.github}
+      </a>
+    </div>
+
+    <div class="hero__interests">
+      <span class="hero__interests-label">{t.interestsLabel}</span>
+      <ul>
+        {
+          t.interests.map((label, i) => (
+            <li style={`--k:${i}`}>
+              <Icon name={site.interestIcons[i]} />
+              {label}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+
+  <svg class="hero__wave" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
+    <path class="w w1" d={wave(1440, 18, 240, 60)}></path>
+    <path class="w w2" d={wave(1440, 10, 180, 66)}></path>
+    <path class="w w3" d={wave(1440, 26, 360, 56)}></path>
+  </svg>
+
+  <a class="hero__scroll" href="#about" aria-label={t.scroll}>
+    <span>{t.scroll}</span>
+    <Icon name="lucide:arrow-down" />
+  </a>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-rotator]');
+  const items = root ? Array.from(root.querySelectorAll<HTMLElement>('.rot')) : [];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (items.length > 1 && !reduce) {
+    let i = 0;
+    setInterval(() => {
+      items[i].classList.remove('is-active');
+      items[i].setAttribute('aria-hidden', 'true');
+      i = (i + 1) % items.length;
+      items[i].classList.add('is-active');
+      items[i].removeAttribute('aria-hidden');
+    }, 3600);
+  }
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: grid;
+    align-items: center;
+    color: var(--hero-ink);
+    overflow: hidden;
+    isolation: isolate;
+    background: #03060d;
+  }
+
+  /* ---- Background: crossfade + Ken Burns */
+  .hero__bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+  .hero__bg :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    animation: kenburns 21s var(--d) infinite linear backwards;
+  }
+  .hero__bg :global(img:first-of-type) {
+    animation-name: kenburns-first;
+  }
+  @keyframes kenburns {
+    0% {
+      opacity: 0;
+      transform: scale(1.14) translate3d(1%, 0, 0);
+    }
+    6% {
+      opacity: 1;
+    }
+    33% {
+      opacity: 1;
+    }
+    40% {
+      opacity: 0;
+      transform: scale(1.02) translate3d(-1%, -1%, 0);
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  /* First slide starts visible so there is no blank frame on load. */
+  @keyframes kenburns-first {
+    0% {
+      opacity: 1;
+      transform: scale(1.14) translate3d(1%, 0, 0);
+    }
+    33% {
+      opacity: 1;
+    }
+    40% {
+      opacity: 0;
+      transform: scale(1.02) translate3d(-1%, -1%, 0);
+    }
+    94% {
+      opacity: 0;
+      transform: scale(1.14) translate3d(1%, 0, 0);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1.14) translate3d(1%, 0, 0);
+    }
+  }
+  .hero__shade {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(120% 80% at 15% 40%, rgb(3 6 13 / 0.35), rgb(3 6 13 / 0.85) 75%),
+      linear-gradient(180deg, rgb(3 6 13 / 0.45) 0%, transparent 30%, rgb(3 6 13 / 0.6) 85%, var(--bg) 100%);
+  }
+
+  /* ---- Content */
+  .hero__content {
+    padding-block: calc(var(--nav-h) + 3rem) 9rem;
+    display: grid;
+    gap: 1.4rem;
+    max-width: var(--container);
+  }
+  .hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: fit-content;
+    padding: 0.4rem 0.9rem 0.4rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid rgb(255 255 255 / 0.18);
+    background: rgb(255 255 255 / 0.08);
+    backdrop-filter: blur(10px);
+    font-size: 0.88rem;
+    font-weight: 500;
+    animation: rise 0.9s 0.1s var(--ease-out) both;
+  }
+  .pulse {
+    position: relative;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4ade80;
+  }
+  .pulse::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: inherit;
+    animation: ping 2s var(--ease-out) infinite;
+  }
+  @keyframes ping {
+    to {
+      transform: scale(3);
+      opacity: 0;
+    }
+  }
+
+  .hero__title {
+    font-size: clamp(2.9rem, 9vw, 6.5rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .word {
+    display: inline-block;
+    animation: word 1s calc(0.25s + var(--w) * 0.09s) var(--ease-out) both;
+  }
+  @keyframes word {
+    from {
+      opacity: 0;
+      transform: translateY(0.45em) rotate(4deg);
+      filter: blur(10px);
+    }
+  }
+
+  .hero__rotator {
+    display: grid;
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 3.6vw, 2.4rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    min-height: 1.3em;
+    animation: rise 0.9s 0.6s var(--ease-out) both;
+  }
+  .rot {
+    grid-area: 1 / 1;
+    width: fit-content;
+    background: linear-gradient(90deg, #7dd3fc, #c4b5fd 60%, #f0abfc);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    opacity: 0;
+    transform: translateY(0.6em);
+    filter: blur(8px);
+    transition:
+      opacity 0.7s var(--ease-out),
+      transform 0.7s var(--ease-out),
+      filter 0.7s var(--ease-out);
+  }
+  .rot.is-active {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+
+  .hero__taglines {
+    display: grid;
+    gap: 0.2rem;
+    max-width: 40rem;
+    font-size: clamp(1rem, 1.6vw, 1.15rem);
+    color: rgb(255 255 255 / 0.82);
+    animation: rise 0.9s 0.75s var(--ease-out) both;
+  }
+  .hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.4rem;
+    animation: rise 0.9s 0.9s var(--ease-out) both;
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+  }
+
+  .hero__interests {
+    margin-top: 1.2rem;
+    display: grid;
+    gap: 0.7rem;
+  }
+  .hero__interests-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.6);
+    animation: rise 0.8s 1s var(--ease-out) both;
+  }
+  .hero__interests ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    max-width: 52rem;
+  }
+  .hero__interests li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid rgb(255 255 255 / 0.14);
+    background: rgb(255 255 255 / 0.07);
+    backdrop-filter: blur(8px);
+    font-size: 0.85rem;
+    color: rgb(255 255 255 / 0.9);
+    animation: rise 0.7s calc(1.05s + var(--k) * 0.05s) var(--ease-out) both;
+    transition:
+      background-color 0.25s,
+      transform 0.25s var(--ease-out);
+  }
+  .hero__interests li:hover {
+    background: rgb(255 255 255 / 0.16);
+    transform: translateY(-2px);
+  }
+  .hero__interests :global(svg) {
+    width: 16px;
+    height: 16px;
+    opacity: 0.85;
+  }
+
+  /* ---- 52 Hz wave */
+  .hero__wave {
+    position: absolute;
+    left: 0;
+    bottom: 3.5rem;
+    width: 100%;
+    height: 90px;
+    pointer-events: none;
+    overflow: visible;
+  }
+  .w {
+    fill: none;
+    stroke-linecap: round;
+    transform-box: view-box;
+    animation: flow linear infinite;
+  }
+  .w1 {
+    stroke: rgb(125 211 252 / 0.55);
+    stroke-width: 1.6;
+    animation-duration: 14s;
+  }
+  .w2 {
+    stroke: rgb(196 181 253 / 0.35);
+    stroke-width: 1.2;
+    animation-duration: 9s;
+  }
+  .w3 {
+    stroke: rgb(255 255 255 / 0.18);
+    stroke-width: 1;
+    animation-duration: 22s;
+  }
+  @keyframes flow {
+    to {
+      transform: translateX(-720px);
+    }
+  }
+
+  .hero__scroll {
+    position: absolute;
+    left: 50%;
+    bottom: 1.25rem;
+    translate: -50% 0;
+    display: grid;
+    justify-items: center;
+    gap: 0.2rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.65);
+    animation: rise 0.8s 1.4s var(--ease-out) both;
+  }
+  .hero__scroll :global(svg) {
+    width: 16px;
+    animation: bob 1.8s var(--ease-in-out) infinite;
+  }
+  @keyframes bob {
+    50% {
+      transform: translateY(5px);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hero__content {
+      padding-bottom: 8rem;
+    }
+    .hero__interests li {
+      font-size: 0.78rem;
+    }
+  }
+</style>

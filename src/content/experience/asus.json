@@ -1,0 +1,61 @@
+{
+  "order": 0,
+  "start": 2022,
+  "end": null,
+  "company": {
+    "en": "ASUS",
+    "zh-tw": "華碩",
+    "zh-cn": "华硕",
+    "ja": "ASUS"
+  },
+  "role": {
+    "en": "AI R&D Software Engineer",
+    "zh-tw": "AI R&D 軟體工程師",
+    "zh-cn": "AI 研发软件工程师",
+    "ja": "AI研究開発ソフトウェアエンジニア"
+  },
+  "description": {
+    "en": "As an R&D Engineer at Digital Image Technology (DIT) in ASUS, I develop and implement computer vision algorithms using AI, while collaborating with both front-end and back-end teams to create innovative solutions for clients. My technical skills, communication abilities, and project management expertise have enabled me to successfully deliver projects and provide effective solutions to clients.",
+    "zh-tw": "於華碩的數位影像技術部 (Digital Image Technology (DIT)) 擔任 AI 研發工程師，除了需要對於電腦視覺的AI演算法有一定程度理解之外,也須結合前端或後端的程式能力以建構解決方案的應用程式。",
+    "zh-cn": "在华硕数字图像技术部门（DIT）担任研发工程师期间，我负责开发与实现基于 AI 的计算机视觉算法，并与前端和后端团队协作，为客户打造创新解决方案。凭借我的技术能力、沟通技巧与项目管理经验，我成功交付多个项目，并提供高效的技术支持。",
+    "ja": "ASUSのデジタルイメージテクノロジー（DIT）部門にて、AIを活用したコンピュータビジョンアルゴリズムの開発と実装を担当し、フロントエンドとバックエンドのチームと協力しながら、顧客向けに革新的なソリューションを提供しています。技術力、コミュニケーション能力、プロジェクト管理スキルを活かし、プロジェクトを成功に導き、効果的な解決策を実現しています。"
+  },
+  "tags": {
+    "en": [
+      "Python",
+      "CSharp",
+      "C++",
+      "OpenCV",
+      "PyTorch",
+      "Tensorflow",
+      "Gitlab"
+    ],
+    "zh-tw": [
+      "Python",
+      "CSharp",
+      "C++",
+      "OpenCV",
+      "PyTorch",
+      "Tensorflow",
+      "Gitlab"
+    ],
+    "zh-cn": [
+      "Python",
+      "CSharp",
+      "C++",
+      "OpenCV",
+      "PyTorch",
+      "Tensorflow",
+      "Gitlab"
+    ],
+    "ja": [
+      "Python",
+      "CSharp",
+      "C++",
+      "OpenCV",
+      "PyTorch",
+      "Tensorflow",
+      "Gitlab"
+    ]
+  }
+}

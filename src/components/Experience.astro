@@ -1,0 +1,164 @@
+---
+import { Icon } from 'astro-icon/components';
+import { getCollection } from 'astro:content';
+import SectionHead from './SectionHead.astro';
+import { ui, type Locale } from '@/i18n/ui';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const t = ui[lang];
+const items = (await getCollection('experience')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<section class="section" id="experience">
+  <div class="container">
+    <SectionHead index={2} title={t.headings.experience} />
+    <ol class="timeline">
+      {
+        items.map(({ data }, i) => (
+          <li class="tl-item" data-reveal="right" style={`--i:${i}`}>
+            <span class:list={['tl-dot', { 'is-current': data.end === null }]} aria-hidden="true">
+              <Icon name="lucide:briefcase" />
+            </span>
+            <article class="card spotlight tl-card">
+              <header class="tl-head">
+                <div>
+                  <h3 class="tl-company">{data.company[lang]}</h3>
+                  <p class="tl-role">{data.role[lang]}</p>
+                </div>
+                <span class="badge">
+                  {data.start} – {data.end ?? t.experience.present}
+                </span>
+              </header>
+              <p class="tl-desc">{data.description[lang]}</p>
+              <ul class="tl-tags">
+                {data.tags[lang].map((tag) => (
+                  <li class="chip">{tag}</li>
+                ))}
+              </ul>
+            </article>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .timeline {
+    position: relative;
+    display: grid;
+    gap: 1.75rem;
+    margin: 0;
+    padding: 0 0 0 3.25rem;
+    list-style: none;
+  }
+  /* Track + progress line */
+  .timeline::before,
+  .timeline::after {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    border-radius: 2px;
+  }
+  .timeline::before {
+    background: var(--border);
+  }
+  .timeline::after {
+    background: linear-gradient(var(--accent), var(--accent-2));
+    transform-origin: top;
+  }
+  @supports (animation-timeline: view()) {
+    .timeline::after {
+      animation: grow linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 55%;
+    }
+    @keyframes grow {
+      from {
+        transform: scaleY(0);
+      }
+    }
+  }
+
+  .tl-item {
+    position: relative;
+  }
+  .tl-dot {
+    position: absolute;
+    left: calc(-3.25rem);
+    top: 1.4rem;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-elev);
+    border: 1px solid var(--border-strong);
+    color: var(--accent);
+    z-index: 1;
+  }
+  .tl-dot :global(svg) {
+    width: 18px;
+    height: 18px;
+  }
+  .tl-dot.is-current::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    opacity: 0.5;
+    animation: halo 2.4s var(--ease-out) infinite;
+  }
+  @keyframes halo {
+    to {
+      transform: scale(1.5);
+      opacity: 0;
+    }
+  }
+
+  .tl-card {
+    padding: clamp(1.25rem, 3vw, 1.75rem);
+    transition:
+      transform 0.35s var(--ease-out),
+      box-shadow 0.35s var(--ease-out),
+      border-color 0.35s;
+  }
+  .tl-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-strong);
+  }
+  .tl-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    margin-bottom: 0.9rem;
+  }
+  .tl-company {
+    font-size: 1.35rem;
+  }
+  .tl-role {
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .tl-desc {
+    color: var(--text-2);
+  }
+  .tl-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 1.1rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

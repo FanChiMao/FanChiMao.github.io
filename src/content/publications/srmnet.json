@@ -1,0 +1,29 @@
+{
+  "order": 4,
+  "year": 2022,
+  "venueShort": "EUSIPCO 2022",
+  "venue": {
+    "en": "IEEE European Signal Processing Conference (EUSIPCO 2022)",
+    "zh-tw": "IEEE 歐洲訊號處理會議 (EUSIPCO 2022)",
+    "zh-cn": "IEEE 欧洲信号处理会议 (EUSIPCO 2022)",
+    "ja": "IEEE 欧州信号処理会議 (EUSIPCO 2022)"
+  },
+  "title": {
+    "en": "Selective Residual M-Net for Real Image Denoising",
+    "zh-tw": "選擇性殘差 M-Net 用於真實圖像去噪",
+    "zh-cn": "选择性残差 M-Net 用于真实图像去噪",
+    "ja": "実画像のノイズ除去のための選択的残差 M-Net"
+  },
+  "abstract": {
+    "en": "Image restoration is a low-level vision task which is to restore degraded images to noise-free images. With the success of deep neural networks, the convolutional neural networks surpass the traditional restoration methods and become the main-stream in the computer vision area. To advance the performance of denoising algorithms, we propose a blind real image denoising network (SRMNet) by employing a hierarchical architecture improved from U-Net. Specifically, we use a selective kernel with residual block on the hierarchical structure called M-Net to enrich the multi-scale semantic information. Furthermore, our SRMNet has competitive performance results on two synthetic and two real-world noisy datasets in terms of quantitative metrics and visual quality. The source code and pretrained model are available at https://github.com/FanChiMao/SRMNet.",
+    "zh-tw": "圖像修復是一項低層次的視覺任務，旨在將退化的圖像恢復為無噪聲的圖像。隨著深度神經網絡的成功，卷積神經網絡已超越傳統的修復方法，並成為計算機視覺領域的主流。為了提高去噪算法的性能，我們提出了一種基於層次結構的盲真實圖像去噪網絡（SRMNet），該結構從 U-Net 改進而來。具體而言，我們在層次結構 M-Net 上使用了一個具有殘差塊的選擇性內核，以豐富多尺度語義信息。此外，在兩個合成和兩個真實世界的噪聲數據集上，我們的 SRMNet 在定量指標和視覺質量方面均表現出競爭力。源代碼和預訓練模型可在以下鏈接獲取：https://github.com/FanChiMao/SRMNet。",
+    "zh-cn": "图像修复是一项低层次的视觉任务，目标是将退化的图像还原为无噪声的图像。随着深度神经网络的广泛应用，卷积神经网络已超越传统修复方法，成为计算机视觉领域的主流。为提升去噪算法性能，我们提出了一种基于层次结构的盲真实图像去噪网络（SRMNet），该架构源自 U-Net 的改进版。具体来说，我们在 M-Net 框架中引入了结合残差模块的选择性卷积核，以增强多尺度语义信息。我们的方法在两个合成与两个真实世界的噪声数据集上，在定量评估与视觉质量方面均表现出色。源代码和预训练模型可通过以下链接获取：https://github.com/FanChiMao/SRMNet。",
+    "ja": "画像復元は、劣化した画像をノイズのない状態に回復するための低レベル視覚タスクです。ディープニューラルネットワークの成功により、畳み込みニューラルネットワーク（CNN）は従来の復元手法を凌駕し、コンピュータビジョン分野の主流となっています。本研究では、U-Net を改良した階層型ブラインド画像ノイズ除去ネットワーク（SRMNet）を提案します。具体的には、M-Net に残差ブロック付きの選択的カーネルを導入することで、多スケールのセマンティック情報を強化します。提案する SRMNet は、2つの合成データセットと2つの実画像ノイズデータセットにおいて、定量指標と視覚的品質の両面で優れた性能を示しました。ソースコードと事前学習済みモデルは以下より入手可能です：https://github.com/FanChiMao/SRMNet"
+  },
+  "links": {
+    "paper": "https://ieeexplore.ieee.org/document/9909521",
+    "code": "https://github.com/FanChiMao/SRMNet",
+    "video": "uju2fSa44h4"
+  },
+  "media": "/media/papers/srmnet.webp"
+}

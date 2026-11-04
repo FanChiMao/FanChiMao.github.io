@@ -1,0 +1,27 @@
+{
+  "order": 6,
+  "year": 2021,
+  "venueShort": "ICCE-TW 2021",
+  "venue": {
+    "en": "IEEE International Conference on Consumer Electronics-Taiwan (ICCE-TW 2021)",
+    "zh-tw": "IEEE 消費電子國際會議 (ICCE-TW 2021)",
+    "zh-cn": "IEEE 消费电子国际会议 (ICCE-TW 2021)",
+    "ja": "IEEE 国際消費電子会議 (ICCE-TW 2021)"
+  },
+  "title": {
+    "en": "WBTP-VTON: Whole Body and Texture Preservation based Virtual Try-On Network",
+    "zh-tw": "WBTP-VTON：基於全身和紋理保護的虛擬試穿網絡",
+    "zh-cn": "WBTP-VTON：基于全身和纹理保持的虚拟试衣网络",
+    "ja": "WBTP-VTON：全身およびテクスチャ保持に基づくバーチャル試着ネットワーク"
+  },
+  "abstract": {
+    "en": "Image-based virtual clothes try-on systems are becoming more and more popular. However, many challenges are waiting to be solved. Therefore, we propose a new fully learnable method, called the whole body and texture preservation based virtual try-on network (WBTP-VTON) to guide the virtual attempt to deal with all practical challenges in this area. First, the WBTP-VTON template conversion is used to transform the target clothing and pants (or skirts) according to the body shape of the target person using a method called Geometric Matching Module (GMM). The second part is to synthesize the final image and make the generated results more realistic. Finally, we use try-on modules and synthetic masks to combine the deformed clothes and the final image to ensure image smoothness. After experimenting on a large data set, it is proved that our WBTP-VTON method has advanced virtual try-on performance.",
+    "zh-tw": "基於圖像的虛擬服裝試穿系統越來越受歡迎。然而，許多挑戰仍有待解決。為此，我們提出了一種新的完全可學習的方法，稱為基於全身和紋理保護的虛擬試穿網絡 (WBTP-VTON)，以應對該領域中的所有實際挑戰。首先，WBTP-VTON 模板轉換使用幾何匹配模塊 (GMM) 方法根據目標人物的體型來轉換目標衣服和褲子（或裙子）。第二部分是合成最終圖像，使生成的結果更逼真。最後，我們使用試穿模塊和合成遮罩將變形的衣服與最終圖像結合起來，以確保圖像的平滑度。經過在大型數據集上的實驗證明，我們的 WBTP-VTON 方法具有先進的虛擬試穿性能。",
+    "zh-cn": "基于图像的虚拟试衣系统日益受到关注，但仍面临许多未解决的挑战。因此，我们提出一种全新且可端到端学习的方法——WBTP-VTON（Whole Body and Texture Preservation based Virtual Try-On Network），以解决该领域中的实际问题。首先，WBTP-VTON 使用几何匹配模块（GMM）进行模板转换，根据目标人物的身形对目标上衣和裤子（或裙子）进行调整。第二阶段是合成最终图像，使生成结果更为逼真自然。最后，我们结合试穿模块与合成掩码，将变形后的服装与最终图像融合，确保图像的平滑与一致性。在大规模数据集上的实验证明，WBTP-VTON 在虚拟试衣任务上具有先进的性能。",
+    "ja": "画像ベースのバーチャル試着システムは近年ますます注目されていますが、まだ多くの課題が残されています。そこで本研究では、全身およびテクスチャの保持を考慮した新しい完全学習型モデル「WBTP-VTON（Whole Body and Texture Preservation based Virtual Try-On Network）」を提案し、この分野における課題解決を目指します。まず、WBTP-VTON テンプレート変換では、幾何学的マッチングモジュール（GMM）を用いて、ターゲット人物の体型に合わせて衣服やズボン（またはスカート）を変形させます。次に、最終的な画像を合成し、生成結果のリアリティを高めます。最後に、試着モジュールと合成マスクを用いて、変形された衣服と最終画像を統合し、滑らかな描写を実現します。大規模なデータセットによる実験の結果、提案する WBTP-VTON はバーチャル試着において優れた性能を示しました。"
+  },
+  "links": {
+    "paper": "https://ieeexplore.ieee.org/document/9603061",
+    "code": "https://github.com/FanChiMao/WBTP-VTON"
+  }
+}

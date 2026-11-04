@@ -1,0 +1,21 @@
+{
+  "order": 0,
+  "degree": {
+    "en": "Master's Degree in Electrical Engineering",
+    "zh-tw": "電機工程學系 碩士學位",
+    "zh-cn": "电气工程系 硕士学位",
+    "ja": "電気工学専攻 修士課程修了"
+  },
+  "school": {
+    "en": "National Chung Hsing University (NCHU)",
+    "zh-tw": "國立中興大學",
+    "zh-cn": "国立中兴大学",
+    "ja": "国立中興大学"
+  },
+  "description": {
+    "en": "Master's degree in Electrical Engineering with a specialization in Computer Vision through Deep Learning and Artificial Intelligence, with a focus on <strong>Image Restoration</strong>. Achieved an outstanding <strong>GPA of 4.13/4.15</strong> and participated in multiple deep learning competitions, including data analysis, object detection, and segmentation. Authored <strong>4</strong> conference papers, which were accepted by several international conference such as <strong>ICIP, EUSIPCO, and ISCAS</strong>, and received the <strong>2022 IEEE Taipei Section Best Paper Awards</strong> for master thesis work. Passionate about using software skills to develop innovative solutions for real-world challenges.",
+    "zh-tw": "碩士畢業於國立中興大學電機工程學系,主修電腦視覺與人工智慧,研究領域為影像修復任務。 期間取得傑出的在校成績 GPA: 4.13/4.15,且參與多個深度學習程式競賽,包括: 資料分析、物件偵測與影像分割等。 並且發表 4 篇論文並被接受與發表至 ICIP、EUSIPCO 與 ISCAS 等國際會議,且碩士論文被選為 <b>2022 IEEE 台北分會最佳碩博士論文獎</b>。 期望能不斷精進自己程式能力以解決現實生活中所遇到的問題。",
+    "zh-cn": "电气工程硕士学位，专注于通过深度学习与人工智能实现计算机视觉任务，研究方向为<strong>图像修复</strong>。以优秀的 <strong>GPA 4.13/4.15</strong> 毕业，并参与多个深度学习竞赛，内容涵盖数据分析、目标检测与图像分割。共发表 <strong>4 篇</strong>国际会议论文，分别被 <strong>ICIP、EUSIPCO 和 ISCAS</strong> 等国际会议接受，并获得 <strong>2022 IEEE 台北分会最佳论文奖</strong>。热衷于运用软件能力开发创新解决方案，应对现实挑战。",
+    "ja": "電気工学の修士号を取得し、深層学習と人工知能によるコンピュータビジョンを専門とし、研究の中心は<strong>画像復元</strong>です。<strong>GPA 4.13/4.15</strong> という優れた成績で卒業し、データ分析、物体検出、セグメンテーションなど複数の深層学習コンペに参加しました。<strong>4 本</strong>の国際会議論文を執筆し、<strong>ICIP、EUSIPCO、ISCAS</strong> などの主要国際会議で採択され、修士論文として<strong>2022 IEEE Taipei Section Best Paper Awards</strong> を受賞しました。実世界の課題に対して、ソフトウェア技術で革新的なソリューションを生み出すことに情熱を持っています。"
+  }
+}

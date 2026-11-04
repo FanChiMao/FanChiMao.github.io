@@ -1,0 +1,273 @@
+{
+  "order": 2,
+  "emoji": "🍜",
+  "title": {
+    "en": "Ramen",
+    "zh-tw": "拉麵",
+    "zh-cn": "拉面",
+    "ja": "ラーメン"
+  },
+  "cover": "gallery/ramen/00000.jpg",
+  "photos": [
+    {
+      "src": "gallery/ramen/00000.jpg",
+      "caption": [
+        "高雄新興 一本拉麵",
+        "私心推薦 & 印象深刻 ★★★★★",
+        "(等候時間 30 - 60 minutes)",
+        "2024.09.21"
+      ],
+      "link": "https://maps.app.goo.gl/SsPdU5zZJEV9FAw7A?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00001.jpg",
+      "caption": [
+        "新竹東區 KIYO拉麵 博多ラーメン",
+        "私心推薦 & 印象深刻 ★★★",
+        "(等候時間 5 minutes)",
+        "2024.09.17"
+      ],
+      "link": "https://maps.app.goo.gl/YQuiK4gBt9PXa9H66?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00002.jpg",
+      "caption": [
+        "台北中山 (中山站) 池音 鶏白湯ラーメン",
+        "私心推薦 & 印象深刻 ★★★★",
+        "(等候時間 30 - 60 minutes)",
+        "2024.09.08"
+      ],
+      "link": "https://maps.app.goo.gl/eniWBFEXwRZqWTcN9?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00003.jpg",
+      "caption": [
+        "台北中正 (公館站) 墨洋拉麵",
+        "私心推薦 & 印象深刻 ★★★★",
+        "(等候時間 30 - 60 minutes)",
+        "2024.09.01"
+      ],
+      "link": "https://maps.app.goo.gl/WTncopqjgB5Phxpq7?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00004.jpg",
+      "caption": [
+        "台北大安 (忠孝復興站) 湮鯱",
+        "私心推薦 & 印象深刻 ★★★★",
+        "(等候時間 10 - 30 minutes)",
+        "2024.08.23"
+      ],
+      "link": "https://maps.app.goo.gl/ikA1PAkM9wEW7b8U6?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00005.jpg",
+      "caption": [
+        "台北三重 (三重國小站) 炊煙拉麵",
+        "私心推薦 & 印象深刻 ★★★",
+        "(等候時間 10 - 30 minutes)",
+        "2024.08.11"
+      ],
+      "link": "https://maps.app.goo.gl/nu8C3x8GfGJ9SVnW7?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00006.jpg",
+      "caption": [
+        "台北中正 (忠孝新生站) 麵屋雞金",
+        "私心推薦 & 印象深刻 ★★★",
+        "(等候時間 10 - 30 minutes)",
+        "2024.08.04"
+      ],
+      "link": "https://maps.app.goo.gl/sWMDgZdBmqMZrukv8?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00007.jpg",
+      "caption": [
+        "台北信義 (象山站) 一幻拉麵",
+        "私心推薦 & 印象深刻 ★★★★★",
+        "(等候時間 10 - 30 minutes)",
+        "2024.07.14"
+      ],
+      "link": "https://maps.app.goo.gl/PTajY8dV2BRmKpuWA?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00008.jpg",
+      "caption": [
+        "台北中山 (中山國小站) 銀座 篝",
+        "私心推薦 & 印象深刻 ★★★★",
+        "(等候時間 30 - 60 minutes)",
+        "2024.06.30"
+      ],
+      "link": "https://maps.app.goo.gl/py7nEBPWUgWXEvZWA?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00009.jpg",
+      "caption": [
+        "台北北投 (北投站) 樂山窄巷拉麵",
+        "私心推薦 & 印象深刻 ★★★",
+        "(等候時間 10 - 30 minutes)",
+        "2024.06.24"
+      ],
+      "link": "https://maps.app.goo.gl/mCKVi4LCPADUwRpQ8?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00010.jpg",
+      "caption": [
+        "台北內湖 (東湖站) 麵屋昕家",
+        "私心推薦 & 印象深刻 ★★★",
+        "(等候時間 10 - 30 minutes)",
+        "2024.06.08"
+      ],
+      "link": "https://maps.app.goo.gl/CjpC3qtv5YUymDzN6?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00011.jpg",
+      "caption": [
+        "台北信義 (台北101站) 伊禾白湯",
+        "私心推薦 & 印象深刻 ★★★★★",
+        "(等候時間 120 - 150 minutes)",
+        "2024.05.31"
+      ],
+      "link": "https://maps.app.goo.gl/wLcN4FcqxWoMgPiRA?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00012.jpg",
+      "caption": [
+        "台北大安 (大安站) 森麵堂",
+        "私心推薦 & 印象深刻 ★★★★",
+        "(等候時間 10 - 30 minutes)",
+        "2024.05.11"
+      ],
+      "link": "https://maps.app.goo.gl/fQPWqN5iYyxA5Cn89?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00013.jpg",
+      "caption": [
+        "台北中山 (中山站) 塩琉",
+        "私心推薦 & 印象深刻 ★★★★★",
+        "(等候時間 30 - 60 minutes)",
+        "2024.05.04"
+      ],
+      "link": "https://maps.app.goo.gl/46cTh19xrr4LenHA7?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00014.jpg",
+      "caption": [
+        "台北大安 (科技大樓站) 山嵐拉麵",
+        "私心推薦 & 印象深刻 ★★",
+        "(等候時間 10 - 30 minutes)",
+        "2024.03.31"
+      ],
+      "link": "https://maps.app.goo.gl/ugnbRnVxWBuWQHaKA?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00015.jpg",
+      "caption": [
+        "台北大同 (中山站) 二屋牡蠣拉麵",
+        "私心推薦 & 印象深刻 ★★★★",
+        "(等候時間 60 - 90 minutes)",
+        "2024.03.17"
+      ],
+      "link": "https://maps.app.goo.gl/qdSEE5zAiC97idsC9?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00016.jpg",
+      "caption": [
+        "台北大同 (中山站) 鷹流東京醬油拉麵 - 蘭丸",
+        "私心推薦 & 印象深刻 ★★★★",
+        "(等候時間 30 - 60 minutes)",
+        "2024.03.09"
+      ],
+      "link": "https://maps.app.goo.gl/qdSEE5zAiC97idsC9?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00017.jpg",
+      "caption": [
+        "台北中山 (中山站) 麒麟創作拉麵坊",
+        "私心推薦 & 印象深刻 ★★★★★",
+        "(等候時間 90 - 120 minutes)",
+        "2024.02.24"
+      ],
+      "link": "https://maps.app.goo.gl/qN646g2WAT7QBLic8?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00018.jpg",
+      "caption": [
+        "台北中山 (南京復興站) 拉麵公子",
+        "私心推薦 & 印象深刻 ★★★★",
+        "(等候時間 10 - 30 minutes)",
+        "2024.02.18"
+      ],
+      "link": "https://maps.app.goo.gl/97MjNNEeUEEDzGXb8?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00019.jpg",
+      "caption": [
+        "高雄前金 (中央公園站) らーめん壱",
+        "私心推薦 & 印象深刻 ★★★★",
+        "(等候時間 10 - 30 minutes)",
+        "2024.02.03"
+      ],
+      "link": "https://maps.app.goo.gl/A1LuKpPJHNBbPxX36?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00020.jpg",
+      "caption": [
+        "台北大同 (北門站) 古流拉麵",
+        "私心推薦 & 印象深刻 ★★★",
+        "(等候時間 10 - 30 minutes)",
+        "2023.12.30"
+      ],
+      "link": "https://maps.app.goo.gl/aVodBUxhwgiWheMp9?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00021.jpg",
+      "caption": [
+        "台北松山 (南京東路站) 大石家拉麵",
+        "私心推薦 & 印象深刻 ★★★",
+        "(等候時間 10 - 30 minutes)",
+        "2023.12.23"
+      ],
+      "link": "https://maps.app.goo.gl/MDwgRCjqq5tMedt96?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00022.jpg",
+      "caption": [
+        "台北大安 (台電大樓站) 真劍拉麵",
+        "私心推薦 & 印象深刻 ★★★★★",
+        "(等候時間 60 - 120 minutes)",
+        "2023.12.16"
+      ],
+      "link": "https://maps.app.goo.gl/TkqaYnnbQa4PoZVK9?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00023.jpg",
+      "caption": [
+        "台北士林 (芝山站) 隱家拉麵",
+        "私心推薦 & 印象深刻 ★★★★",
+        "(等候時間 60 - 120 minutes)",
+        "2023.12.10"
+      ],
+      "link": "https://maps.app.goo.gl/hEAfqqdBQVz5dsGx9?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00024.jpg",
+      "caption": [
+        "台北中山 (中山站) 麵屋 千雲",
+        "私心推薦 & 印象深刻 ★★★★",
+        "(等候時間 30 - 60 minutes)",
+        "2023.12.03"
+      ],
+      "link": "https://maps.app.goo.gl/bRarzZpeZo47UYxg6?g_st=com.google.maps.preview"
+    },
+    {
+      "src": "gallery/ramen/00025.jpg",
+      "caption": [
+        "台北士林 (士林站) 荷麵亭",
+        "私心推薦 & 印象深刻 ★★★★",
+        "(等候時間 10 - 30 minutes)",
+        "2023.11.22"
+      ],
+      "link": "https://maps.app.goo.gl/PqgJNXTgta8EjNVf7?g_st=com.google.maps.preview"
+    }
+  ]
+}

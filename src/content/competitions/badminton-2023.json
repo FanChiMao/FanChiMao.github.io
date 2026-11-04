@@ -1,0 +1,24 @@
+{
+  "order": 1,
+  "year": 2023,
+  "title": {
+    "en": "Shuttlecock Tracking",
+    "zh-tw": "羽球追蹤",
+    "zh-cn": "羽毛球追踪",
+    "ja": "シャトル追跡"
+  },
+  "description": {
+    "en": "Use AI approaches to locate and analyze the Shuttlecock in badminton competition.",
+    "zh-tw": "使用AI方法來定位和分析羽毛球比賽中的羽毛球運動軌跡。",
+    "zh-cn": "运用 AI 方法在羽毛球比赛中进行球的位置识别与轨迹分析。",
+    "ja": "AI 技術を用いて、バドミントンの試合におけるシャトルの位置と軌道を解析します。"
+  },
+  "repo": "https://github.com/FanChiMao/Competition-2023-PyTorch-Badminton",
+  "images": [
+    "competitions/badminton-2023/1.webp",
+    "competitions/badminton-2023/2.webp",
+    "competitions/badminton-2023/3.webp",
+    "competitions/badminton-2023/4.webp",
+    "competitions/badminton-2023/5.webp"
+  ]
+}

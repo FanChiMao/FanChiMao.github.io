@@ -1,0 +1,29 @@
+{
+  "order": 5,
+  "year": 2022,
+  "venueShort": "ISCAS 2022",
+  "venue": {
+    "en": "IEEE International Symposium on Circuits and Systems (ISCAS 2022)",
+    "zh-tw": "IEEE 電路與系統國際協會 (ISCAS 2022)",
+    "zh-cn": "IEEE 电路与系统国际会议 (ISCAS 2022)",
+    "ja": "IEEE 回路とシステム国際会議 (ISCAS 2022)"
+  },
+  "title": {
+    "en": "SUNet: Swin Transformer UNet for Image Denoising",
+    "zh-tw": "SUNet: 基於 Swin Transformer 的 UNet 用於圖像去噪",
+    "zh-cn": "SUNet：基于 Swin Transformer 的 UNet 图像去噪方法",
+    "ja": "SUNet：Swin Transformer を用いた UNet による画像ノイズ除去"
+  },
+  "abstract": {
+    "en": "Image restoration is a challenging ill-posed problem which also has been a long-standing issue. In the past few years, the convolution neural networks (CNNs) almost dominated the computer vision and had achieved considerable success in different levels of vision tasks including image restoration. However, recently the Swin Transformer-based model also shows impressive performance, even surpasses the CNN-based methods to become the state-of-the-art on high-level vision tasks. In this paper, we proposed a restoration model called SUNet which uses the Swin Transformer layer as our basic block and then is applied to UNet architecture for image denoising.",
+    "zh-tw": "圖像修復是一個具有挑戰性的 ill-posed 問題，並且長期以來一直是研究的難題。過去幾年，卷積神經網絡 (CNNs) 幾乎主導了計算機視覺領域，並在包括圖像修復在內的不同層次的視覺任務中取得了相當的成功。然而，最近基於 Swin Transformer 的模型也展示了令人印象深刻的表現，甚至超越了基於 CNN 的方法，成為高層次視覺任務的最新技術。在本文中，我們提出了一個名為 SUNet 的修復模型，該模型使用 Swin Transformer 層作為基本模塊，並將其應用於 UNet 架構來進行圖像去噪。",
+    "zh-cn": "图像修复是一个具有挑战性的 ill-posed 问题，也是长期存在的难题。在过去几年里，卷积神经网络（CNN）几乎主导了整个计算机视觉领域，并在包括图像修复在内的各类视觉任务中取得了显著成功。然而，近期基于 Swin Transformer 的模型也展现出令人惊艳的性能，甚至在高阶视觉任务上超越了 CNN 方法，成为最新的主流。在本文中，我们提出了一个名为 SUNet 的图像修复模型，使用 Swin Transformer 层作为基础模块，并将其应用于 UNet 架构以完成图像去噪任务。",
+    "ja": "画像復元は、長年にわたり取り組まれてきた困難な ill-posed 問題です。近年では、畳み込みニューラルネットワーク（CNN）がコンピュータビジョン分野をほぼ独占し、画像復元を含む様々なタスクで顕著な成果を上げてきました。しかし、最近では Swin Transformer ベースのモデルが優れた性能を示し、高レベルな視覚タスクにおいては CNN を超える最新のアプローチとなっています。本研究では、Swin Transformer レイヤを基本ブロックとして採用し、それを UNet アーキテクチャに組み込んだ復元モデル「SUNet」を提案します。本モデルは画像ノイズ除去に応用されます。"
+  },
+  "links": {
+    "paper": "https://ieeexplore.ieee.org/document/9937486",
+    "code": "https://github.com/FanChiMao/SUNet",
+    "video": "XQsFxGaDTGk"
+  },
+  "media": "/media/papers/sunet.webp"
+}

@@ -1,0 +1,69 @@
+{
+  "order": 0,
+  "emoji": "🌌",
+  "title": {
+    "en": "Starry Sky",
+    "zh-tw": "星空",
+    "zh-cn": "星空",
+    "ja": "星空"
+  },
+  "cover": "gallery/starry_sky/00000.jpg",
+  "photos": [
+    {
+      "src": "gallery/starry_sky/00000.jpg",
+      "caption": [
+        "三貂角燈塔銀河",
+        "2024.09.09"
+      ]
+    },
+    {
+      "src": "gallery/starry_sky/00001.jpg",
+      "caption": [
+        "三貂角燈塔銀河",
+        "2024.09.09"
+      ]
+    },
+    {
+      "src": "gallery/starry_sky/00002.jpg",
+      "caption": [
+        "三貂角燈塔銀河",
+        "2024.09.09"
+      ]
+    },
+    {
+      "src": "gallery/starry_sky/00003.jpg",
+      "caption": [
+        "三貂角燈塔銀河",
+        "2024.09.09"
+      ]
+    },
+    {
+      "src": "gallery/starry_sky/00004.jpg",
+      "caption": [
+        "三貂角燈塔銀河",
+        "2024.09.09"
+      ]
+    },
+    {
+      "src": "gallery/starry_sky/00005.jpg",
+      "caption": [
+        "陽明山擎天崗 雙子座流星雨",
+        "2023.12.14"
+      ]
+    },
+    {
+      "src": "gallery/starry_sky/00006.jpg",
+      "caption": [
+        "陽明山擎天崗 雙子座流星雨",
+        "2023.12.14"
+      ]
+    },
+    {
+      "src": "gallery/starry_sky/00007.jpg",
+      "caption": [
+        "陽明山擎天崗 雙子座流星雨",
+        "2023.12.14"
+      ]
+    }
+  ]
+}

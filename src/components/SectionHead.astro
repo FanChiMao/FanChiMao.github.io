@@ -1,0 +1,22 @@
+---
+interface Props {
+  index: number;
+  title: string;
+  lead?: string;
+}
+const { index, title, lead } = Astro.props;
+---
+
+<header class="section-head" data-reveal>
+  <span class="section-kicker">{String(index).padStart(2, '0')}</span>
+  <h2 class="section-title">{title}</h2>
+  {lead && <p class="section-lead">{lead}</p>}
+</header>
+
+<style>
+  .section-lead {
+    max-width: 42rem;
+    color: var(--muted);
+    font-size: 1.05rem;
+  }
+</style>

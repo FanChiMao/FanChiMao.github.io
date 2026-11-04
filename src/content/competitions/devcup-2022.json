@@ -1,0 +1,26 @@
+{
+  "order": 2,
+  "year": 2022,
+  "title": {
+    "en": "Music Transcription",
+    "zh-tw": "音訊轉譜",
+    "zh-cn": "音频转谱",
+    "ja": "音声譜面変換"
+  },
+  "description": {
+    "en": "Developed an AI application integrating source separation and audio transcription to convert music input into sheet music. Awarded 3rd place in Intel DevCUP.",
+    "zh-tw": "整合音源分離與音訊轉錄的AI模型應用程式,將輸入的音樂轉換成樂譜。 取得 Intel DevCUP 第三名。",
+    "zh-cn": "整合音源分离与音频转录的 AI 模型应用程序，将输入的音乐转换为乐谱。获得 Intel DevCUP 第三名。",
+    "ja": "音源分離と音声転写を統合した AI アプリケーションを開発し、音楽入力を楽譜に変換。Intel DevCUP にて第3位を受賞。"
+  },
+  "repo": "https://github.com/FanChiMao/Competition-2022-OpenVINO-Devcup",
+  "images": [
+    "competitions/devcup-2022/1.webp",
+    "competitions/devcup-2022/2.webp",
+    "competitions/devcup-2022/3.webp",
+    "competitions/devcup-2022/4.webp",
+    "competitions/devcup-2022/5.webp",
+    "competitions/devcup-2022/6.webp",
+    "competitions/devcup-2022/7.webp"
+  ]
+}

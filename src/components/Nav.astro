@@ -1,0 +1,413 @@
+---
+import { Icon } from 'astro-icon/components';
+import { locales, localeMeta, localePath, ui, type Locale } from '@/i18n/ui';
+
+interface Props {
+  lang: Locale;
+  path: string;
+  /** On the home page links are in-page anchors with scroll-spy. */
+  home?: boolean;
+}
+const { lang, path, home = false } = Astro.props;
+const t = ui[lang];
+const homeHref = localePath(lang, '/');
+const sections = ['about', 'experience', 'competitions', 'publications', 'education', 'skills', 'gallery', 'contact'] as const;
+const href = (id: string) => (home ? `#${id}` : `${homeHref}#${id}`);
+---
+
+<header class="nav" data-nav data-home={home ? '' : undefined}>
+  <div class="nav__inner container">
+    <a class="nav__brand" href={homeHref} aria-label="Chi-Mao Fan — home">
+      <span class="nav__logo" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><path d="M2 16c3 0 3-8 6-8s3 16 6 16 3-16 6-16 3 16 6 16 3-8 4-8" /></svg>
+      </span>
+      <span class="nav__name">Chi-Mao Fan</span>
+    </a>
+
+    <nav class="nav__links" aria-label="Primary" data-nav-panel>
+      <ul>
+        {
+          sections.map((id, i) => (
+            <li style={`--i:${i}`}>
+              <a href={href(id)} data-spy={id}>
+                {t.nav[id]}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="nav__actions">
+      <details class="lang" data-lang-menu>
+        <summary class="icon-btn" aria-label={t.a11y.language}>
+          <Icon name="lucide:languages" />
+        </summary>
+        <ul class="lang__menu card">
+          {
+            locales.map((l) => (
+              <li>
+                <a href={localePath(l, path)} hreflang={localeMeta[l].htmlLang} lang={localeMeta[l].htmlLang} aria-current={l === lang ? 'true' : undefined}>
+                  <span class="lang__short">{localeMeta[l].short}</span>
+                  {localeMeta[l].label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </details>
+      <button class="icon-btn theme-toggle" type="button" data-theme-toggle aria-label={t.a11y.theme}>
+        <Icon name="lucide:sun" class="theme-toggle__sun" />
+        <Icon name="lucide:moon" class="theme-toggle__moon" />
+      </button>
+      <button class="icon-btn nav__burger" type="button" data-nav-toggle aria-expanded="false" aria-label={t.a11y.openMenu} data-label-open={t.a11y.openMenu} data-label-close={t.a11y.closeMenu}>
+        <span class="burger" aria-hidden="true"><span></span><span></span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<script>
+  const nav = document.querySelector<HTMLElement>('[data-nav]')!;
+  const toggle = nav.querySelector<HTMLButtonElement>('[data-nav-toggle]')!;
+  const langMenu = nav.querySelector<HTMLDetailsElement>('[data-lang-menu]')!;
+
+  // Elevated style once the page scrolls.
+  const onScroll = () => nav.classList.toggle('is-scrolled', scrollY > 24);
+  onScroll();
+  addEventListener('scroll', onScroll, { passive: true });
+
+  // Mobile menu
+  const setOpen = (open: boolean) => {
+    nav.classList.toggle('is-open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', (open ? toggle.dataset.labelClose : toggle.dataset.labelOpen) ?? '');
+    document.documentElement.classList.toggle('nav-locked', open);
+  };
+  toggle.addEventListener('click', () => setOpen(!nav.classList.contains('is-open')));
+  nav.querySelectorAll('[data-nav-panel] a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+  addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    setOpen(false);
+    langMenu.open = false;
+  });
+  matchMedia('(min-width: 960px)').addEventListener('change', () => setOpen(false));
+
+  // Close language menu on outside click.
+  document.addEventListener('click', (e) => {
+    if (langMenu.open && !langMenu.contains(e.target as Node)) langMenu.open = false;
+  });
+
+  // Scroll-spy on the home page.
+  if (nav.hasAttribute('data-home')) {
+    const links = new Map<string, HTMLElement>();
+    nav.querySelectorAll<HTMLElement>('[data-spy]').forEach((a) => links.set(a.dataset.spy!, a));
+    const visible = new Map<string, number>();
+    const spy = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) visible.set(e.target.id, e.isIntersecting ? e.intersectionRatio : 0);
+        let best = '';
+        let max = 0;
+        for (const [id, r] of visible) if (r > max) [best, max] = [id, r];
+        links.forEach((a, id) => a.classList.toggle('is-active', id === best));
+      },
+      { rootMargin: '-35% 0px -55% 0px', threshold: [0, 0.25, 0.5, 1] },
+    );
+    links.forEach((_, id) => {
+      const s = document.getElementById(id);
+      if (s) spy.observe(s);
+    });
+  }
+</script>
+
+<style>
+  .nav {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 50;
+    height: var(--nav-h);
+    color: var(--hero-ink);
+    transition:
+      background-color 0.35s,
+      border-color 0.35s,
+      color 0.35s,
+      backdrop-filter 0.35s;
+    border-bottom: 1px solid transparent;
+  }
+  .nav:not([data-home]),
+  .nav.is-scrolled,
+  .nav.is-open {
+    color: var(--text);
+    background: var(--glass);
+    backdrop-filter: saturate(1.6) blur(16px);
+    -webkit-backdrop-filter: saturate(1.6) blur(16px);
+    border-bottom-color: var(--border);
+  }
+  .nav__inner {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .nav__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-display);
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    font-size: 1.05rem;
+    margin-right: auto;
+  }
+  .nav__logo {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  }
+  .nav__logo svg {
+    width: 22px;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 80;
+    stroke-dashoffset: 80;
+    animation: draw 1.6s 0.3s var(--ease-out) forwards;
+  }
+  .nav__brand:hover .nav__logo svg {
+    animation: draw 1.2s var(--ease-out) both;
+  }
+  @keyframes draw {
+    from {
+      stroke-dashoffset: 80;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .nav__links ul {
+    display: flex;
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .nav__links a {
+    position: relative;
+    display: block;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 999px;
+    opacity: 0.82;
+    transition:
+      opacity 0.2s,
+      background-color 0.2s;
+  }
+  .nav__links a:hover {
+    opacity: 1;
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
+  .nav__links a::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 2px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+    transform: translateX(-50%) scale(0);
+    transition: transform 0.3s var(--ease-out);
+  }
+  .nav__links a.is-active {
+    opacity: 1;
+  }
+  .nav__links a.is-active::after {
+    transform: translateX(-50%) scale(1);
+  }
+
+  .nav__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .nav .icon-btn {
+    color: inherit;
+  }
+  .nav .icon-btn:hover {
+    background: color-mix(in srgb, currentColor 10%, transparent);
+  }
+
+  /* Theme toggle icon swap */
+  .theme-toggle {
+    position: relative;
+  }
+  .theme-toggle :global(svg) {
+    position: absolute;
+    transition:
+      transform 0.5s var(--ease-out),
+      opacity 0.3s;
+  }
+  :global([data-theme='dark']) .theme-toggle :global(.theme-toggle__sun),
+  :global([data-theme='light']) .theme-toggle :global(.theme-toggle__moon) {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.5);
+  }
+
+  /* Language dropdown */
+  .lang {
+    position: relative;
+  }
+  .lang summary {
+    list-style: none;
+  }
+  .lang summary::-webkit-details-marker {
+    display: none;
+  }
+  .lang__menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    min-width: 170px;
+    margin: 0;
+    padding: 0.4rem;
+    list-style: none;
+    color: var(--text);
+    box-shadow: var(--shadow-lg);
+    border-radius: var(--radius);
+    transform-origin: top right;
+    animation: pop 0.22s var(--ease-out);
+  }
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.97);
+    }
+  }
+  .lang__menu a {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.5rem 0.65rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.92rem;
+  }
+  .lang__menu a:hover {
+    background: var(--surface-2);
+  }
+  .lang__menu a[aria-current] {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .lang__short {
+    display: inline-grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    background: var(--surface-2);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  /* Burger */
+  .nav__burger {
+    display: none;
+  }
+  .burger {
+    position: relative;
+    width: 18px;
+    height: 12px;
+  }
+  .burger span {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    transition:
+      transform 0.35s var(--ease-out),
+      top 0.35s var(--ease-out);
+  }
+  .burger span:first-child {
+    top: 1px;
+  }
+  .burger span:last-child {
+    top: 9px;
+  }
+  .is-open .burger span:first-child {
+    top: 5px;
+    transform: rotate(45deg);
+  }
+  .is-open .burger span:last-child {
+    top: 5px;
+    transform: rotate(-45deg);
+  }
+
+  @media (max-width: 959px) {
+    .nav__burger {
+      display: inline-grid;
+    }
+    .nav__links {
+      /* absolute, not fixed: backdrop-filter on .nav makes it the containing block */
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      height: calc(100dvh - var(--nav-h));
+      padding: 1.5rem var(--gutter) 3rem;
+      background: var(--bg);
+      overflow-y: auto;
+      visibility: hidden;
+      opacity: 0;
+      transition:
+        opacity 0.3s,
+        visibility 0.3s;
+    }
+    .is-open .nav__links {
+      visibility: visible;
+      opacity: 1;
+    }
+    .nav__links ul {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .nav__links li {
+      opacity: 0;
+      transform: translateY(12px);
+      transition:
+        opacity 0.4s var(--ease-out),
+        transform 0.4s var(--ease-out);
+      transition-delay: calc(var(--i) * 40ms);
+    }
+    .is-open .nav__links li {
+      opacity: 1;
+      transform: none;
+    }
+    .nav__links a {
+      font-family: var(--font-display);
+      font-size: 1.75rem;
+      font-weight: 600;
+      padding: 0.6rem 0;
+      border-radius: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .nav__links a:hover {
+      background: none;
+      color: var(--accent);
+    }
+    .nav__links a::after {
+      display: none;
+    }
+  }
+  :global(.nav-locked) {
+    overflow: hidden;
+  }
+</style>
