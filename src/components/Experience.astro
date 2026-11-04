@@ -120,6 +120,9 @@ const items = (await getCollection('experience')).sort((a, b) => a.data.order - 
 
   .tl-item {
     position: relative;
+    /* The reveal animation makes each item its own stacking context, so lift the whole
+       item above the timeline's ::after progress line (which is transformed and painted later). */
+    z-index: 1;
   }
   .tl-dot {
     position: absolute;
