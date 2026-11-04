@@ -97,13 +97,18 @@ for (const c of items) {
   const grid = document.querySelector<HTMLElement>('[data-comp-grid]');
   const btn = document.querySelector<HTMLButtonElement>('[data-comp-more]');
   if (grid && btn) {
-    // Collapse only when JS runs, so every card stays reachable without it.
-    grid.classList.add('is-collapsed');
+    // Extras are hidden by CSS once <html> has .js (set before paint, so no layout shift);
+    // without JS every card stays visible. A language switch may arrive pre-expanded.
+    const sync = () => {
+      const expanded = grid.classList.contains('is-expanded');
+      btn.setAttribute('aria-expanded', String(expanded));
+      btn.querySelector('[data-label]')!.textContent = (expanded ? btn.dataset.less : btn.dataset.more) ?? '';
+    };
+    sync();
     btn.addEventListener('click', () => {
-      const expand = grid.classList.contains('is-collapsed');
-      grid.classList.toggle('is-collapsed', !expand);
-      btn.setAttribute('aria-expanded', String(expand));
-      btn.querySelector('[data-label]')!.textContent = (expand ? btn.dataset.less : btn.dataset.more) ?? '';
+      const expand = !grid.classList.contains('is-expanded');
+      grid.classList.toggle('is-expanded', expand);
+      sync();
       // Newly shown cards are revealed by the global IntersectionObserver.
       if (!expand) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
@@ -170,7 +175,7 @@ for (const c of items) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.5rem;
   }
-  .comp-grid:global(.is-collapsed) [data-extra] {
+  :global(.js) .comp-grid:not(:global(.is-expanded)) [data-extra] {
     display: none;
   }
   .comp {

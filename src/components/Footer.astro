@@ -40,7 +40,7 @@ const vmQuery = new URLSearchParams({ d: vm.id, w: String(vm.width), t: 'm', ...
       {
         locales.map((l) => (
           <li>
-            <a href={localePath(l, path)} lang={localeMeta[l].htmlLang} aria-current={l === lang ? 'true' : undefined}>
+            <a data-lang-link href={localePath(l, path)} lang={localeMeta[l].htmlLang} aria-current={l === lang ? 'true' : undefined}>
               {localeMeta[l].label}
             </a>
           </li>
