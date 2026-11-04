@@ -83,3 +83,10 @@
     background-color 0.35s,
     border-color 0.35s;
 }
+/* Its icon buttons inherit that ink: a colour transition of their own would be restarted
+   by Chromium on every frame of the nav's (visible flicker), so they just follow it. */
+:root[data-world='personal']:has([data-theme-scene]) [data-nav] .icon-btn {
+  transition:
+    background-color 0.2s,
+    transform 0.2s;
+}
