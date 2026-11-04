@@ -119,7 +119,7 @@ const en = {
     copy: 'Copy email',
     copied: 'Copied!',
   },
-  footer: { rights: 'All rights reserved.', built: 'Built with Astro' },
+  footer: { visitors: 'Visitors around the world', rights: 'All rights reserved.', built: 'Built with Astro' },
 };
 
 export type UI = typeof en;
@@ -223,7 +223,7 @@ const zhTw: UI = {
     copy: '複製信箱',
     copied: '已複製！',
   },
-  footer: { rights: '版權所有。', built: '以 Astro 打造' },
+  footer: { visitors: '世界各地的訪客', rights: '版權所有。', built: '以 Astro 打造' },
 };
 
 const zhCn: UI = {
@@ -325,7 +325,7 @@ const zhCn: UI = {
     copy: '复制邮箱',
     copied: '已复制！',
   },
-  footer: { rights: '版权所有。', built: '使用 Astro 构建' },
+  footer: { visitors: '世界各地的访客', rights: '版权所有。', built: '使用 Astro 构建' },
 };
 
 const ja: UI = {
@@ -427,7 +427,7 @@ const ja: UI = {
     copy: 'メールをコピー',
     copied: 'コピーしました！',
   },
-  footer: { rights: 'All rights reserved.', built: 'Built with Astro' },
+  footer: { visitors: '世界中からの訪問者', rights: 'All rights reserved.', built: 'Built with Astro' },
 };
 
 export const ui: Record<Locale, UI> = { en, 'zh-tw': zhTw, 'zh-cn': zhCn, ja };

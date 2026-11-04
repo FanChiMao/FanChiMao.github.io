@@ -30,5 +30,12 @@ export const site = {
   /** Shown in About. Keep these short; project cards list their own tech. */
   focus: ['Computer Vision', 'Deep Learning', 'Oriented Object Detection', 'Image Restoration', 'Anomaly Detection', 'Object Tracking', 'Signal Analysis', 'AI Product Integration'],
   stack: ['Python', 'PyTorch', 'FastAPI', 'PostgreSQL', 'Vue 3', 'TypeScript'],
-  clustrmaps: 'HYO7zzkolzYzN5D-YRL2t4qZkV5snbeKywIK6D79vqc',
+  /** MapMyVisitors widget (footer of the home page). */
+  visitorMap: {
+    id: 'OYm-Ji_nuH6XJYyE9CcUUTW8ncME_bxBRGMa1_ZBT3E',
+    page: 'https://mapmyvisitors.com/web/1c9ai',
+    /** Colours (hex, no #): co = ocean / background, cl = land, ct = text. Fixed PNG, so it cannot follow the theme. */
+    colors: { co: '0b1424', cl: '3d5a80', ct: 'c9d6ea' },
+    width: 300,
+  },
 } as const;

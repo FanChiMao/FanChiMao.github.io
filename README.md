@@ -19,7 +19,7 @@ Requires Node 24 (see `.nvmrc`).
 | What | Where |
 | --- | --- |
 | UI text in all 4 languages (nav, headings, hero, about, buttons…) | `src/i18n/ui.ts` |
-| Email, phone, résumé link, social links, focus areas, core stack | `src/lib/site.ts` |
+| Email, phone, résumé link, social links, focus areas, core stack, visitor map (MapMyVisitors) | `src/lib/site.ts` |
 | Work experience, incl. per-product periods | `src/content/experience/*.json` |
 | Patents (link to the verified Google Patents page) | `src/content/patents/*.json` |
 | Competitions | `src/content/competitions/*.json` + images in `src/assets/competitions/<id>/` |

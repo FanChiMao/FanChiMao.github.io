@@ -12,10 +12,13 @@ interface Props {
 const { lang, path, visitors = false } = Astro.props;
 const t = ui[lang];
 const year = new Date().getFullYear();
+const vm = site.visitorMap;
+const vmQuery = new URLSearchParams({ d: vm.id, w: String(vm.width), t: 'm', ...vm.colors }).toString();
 ---
 
 <footer class="footer">
   <div class="container footer__inner">
+    <div class="footer__main">
     <div class="footer__brand">
       <p class="footer__name">Chi-Mao Fan · 范植貿</p>
       <p class="footer__copy">© {year} {site.name}. {t.footer.rights}</p>
@@ -45,11 +48,24 @@ const year = new Date().getFullYear();
       }
     </ul>
 
+    </div>
+
     {
       visitors && (
-        <div class="footer__visitors">
-          <script is:inline type="text/javascript" id="clustrmaps" onerror="this.parentElement.remove()" src={`https://cdn.clustrmaps.com/map_v2.js?cl=1da1f2&w=240&t=n&d=${site.clustrmaps}&co=f2f3f7&ct=2d2121`}></script>
-        </div>
+        <figure class="footer__visitors">
+          <figcaption>
+            <Icon name="lucide:globe" />
+            {t.footer.visitors}
+          </figcaption>
+          <div class="footer__map">
+            <script is:inline type="text/javascript" id="mapmyvisitors" src={`https://mapmyvisitors.com/map.js?${vmQuery}`} onerror="this.closest('figure').remove()"></script>
+            <noscript>
+              <a href={vm.page} title="Visit tracker" target="_blank" rel="noopener">
+                <img src={`https://mapmyvisitors.com/map.png?d=${vm.id}&cl=${vm.colors.cl}`} alt={t.footer.visitors} width={vm.width} loading="lazy" />
+              </a>
+            </noscript>
+          </div>
+        </figure>
       )
     }
   </div>
@@ -64,9 +80,14 @@ const year = new Date().getFullYear();
   }
   .footer__inner {
     display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 1.5rem 2rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2rem;
     align-items: center;
+  }
+  .footer__main {
+    display: grid;
+    gap: 1.1rem;
+    justify-items: start;
   }
   .footer__name {
     font-family: var(--font-display);
@@ -99,19 +120,48 @@ const year = new Date().getFullYear();
     color: var(--accent);
   }
   .footer__visitors {
-    justify-self: end;
-    grid-row: span 1;
-    max-width: 240px;
+    margin: 0;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: #0b1424;
+    box-shadow: var(--shadow-sm);
+  }
+  .footer__visitors figcaption {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0 0 0.6rem 0.15rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #9fb3d1;
+  }
+  .footer__visitors figcaption :global(svg) {
+    width: 14px;
+    height: 14px;
+    color: #5cc6ff;
+  }
+  .footer__map {
+    width: 300px;
+    max-width: 100%;
+    min-height: 147px;
     border-radius: var(--radius-sm);
     overflow: hidden;
-    opacity: 0.85;
   }
-  @media (max-width: 700px) {
+  .footer__map :global(img) {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+  @media (max-width: 760px) {
     .footer__inner {
       grid-template-columns: 1fr;
     }
     .footer__visitors {
       justify-self: start;
+      max-width: 100%;
     }
   }
 </style>
