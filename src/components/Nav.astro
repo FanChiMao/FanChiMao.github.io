@@ -11,7 +11,7 @@ interface Props {
 const { lang, path, home = false } = Astro.props;
 const t = ui[lang];
 const homeHref = localePath(lang, '/');
-const sections = ['about', 'projects', 'experience', 'publications', 'patents', 'awards', 'education', 'gallery', 'contact'] as const;
+const sections = ['about', 'experience', 'publications', 'patents', 'competitions', 'education', 'gallery', 'contact'] as const;
 const href = (id: string) => (home ? `#${id}` : `${homeHref}#${id}`);
 ---
 

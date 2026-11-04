@@ -1,0 +1,31 @@
+{
+  "order": 0,
+  "year": 2024,
+  "title": {
+    "en": "Low-Frame-Rate Vehicle Tracking",
+    "zh-tw": "低影格率車輛追蹤",
+    "zh-cn": "低帧率车辆跟踪",
+    "ja": "低フレームレート車両追跡"
+  },
+  "description": {
+    "en": "AI CUP 2024. Contributed to the ASUS team's solution for tracking vehicles in 1 fps video, combining YOLO detector ensembles, OSNet re-identification features, and motion-based association.",
+    "zh-tw": "AI CUP 2024。參與華碩團隊方案，針對每秒 1 張影像的車輛追蹤，整合 YOLO 模型集成、OSNet 再辨識特徵與運動資訊。",
+    "zh-cn": "AI CUP 2024。参与华硕团队方案，针对每秒 1 张图像的车辆跟踪，整合 YOLO 模型集成、OSNet 重识别特征与运动信息。",
+    "ja": "AI CUP 2024。ASUSチームの一員として、1 fps 映像での車両追跡に取り組み、YOLO 検出器のアンサンブル、OSNet の再識別特徴、動き情報による対応付けを組み合わせました。"
+  },
+  "achievement": {
+    "en": "Team result: 2nd of 286 teams",
+    "zh-tw": "團隊成果：286 隊中第 2 名",
+    "zh-cn": "团队成果：286 队中第 2 名",
+    "ja": "チーム成績：286チーム中2位"
+  },
+  "repo": "https://github.com/FanChiMao/Competition-2024-PyTorch-Tracking",
+  "images": [
+    "competitions/tracking-2024/0.webp",
+    "competitions/tracking-2024/1.webp",
+    "competitions/tracking-2024/2.webp",
+    "competitions/tracking-2024/3.webp",
+    "competitions/tracking-2024/4.webp",
+    "competitions/tracking-2024/5.webp"
+  ]
+}

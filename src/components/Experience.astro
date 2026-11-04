@@ -14,7 +14,7 @@ const items = (await getCollection('experience')).sort((a, b) => a.data.order - 
 
 <section class="section" id="experience">
   <div class="container">
-    <SectionHead index={3} title={t.headings.experience} />
+    <SectionHead index={2} title={t.headings.experience} />
     <ol class="timeline">
       {
         items.map(({ data }, i) => (

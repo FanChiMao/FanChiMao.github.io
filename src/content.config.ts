@@ -27,29 +27,6 @@ const experience = defineCollection({
   }),
 });
 
-const projects = defineCollection({
-  loader: glob({ pattern: '*.json', base: './src/content/projects' }),
-  schema: z.object({
-    order: z.number(),
-    /** Featured projects get a large card; the rest go to "More projects". */
-    featured: z.boolean(),
-    period: z.string(),
-    kind: t,
-    title: t,
-    summary: t,
-    description: t.optional(),
-    role: t.optional(),
-    /** Must be backed by a public source (e.g. the repo README). */
-    achievement: t.optional(),
-    tech: z.array(z.string()),
-    repo: z.url(),
-    /** YouTube video id */
-    video: z.string().optional(),
-    images: z.array(asset).optional(),
-    /** Icon shown when there are no screenshots. */
-    icon: z.string().optional(),
-  }),
-});
 
 const patents = defineCollection({
   loader: glob({ pattern: '*.json', base: './src/content/patents' }),
@@ -67,19 +44,6 @@ const patents = defineCollection({
   }),
 });
 
-const honors = defineCollection({
-  loader: glob({ pattern: '*.json', base: './src/content/honors' }),
-  schema: z.object({
-    order: z.number(),
-    year: z.number(),
-    title: t,
-    detail: t,
-    /** Team results must be labelled as such. */
-    team: z.boolean(),
-    /** In-page anchor or external evidence link. */
-    href: z.string().optional(),
-  }),
-});
 
 const competitions = defineCollection({
   loader: glob({ pattern: '*.json', base: './src/content/competitions' }),
@@ -88,8 +52,12 @@ const competitions = defineCollection({
     year: z.number(),
     title: t,
     description: t,
+    /** Team results must be labelled as such, e.g. "Team result: 2nd of 286". */
+    achievement: t.optional(),
     repo: z.url(),
-    images: z.array(asset).min(1),
+    /** Photos; without them the card shows an icon placeholder. */
+    images: z.array(asset).optional(),
+    icon: z.string().optional(),
   }),
 });
 
@@ -141,4 +109,4 @@ const albums = defineCollection({
   }),
 });
 
-export const collections = { experience, projects, competitions, publications, patents, honors, education, albums };
+export const collections = { experience, competitions, publications, patents, education, albums };

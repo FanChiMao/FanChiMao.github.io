@@ -13,48 +13,32 @@ const { lang } = Astro.props;
 const t = ui[lang];
 const INITIAL = 4;
 const items = (await getCollection('competitions')).sort((a, b) => a.data.order - b.data.order);
-const honors = (await getCollection('honors')).sort((a, b) => a.data.order - b.data.order);
-const external = (href: string) => /^https?:/.test(href);
 ---
 
-<section class="section" id="awards">
+<section class="section" id="competitions">
   <div class="container">
-    <SectionHead index={6} title={t.headings.awards} />
-    <ol class="honors">
-      {
-        honors.map(({ data }, i) => {
-          const Tag = data.href ? 'a' : 'div';
-          return (
-            <li data-reveal style={`--i:${i % 3}`}>
-              <Tag class="card spotlight honor" href={data.href} target={data.href && external(data.href) ? '_blank' : undefined} rel={data.href && external(data.href) ? 'noopener' : undefined}>
-                <span class="honor__year">{data.year}</span>
-                <span class="honor__icon" aria-hidden="true">
-                  <Icon name={i === 0 ? 'lucide:award' : 'lucide:trophy'} />
-                </span>
-                <span class="honor__text">
-                  <strong>{data.title[lang]}</strong>
-                  <span>
-                    {data.team && <span class="badge honor__team">{t.awards.team}</span>}
-                    {data.detail[lang]}
-                  </span>
-                </span>
-                {data.href && <Icon name={external(data.href) ? 'lucide:arrow-up-right' : 'lucide:arrow-down-right'} class="honor__arrow" />}
-              </Tag>
-            </li>
-          );
-        })
-      }
-    </ol>
-
-    <h3 class="comp-heading" data-reveal>{t.awards.competitions}</h3>
+    <SectionHead index={5} title={t.headings.competitions} />
     <div class="comp-grid" data-comp-grid>
       {
         items.map(({ data }, i) => (
           <article class="card spotlight comp" data-reveal style={`--i:${i % 2}`} data-extra={i >= INITIAL ? '' : undefined}>
-            <Carousel images={data.images.map(asset)} alt={data.title[lang]} labels={t.a11y} />
+            {data.images?.length ? (
+              <Carousel images={data.images.map(asset)} alt={data.title[lang]} labels={t.a11y} />
+            ) : (
+              <div class="comp__art" aria-hidden="true">
+                <div class="comp__grid" />
+                <Icon name={data.icon ?? 'lucide:sparkles'} />
+              </div>
+            )}
             <div class="comp__body">
               <span class="badge">{data.year}</span>
               <h3 class="comp__title">{data.title[lang]}</h3>
+              {data.achievement && (
+                <p class="comp__achievement">
+                  <Icon name="lucide:trophy" />
+                  {data.achievement[lang]}
+                </p>
+              )}
               <p class="comp__desc">{data.description[lang]}</p>
               <a class="btn btn--sm comp__link" href={data.repo} target="_blank" rel="noopener">
                 <Icon name="mdi:github" />
@@ -97,82 +81,58 @@ const external = (href: string) => /^https?:/.test(href);
 </script>
 
 <style>
-  .honors {
-    display: grid;
-    gap: 0.75rem;
-    margin: 0 0 3rem;
-    padding: 0;
-    list-style: none;
-  }
-  .honor {
-    display: grid;
-    grid-template-columns: 3.5rem auto minmax(0, 1fr) auto;
-    gap: 1rem;
-    align-items: center;
-    padding: 1rem 1.25rem;
-    transition:
-      transform 0.3s var(--ease-out),
-      border-color 0.3s;
-  }
-  a.honor:hover {
-    transform: translateX(4px);
-    border-color: var(--border-strong);
-  }
-  .honor__year {
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    color: var(--muted);
-  }
-  .honor__icon {
+  .comp__art {
+    position: relative;
     display: grid;
     place-items: center;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    isolation: isolate;
+    background:
+      radial-gradient(60% 70% at 30% 30%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 70%),
+      radial-gradient(50% 60% at 80% 80%, color-mix(in srgb, var(--accent-2) 30%, transparent), transparent 70%),
+      var(--surface-2);
+  }
+  .comp__grid {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: radial-gradient(closest-side, #000, transparent);
+    animation: drift 18s linear infinite;
+  }
+  @keyframes drift {
+    to {
+      background-position: 28px 28px;
+    }
+  }
+  .comp__art > :global(svg) {
+    width: 72px;
+    height: 72px;
+    color: var(--accent);
+    filter: drop-shadow(0 8px 24px color-mix(in srgb, var(--accent) 45%, transparent));
+  }
+  .comp__achievement {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
     background: var(--gold-soft);
     color: var(--gold);
+    font-size: 0.88rem;
+    font-weight: 600;
   }
-  .honor__icon :global(svg) {
-    width: 18px;
-    height: 18px;
+  .comp__achievement :global(svg) {
+    width: 16px;
+    height: 16px;
   }
-  .honor__text {
-    display: grid;
-    gap: 0.15rem;
-  }
-  .honor__text strong {
-    font-family: var(--font-display);
-    font-size: 1.02rem;
-    line-height: 1.35;
-  }
-  .honor__text > span {
-    color: var(--text-2);
-    font-size: 0.92rem;
-  }
-  .honor__team {
-    margin-right: 0.5rem;
-    vertical-align: 0.1em;
-  }
-  .honor :global(.honor__arrow) {
-    width: 18px;
-    color: var(--muted);
-    transition: color 0.25s;
-  }
-  a.honor:hover :global(.honor__arrow) {
-    color: var(--accent);
-  }
-  .comp-heading {
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
-    color: var(--text-2);
-  }
-  @media (max-width: 600px) {
-    .honor {
-      grid-template-columns: auto minmax(0, 1fr) auto;
-    }
-    .honor__year {
-      grid-column: 1 / -1;
-      margin-bottom: -0.5rem;
+  @media (prefers-reduced-motion: reduce) {
+    .comp__grid {
+      animation: none;
     }
   }
   .comp-grid {

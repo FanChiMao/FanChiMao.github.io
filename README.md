@@ -20,10 +20,8 @@ Requires Node 24 (see `.nvmrc`).
 | --- | --- |
 | UI text in all 4 languages (nav, headings, hero, about, buttons…) | `src/i18n/ui.ts` |
 | Email, phone, résumé link, social links, focus areas, core stack | `src/lib/site.ts` |
-| Selected projects (`featured: true`) and "More projects" | `src/content/projects/*.json` + screenshots in `src/assets/projects/<id>/` |
 | Work experience, incl. per-product periods | `src/content/experience/*.json` |
-| Patents (set `officialUrl` only after verifying the permanent link) | `src/content/patents/*.json` |
-| Awards list (mark team results with `"team": true`) | `src/content/honors/*.json` |
+| Patents (link to the verified Google Patents page) | `src/content/patents/*.json` |
 | Competitions | `src/content/competitions/*.json` + images in `src/assets/competitions/<id>/` |
 | Publications | `src/content/publications/*.json` + previews in `public/media/papers/` |
 | Education | `src/content/education/*.json` |
@@ -44,6 +42,7 @@ Every translatable field is an object with `en`, `zh-tw`, `zh-cn` and `ja` keys 
   "year": 2025,
   "title": { "en": "…", "zh-tw": "…", "zh-cn": "…", "ja": "…" },
   "description": { "en": "…", "zh-tw": "…", "zh-cn": "…", "ja": "…" },
+  "achievement": { "en": "Team result: …", "zh-tw": "團隊成果：…", "zh-cn": "…", "ja": "…" },
   "repo": "https://github.com/FanChiMao/…",
   "images": ["competitions/my-comp-2025/1.webp", "competitions/my-comp-2025/2.webp"]
 }

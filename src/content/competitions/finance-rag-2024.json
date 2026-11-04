@@ -1,0 +1,18 @@
+{
+  "order": 1,
+  "year": 2024,
+  "title": {
+    "en": "RAG for Financial Q&A",
+    "zh-tw": "RAG 與 LLM 金融問答",
+    "zh-cn": "RAG 与 LLM 金融问答",
+    "ja": "金融QAのための RAG"
+  },
+  "description": {
+    "en": "AI CUP 2024, as part of TEAM_6029. Built a reproducible workflow that retrieves the relevant evidence from financial documents, with baseline and submission pipelines and precision@1 evaluation.",
+    "zh-tw": "AI CUP 2024，TEAM_6029 成員。建置金融文件相關證據的檢索流程，提供基準與提交結果的重現步驟，以及 precision@1 評估工具。",
+    "zh-cn": "AI CUP 2024，TEAM_6029 成员。构建金融文件相关证据的检索流程，提供基准与提交结果的复现步骤，以及 precision@1 评估工具。",
+    "ja": "AI CUP 2024、TEAM_6029 として参加。金融文書から根拠資料を検索するフローを再現可能な形で構築し、ベースラインと提出用パイプライン、precision@1 評価を用意しました。"
+  },
+  "repo": "https://github.com/FanChiMao/Competition-2024-PyTorch-LLMRAG",
+  "icon": "lucide:file-search"
+}

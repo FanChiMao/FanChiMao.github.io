@@ -14,11 +14,11 @@ const { lang } = Astro.props;
 const t = ui[lang];
 const pubs = await getCollection('publications');
 const patents = await getCollection('patents');
-const honors = await getCollection('honors');
+const comps = await getCollection('competitions');
 const stats = [
   { value: pubs.length, label: t.stats.papers },
   { value: patents.length, label: t.stats.patents },
-  { value: honors.length, label: t.stats.awards },
+  { value: comps.length, label: t.stats.competitions },
 ];
 ---
 

@@ -15,7 +15,7 @@ const albums = (await getCollection('albums', ({ data }) => !data.draft)).sort((
 
 <section class="section" id="gallery">
   <div class="container">
-    <SectionHead index={8} title={t.headings.gallery} lead={t.gallery.intro} />
+    <SectionHead index={7} title={t.headings.gallery} lead={t.gallery.intro} />
     <div class="albums">
       {albums.map((album, i) => <AlbumCard {lang} {album} index={i} />)}
     </div>
