@@ -70,3 +70,16 @@
 [data-world='personal'] :is(:lang(zh), :lang(ja)) :is(.pw-kicker, .abyss__eyebrow, .sky-map__hint, .sky-node__kind, .chapter__kind, .abyss__dive, .freq__cap, .stub__kind, .stub__soon) {
   letter-spacing: 0.1em;
 }
+
+/* Sunrise hero on the personal home: dark ink for the nav floating over it. */
+:root[data-world='personal'][data-theme='light']:has(.abyss) {
+  --hero-ink: #10213a;
+}
+
+/* On the personal home the nav ink changes with the sky, around the middle of its 2.4 s change. */
+:root[data-world='personal']:has([data-theme-scene]) [data-nav]:not(.is-scrolled):not(.is-open) {
+  transition:
+    color 1.7s cubic-bezier(0.7, 0, 0.3, 1),
+    background-color 0.35s,
+    border-color 0.35s;
+}

@@ -7,8 +7,56 @@
  * meets the sky seamlessly. Rendered below CSS resolution (water is soft) and
  * paused whenever it is not visible.
  *
+ * Colours and light height come from a palette (moonlit night / sunrise), swappable
+ * at runtime when the theme changes.
+ *
  * Returns null when WebGL is unavailable; the caller keeps its 2D fallback.
  */
+
+type RGB = [number, number, number];
+export type OceanPalette = {
+  /** Haze at the horizon (should match the sky just above it). */
+  horizon: RGB;
+  /** Sky high up, as seen in reflections. */
+  zenith: RGB;
+  /** Water colour looking straight down. */
+  deep: RGB;
+  /** Colour of the glitter path. */
+  light: RGB;
+  /** Glow of the sky around the light. */
+  glow: RGB;
+  /** Colour the sea settles into at the bottom (the page below). */
+  fade: RGB;
+  /** Height of the light above the horizon (direction y). */
+  lightY: number;
+  /** Glitter strength. */
+  spec: number;
+};
+
+const hex = (h: string): RGB => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255) as RGB;
+
+export const PALETTES: Record<'night' | 'dawn', OceanPalette> = {
+  night: {
+    horizon: [0.039, 0.149, 0.27],
+    zenith: [0.008, 0.031, 0.078],
+    deep: [0.004, 0.02, 0.047],
+    light: [0.78, 0.88, 1.0],
+    glow: [0.1, 0.2, 0.32],
+    fade: [0.008, 0.031, 0.078],
+    lightY: 0.09,
+    spec: 1.5,
+  },
+  dawn: {
+    horizon: hex('#f4c9a2'),
+    zenith: hex('#93b3d8'),
+    deep: hex('#2c4c6e'),
+    light: hex('#fff0c9'),
+    glow: [0.5, 0.32, 0.12],
+    fade: hex('#eef3f7'),
+    lightY: 0.025,
+    spec: 1.8,
+  },
+};
 
 const VERT = `attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}`;
 
@@ -17,12 +65,10 @@ precision mediump float;
 uniform vec2 uRes;
 uniform float uTime;
 uniform float uLightX; // screen x (0..1) of the light above the horizon
+uniform float uLightY;
+uniform float uSpec;
+uniform vec3 uHorizon, uZenith, uDeep, uLight, uGlow, uFade;
 
-const vec3 HORIZON = vec3(0.039, 0.149, 0.270);
-const vec3 ZENITH  = vec3(0.008, 0.031, 0.078);
-const vec3 DEEP    = vec3(0.004, 0.020, 0.047);
-const vec3 ABYSS   = vec3(0.008, 0.031, 0.078);
-const vec3 LIGHT   = vec3(0.75, 0.88, 1.0);
 
 float hash(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
 float noise(vec2 p){
@@ -46,10 +92,10 @@ float height(vec2 p, float dist){
 }
 
 vec3 sky(vec3 r, vec3 L){
-  vec3 c = mix(HORIZON, ZENITH, smoothstep(0.0, 0.35, r.y));
+  vec3 c = mix(uHorizon, uZenith, smoothstep(0.0, 0.35, r.y));
   // Soft glow of the light just above the horizon.
   float g = max(dot(r, L), 0.0);
-  c += vec3(0.10, 0.20, 0.32) * pow(g, 18.0);
+  c += uGlow * pow(g, 18.0);
   return c;
 }
 
@@ -57,7 +103,7 @@ void main(){
   vec2 frag = gl_FragCoord.xy;
   float v = 1.0 - frag.y / uRes.y;              // 0 at the horizon, 1 at the bottom
   float aspect = uRes.x / uRes.y;
-  vec3 L = normalize(vec3((uLightX - 0.5) * aspect * 0.32, 0.06, 1.0));
+  vec3 L = normalize(vec3((uLightX - 0.5) * aspect * 0.32, uLightY, 1.0));
   vec3 rd = normalize(vec3((frag.x / uRes.x - 0.5) * aspect * 0.32, -(v * 0.32 + 0.0015), 1.0));
   float camH = 1.6;
   float dist = camH / -rd.y;
@@ -74,17 +120,17 @@ void main(){
   float fres = 0.02 + 0.98 * pow(1.0 - max(dot(n, -rd), 0.0), 5.0);
 
   float s = max(dot(r, L), 0.0);
-  float spec = pow(s, 900.0) * 1.5 + pow(s, 120.0) * 0.14;
+  float spec = (pow(s, 900.0) + pow(s, 120.0) * 0.09) * uSpec;
 
-  vec3 col = mix(DEEP, sky(r, L), fres) + LIGHT * spec;
-  col = mix(col, HORIZON, 1.0 - exp(-dist * 0.012));  // haze towards the horizon
-  col = mix(col, ABYSS, smoothstep(0.55, 1.0, v));    // settle into the page below
+  vec3 col = mix(uDeep, sky(r, L), fres) + uLight * spec;
+  col = mix(col, uHorizon, 1.0 - exp(-dist * 0.012));  // haze towards the horizon
+  col = mix(col, uFade, smoothstep(0.55, 1.0, v));     // settle into the page below
   gl_FragColor = vec4(col, 1.0);
 }`;
 
-export type Ocean = { start: () => void; stop: () => void; resize: () => void; still: () => void };
+export type Ocean = { start: () => void; stop: () => void; resize: () => void; still: () => void; setPalette: (p: OceanPalette) => void };
 
-export function createOcean(canvas: HTMLCanvasElement): Ocean | null {
+export function createOcean(canvas: HTMLCanvasElement, palette: OceanPalette = PALETTES.night): Ocean | null {
   const gl = canvas.getContext('webgl', { alpha: false, antialias: false, depth: false, powerPreference: 'low-power' });
   if (!gl) return null;
 
@@ -113,6 +159,18 @@ export function createOcean(canvas: HTMLCanvasElement): Ocean | null {
   const uRes = gl.getUniformLocation(prog, 'uRes');
   const uTime = gl.getUniformLocation(prog, 'uTime');
   const uLightX = gl.getUniformLocation(prog, 'uLightX');
+  const u = (n: string) => gl.getUniformLocation(prog, n);
+  const applyPalette = (p: OceanPalette) => {
+    gl.uniform3fv(u('uHorizon'), p.horizon);
+    gl.uniform3fv(u('uZenith'), p.zenith);
+    gl.uniform3fv(u('uDeep'), p.deep);
+    gl.uniform3fv(u('uLight'), p.light);
+    gl.uniform3fv(u('uGlow'), p.glow);
+    gl.uniform3fv(u('uFade'), p.fade);
+    gl.uniform1f(u('uLightY'), p.lightY);
+    gl.uniform1f(u('uSpec'), p.spec);
+  };
+  applyPalette(palette);
 
   // Water is soft: render below CSS resolution and let the browser upscale.
   const scale = Math.min(devicePixelRatio || 1, 1) * 0.7;
@@ -169,6 +227,11 @@ export function createOcean(canvas: HTMLCanvasElement): Ocean | null {
     stop: () => cancelAnimationFrame(raf),
     still: () => {
       if (!lost) render(t0 + 4000);
+    },
+    setPalette: (p: OceanPalette) => {
+      if (lost) return;
+      applyPalette(p);
+      render(performance.now());
     },
   };
 }

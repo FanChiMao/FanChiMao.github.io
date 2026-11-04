@@ -19,17 +19,37 @@ const nodes = chapters.map((c) => ({ ...c, href: localePath(lang, c.path), at: p
 const line = nodes.map((n) => n.at.join(',')).join(' ');
 ---
 
-<section class="abyss" aria-labelledby="abyss-title">
+<section class="abyss" aria-labelledby="abyss-title" data-theme-scene>
+  <!-- Night sky is the section background; the sunrise sky cross-fades in over it. -->
+  <div class="abyss__day" aria-hidden="true"></div>
   <canvas class="abyss__sky" data-abyss aria-hidden="true"></canvas>
+  <!-- Moon by night, rising sun by day; both sit above the sea's glitter path (--light-x). -->
+  <div class="abyss__moon" aria-hidden="true"></div>
+  <div class="abyss__sun" aria-hidden="true"></div>
   <canvas class="abyss__sea" data-sea aria-hidden="true"></canvas>
   <div class="abyss__horizon" aria-hidden="true"></div>
+
+  <!-- Far away on the horizon: someone in a small boat, drifting slowly left to right. -->
+  <div class="abyss__boat-track" aria-hidden="true">
+    <!-- Heading right: raised bow on the right, rower leaning forward, paddle reaching ahead. -->
+    <svg class="abyss__boat" viewBox="0 0 60 26">
+      <path d="M2 18.5Q26 20 50 18L58.5 13.5Q56 20.5 51 23.5Q30 25 10 23.8Q4 22 2 18.5Z" />
+      <circle cx="24.2" cy="8.4" r="2.3" />
+      <path d="M21.2 18.2 22.2 12.6Q24.6 10.6 26.6 12.4L28.6 17.6Z" />
+      <path d="M27.4 12.9 39.6 22.3" stroke-width="0.9" stroke-linecap="round" fill="none" />
+      <ellipse cx="40.4" cy="22.9" rx="1.7" ry="0.7" transform="rotate(38 40.4 22.9)" />
+    </svg>
+  </div>
+
+  <!-- Whale breaches and their spray (lib/breach.ts). -->
+  <canvas class="abyss__fx" data-fx aria-hidden="true"></canvas>
 
   <div class="container abyss__inner">
     <div class="abyss__copy">
       <p class="abyss__eyebrow">{p.hero.eyebrow}</p>
       <h1 class="abyss__title" id="abyss-title">
-        <span class="abyss__hz serif">{p.hero.title}</span>
-        <span class="abyss__sub serif">{p.hero.subtitle}</span>
+        <span class="abyss__hz">{p.hero.title}</span>
+        <span class="abyss__sub">{p.hero.subtitle}</span>
       </h1>
       <p class="abyss__tagline">{p.hero.tagline}</p>
     </div>
@@ -64,7 +84,8 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
 </section>
 
 <script>
-  import { createOcean } from '@/lib/ocean';
+  import { createOcean, PALETTES, type OceanPalette } from '@/lib/ocean';
+  import { createBreach } from '@/lib/breach';
 
   const canvas = document.querySelector<HTMLCanvasElement>('[data-abyss]');
   const seaCanvas = document.querySelector<HTMLCanvasElement>('[data-sea]');
@@ -73,8 +94,27 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
   if (canvas && hero && ctx) {
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const HORIZON = 0.78;
+    // Light theme is a sunrise, dark theme a moonlit night. `day` (0..1) eases between
+    // them when the theme changes: stars fade, the sea's palette is interpolated.
+    const isDay = () => document.documentElement.dataset.theme === 'light';
+    let day = isDay() ? 1 : 0;
+    const lerp = (a: number[], b: number[], t: number) => a.map((v, i) => v + (b[i] - v) * t) as [number, number, number];
+    const blend = (t: number): OceanPalette => {
+      const n = PALETTES.night;
+      const d = PALETTES.dawn;
+      return { horizon: lerp(n.horizon, d.horizon, t), zenith: lerp(n.zenith, d.zenith, t), deep: lerp(n.deep, d.deep, t), light: lerp(n.light, d.light, t), glow: lerp(n.glow, d.glow, t), fade: lerp(n.fade, d.fade, t), lightY: n.lightY + (d.lightY - n.lightY) * t, spec: n.spec + (d.spec - n.spec) * t };
+    };
+    let pal = blend(day);
     // WebGL sea below the horizon; without it, the 2D canvas draws starlight glints instead.
-    let ocean = seaCanvas ? createOcean(seaCanvas) : null;
+    let ocean = seaCanvas ? createOcean(seaCanvas, pal) : null;
+    const fx = hero.querySelector<HTMLCanvasElement>('[data-fx]');
+    const breach = fx
+      ? createBreach(fx, {
+          look: () => ({ haze: pal.horizon, light: pal.light, day }),
+          waterline: () => fx.clientHeight * 0.86,
+          x: () => fx.clientWidth * (innerWidth < 900 ? 0.34 : 0.72),
+        })
+      : null;
     if (!ocean) seaCanvas?.remove();
     seaCanvas?.addEventListener('ocean:lost', () => {
       ocean = null;
@@ -116,8 +156,9 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
     const draw = (t: number) => {
       ctx.clearRect(0, 0, w, h);
       const s = t / 1000;
-      for (const st of stars) {
-        const a = reduce ? st.a : st.a * (0.62 + 0.38 * Math.sin(s * st.sp + st.ph));
+      const nightness = 1 - day;
+      if (nightness > 0.001) for (const st of stars) {
+        const a = nightness * (reduce ? st.a : st.a * (0.62 + 0.38 * Math.sin(s * st.sp + st.ph)));
         ctx.fillStyle = `rgba(222, 236, 255, ${a.toFixed(3)})`;
         ctx.beginPath();
         ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
@@ -165,6 +206,7 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
       seed();
       draw(performance.now());
       ocean?.resize();
+      breach?.resize();
       if (reduce) ocean?.still();
     };
 
@@ -175,7 +217,7 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
       raf = requestAnimationFrame(frame);
       if (t - last < 33) return; // ~30 fps is plenty for twinkling.
       last = t;
-      if (!shoot && t > nextShoot) {
+      if (!shoot && t > nextShoot && day < 0.5) {
         shoot = { x: w * (0.15 + Math.random() * 0.6), y: h * HORIZON * (0.05 + Math.random() * 0.35), vx: 220 + Math.random() * 160, vy: 90 + Math.random() * 60, t0: t };
         nextShoot = t + 9000 + Math.random() * 9000;
       }
@@ -184,10 +226,51 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
     const run = () => {
       cancelAnimationFrame(raf);
       ocean?.stop();
+      breach?.stop();
       if (reduce || !onScreen || document.hidden) return;
       raf = requestAnimationFrame(frame);
       ocean?.start();
+      breach?.start();
     };
+    // Theme switch: ease the sky and sea over the same 2.4 s as the moon / sun (CSS).
+    // The moon sets to the right (CSS); rising, it should come up from the left, so park it
+    // there (below the horizon) before its transition starts.
+    const moon = hero.querySelector<HTMLElement>('.abyss__moon');
+    const moonFromLeft = () => {
+      if (!moon || reduce) return;
+      moon.style.transition = 'none';
+      moon.style.left = 'calc(var(--light-x) * 100% - 14%)';
+      moon.style.top = '88%';
+      moon.getBoundingClientRect();
+      requestAnimationFrame(() => {
+        moon.style.transition = moon.style.left = moon.style.top = '';
+      });
+    };
+    let tween = 0;
+    new MutationObserver(() => {
+      const from = day;
+      const to = isDay() ? 1 : 0;
+      if (to === 0 && from > 0.5) moonFromLeft();
+      cancelAnimationFrame(tween);
+      if (reduce || from === to) {
+        day = to;
+        pal = blend(day);
+        ocean?.setPalette(pal);
+        draw(performance.now());
+        return;
+      }
+      const t0 = performance.now();
+      const step = (now: number) => {
+        const k = Math.min(1, (now - t0) / 2400);
+        const e = k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2;
+        day = from + (to - from) * e;
+        pal = blend(day);
+        ocean?.setPalette(pal);
+        draw(now);
+        if (k < 1) tween = requestAnimationFrame(step);
+      };
+      tween = requestAnimationFrame(step);
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
     resize();
     new ResizeObserver(() => resize()).observe(hero);
@@ -201,9 +284,22 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
 </script>
 
 <style>
+  .abyss__hz,
+  .abyss__eyebrow,
+  .abyss__sub,
+  .abyss__tagline,
+  .sky-map__hint,
+  .sky-node__name,
+  .sky-node__kind,
+  .abyss__dive {
+    /* Ink holds, then flips around the middle of the sky's 2.4 s change. Only leaf text
+       transitions: if an ancestor also transitioned colour, Chromium would restart these
+       every frame until the ancestor finished. */
+    transition: color 1.7s cubic-bezier(0.7, 0, 0.3, 1);
+  }
   .abyss {
     /* Where the light sits above the horizon (fraction of the width); shared by the sea shader. */
-    --light-x: 0.28;
+    --light-x: 0.45;
     position: relative;
     isolation: isolate;
     display: grid;
@@ -276,15 +372,22 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
     text-transform: uppercase;
     color: rgb(150 214 255 / 0.75);
   }
+  /* Same display face as the professional site. */
   .abyss__hz {
-    font-size: clamp(4.2rem, 9.5vw, 8rem);
-    line-height: 0.85;
-    letter-spacing: -0.03em;
+    color: var(--abyss-ink);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(3rem, 6.4vw, 5.2rem);
+    line-height: 0.95;
+    letter-spacing: -0.035em;
   }
   .abyss__sub {
-    font-style: italic;
-    font-size: clamp(2rem, 4.6vw, 3.6rem);
-    line-height: 1.1;
+    margin-top: 0.35rem;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(1.25rem, 2.4vw, 1.9rem);
+    line-height: 1.15;
+    letter-spacing: -0.015em;
     color: rgb(190 222 245 / 0.9);
   }
   .abyss__tagline {
@@ -371,7 +474,11 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
     box-shadow:
       0 0 10px 2px rgb(170 220 255 / 0.8),
       0 0 30px 6px rgb(92 198 255 / 0.25);
-    transition: transform 0.4s var(--ease-out);
+    /* Colour eases with the sky on a theme change. */
+    transition:
+      transform 0.4s var(--ease-out),
+      background-color 2.4s,
+      box-shadow 2.4s;
   }
   .sky-node__star::after {
     content: '';
@@ -452,12 +559,199 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
     }
   }
 
+
+  /* ---- Moon (night) and rising sun (day) */
+  .abyss__moon,
+  .abyss__sun {
+    position: absolute;
+    z-index: -1;
+    left: calc(var(--light-x) * 100%);
+    border-radius: 50%;
+    translate: -50% -50%;
+    pointer-events: none;
+  }
+  .abyss__moon {
+    top: 17%;
+    transition:
+      top 2.4s cubic-bezier(0.25, 0.6, 0.4, 1),
+      left 2.4s cubic-bezier(0.5, 0, 0.75, 0.6),
+      opacity 0.4s;
+    width: clamp(34px, 3.4vw, 52px);
+    aspect-ratio: 1;
+    background:
+      radial-gradient(circle at 36% 38%, rgb(255 255 255 / 0.0) 0 18%, transparent 19%),
+      radial-gradient(circle at 62% 58%, rgb(196 204 214 / 0.55) 0 9%, transparent 10%),
+      radial-gradient(circle at 40% 66%, rgb(196 204 214 / 0.45) 0 6%, transparent 7%),
+      radial-gradient(circle at 58% 32%, rgb(196 204 214 / 0.4) 0 5%, transparent 6%),
+      radial-gradient(circle at 42% 40%, #fbfaf4, #e3e6e8 70%, #cfd5db);
+    box-shadow:
+      0 0 30px 6px rgb(220 232 255 / 0.28),
+      0 0 120px 40px rgb(150 190 255 / 0.12);
+  }
+  .abyss__sun {
+    /* Night: below the horizon, hidden behind the sea. */
+    top: 93%;
+    opacity: 0;
+    transition:
+      top 2.4s cubic-bezier(0.5, 0, 0.75, 0.6),
+      opacity 0.5s 1.9s;
+    width: clamp(56px, 5vw, 84px);
+    aspect-ratio: 1;
+    /* Half risen: the sea (drawn after it) hides the lower half. */
+    background: radial-gradient(circle, #fffaf0 0 35%, #ffe3ad 62%, #ffc27a);
+    box-shadow:
+      0 0 40px 14px rgb(255 214 150 / 0.7),
+      0 0 160px 70px rgb(255 190 120 / 0.35);
+  }
+
+  /* ---- Boat: drifts across the horizon (one crossing every ~3.5 min), bobbing */
+  .abyss__boat-track {
+    position: absolute;
+    z-index: -1;
+    left: 0;
+    top: 78%;
+    width: 100%;
+    height: 0;
+    /* Starts on the light path, then drifts right. */
+    animation: sail 210s linear -93s infinite;
+  }
+  @keyframes sail {
+    from {
+      transform: translateX(-4%);
+    }
+    to {
+      transform: translateX(104%);
+    }
+  }
+  .abyss__boat {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: clamp(32px, 3.1vw, 48px);
+    height: auto;
+    translate: -50% -66%;
+    fill: #040b17;
+    stroke: #040b17;
+    transform-origin: 50% 85%;
+    animation: bob 6s var(--ease-in-out) infinite;
+    transition:
+      fill 1.6s,
+      stroke 1.6s;
+  }
+  @keyframes bob {
+    0%,
+    100% {
+      transform: translateY(0) rotate(-1.5deg);
+    }
+    50% {
+      transform: translateY(1px) rotate(1.5deg);
+    }
+  }
+
+  .abyss__fx {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  /* ---- Light theme: sunrise */
+  .abyss__day {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 2.4s cubic-bezier(0.65, 0, 0.35, 1);
+    background:
+      radial-gradient(55% 32% at calc(var(--light-x) * 100%) 78%, rgb(255 205 140 / 0.65), transparent 70%),
+      linear-gradient(to bottom, #86a9d4 0%, #a9bfe0 26%, #d6cfdc 50%, #f2c8a8 68%, #f8cfa2 77.6%, #c9a48e 78.4%, #9fb4c8 90%, var(--bg) 100%);
+  }
+  :global([data-theme='light']) .abyss {
+    color: #10213a;
+  }
+  :global([data-theme='light']) .abyss__day {
+    opacity: 1;
+  }
+  /* Moon sets (sinks behind the sea, drifting right) as the sun rises; reversed for night. */
+  :global([data-theme='light']) .abyss__moon {
+    top: 88%;
+    left: calc(var(--light-x) * 100% + 9%);
+    opacity: 0;
+    transition:
+      top 2.4s cubic-bezier(0.5, 0, 0.75, 0.6),
+      left 2.4s cubic-bezier(0.25, 0.6, 0.5, 1),
+      opacity 0.5s 1.9s;
+  }
+  :global([data-theme='light']) .abyss__sun {
+    top: 78%;
+    opacity: 1;
+    transition:
+      top 2.4s cubic-bezier(0.25, 0.6, 0.4, 1),
+      opacity 0.4s;
+  }
+  :global([data-theme='light']) .abyss__horizon {
+    background: linear-gradient(90deg, transparent, rgb(255 238 205 / 0.9) 30%, rgb(255 238 205 / 0.9) 70%, transparent);
+    box-shadow: 0 0 28px 3px rgb(255 200 130 / 0.45);
+  }
+  :global([data-theme='light']) .abyss__boat {
+    fill: #1a2536;
+    stroke: #1a2536;
+  }
+  :global([data-theme='light']) .abyss__hz {
+    color: #10213a;
+  }
+  :global([data-theme='light']) .abyss__eyebrow {
+    color: #33557f;
+  }
+  :global([data-theme='light']) .abyss__sub {
+    color: #2c4a72;
+  }
+  :global([data-theme='light']) .abyss__tagline {
+    color: rgb(16 33 58 / 0.74);
+  }
+  :global([data-theme='light']) .sky-map__hint,
+  :global([data-theme='light']) .abyss__dive {
+    color: rgb(16 33 58 / 0.6);
+  }
+  :global([data-theme='light']) .abyss__dive-line {
+    background: linear-gradient(to bottom, rgb(16 33 58 / 0.6), transparent);
+  }
+  :global([data-theme='light']) .sky-map__lines polyline {
+    stroke: rgb(16 33 58 / 0.24);
+  }
+  :global([data-theme='light']) .sky-node__name {
+    color: #10213a;
+  }
+  :global([data-theme='light']) .sky-node__kind {
+    color: #3b5f8c;
+  }
+  :global([data-theme='light']) .sky-node__star::before {
+    background: #fffaf0;
+    box-shadow:
+      0 0 8px 2px rgb(255 186 100 / 0.9),
+      0 0 26px 6px rgb(255 170 80 / 0.35);
+  }
+  :global([data-theme='light']) .sky-node__star::after {
+    border-color: rgb(16 33 58 / 0.35);
+  }
+  :global([data-theme='light']) .sky-node:hover .sky-node__kind {
+    color: #0b6f8c;
+  }
+  :global([data-theme='light']) .sky-node:focus-visible {
+    outline-color: #0b6f8c;
+  }
+
   /* Narrow screens: the constellation becomes a vertical star chart. */
   @media (max-width: 899px) {
     .abyss {
       --light-x: 0.74;
       align-items: start;
       padding-top: calc(var(--nav-h) + 3rem);
+    }
+    .abyss__moon {
+      top: 12%;
     }
     .abyss__inner {
       grid-template-columns: 1fr;
@@ -488,8 +782,18 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .abyss__dive-line {
+    .abyss__dive-line,
+    .abyss__boat {
       animation: none;
+    }
+    .abyss__boat-track {
+      animation: none;
+      transform: translateX(calc(var(--light-x) * 100% + 3.5%));
+    }
+    .abyss__moon,
+    .abyss__sun,
+    .abyss__day {
+      transition: none !important;
     }
     .sky-map__lines polyline,
     .sky-map li,

@@ -234,7 +234,8 @@ const ogAlt = Astro.props.ogAlt ?? `${t.hero.name} · ${t.hero.position}`;
             } catch {}
           };
           const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-          if (!document.startViewTransition || reduce) return apply();
+          // A page with its own theme scene (the personal hero's sunrise / moonrise) animates itself.
+          if (!document.startViewTransition || reduce || document.querySelector('[data-theme-scene]')) return apply();
           document.startViewTransition(apply);
         }),
       );
