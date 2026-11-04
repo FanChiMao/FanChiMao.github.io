@@ -58,7 +58,8 @@ const order = dets.map((d) => (d.cy - d.hh) / H);
 const NW = 560;
 const NH = 150;
 const layers = [dets.length, 5, 5, pp.classes.length];
-const lx = layers.map((_, i) => 24 + (i * (NW - 48)) / (layers.length - 1));
+const LABEL_W = 190; // space right of the output layer for "0.94 AI R&D Engineer"
+const lx = layers.map((_, i) => 24 + (i * (NW - 24 - LABEL_W - 24)) / (layers.length - 1));
 const ly = (n: number) => Array.from({ length: n }, (_, j) => (NH * (j + 1)) / (n + 1));
 const nodes = layers.map((n, i) => ly(n).map((y) => ({ x: lx[i], y })));
 const edges = nodes.slice(0, -1).map((from, i) => from.flatMap((a) => nodes[i + 1].map((b) => ({ a, b }))));
@@ -83,10 +84,7 @@ const tags = dets.map((d) => {
 
     <div class="hero__grid container">
       <div class="hero__content">
-        <p class="hero__eyebrow">
-          <span class="pulse" aria-hidden="true"></span>
-          {t.position}
-        </p>
+        <p class="hero__eyebrow">{t.position}</p>
 
         <h1 class="hero__title">
           {
@@ -206,6 +204,18 @@ const tags = dets.map((d) => {
               </g>
             ))
           }
+          <g class="net__labels">
+            {
+              nodes[nodes.length - 1].map((n, i) => (
+                <text class:list={{ 'is-top': i === 0 }} x={n.x + 14} y={n.y} data-olabel={i}>
+                  <tspan class="net__prob" data-oprob>
+                    0.00
+                  </tspan>
+                  <tspan dx="8">{pp.classes[i]}</tspan>
+                </text>
+              ))
+            }
+          </g>
         </svg>
 
         <ol class="pipe__out" aria-label={pp.output}>
@@ -267,6 +277,7 @@ const tags = dets.map((d) => {
   const edgeLayers = Array.from(pipe.querySelectorAll<SVGGElement>('.net__edges'));
   const nodeLayers = Array.from(pipe.querySelectorAll<SVGGElement>('.net__nodes'));
   const outs = Array.from(pipe.querySelectorAll<HTMLElement>('[data-out]'));
+  const oLabels = Array.from(pipe.querySelectorAll<SVGTextElement>('[data-olabel]'));
   const status = pipe.querySelector<HTMLElement>('[data-status]')!;
   const count = pipe.querySelector<HTMLElement>('[data-count]')!;
   const ms = pipe.querySelector<HTMLElement>('[data-ms]')!;
@@ -318,6 +329,11 @@ const tags = dets.map((d) => {
     edgeLayers.forEach((g, i) => g.classList.toggle('is-on', net > 0.08 + i * 0.24));
     nodeLayers.forEach((g, i) => i > 0 && g.classList.toggle('is-on', net > 0.2 + (i - 1) * 0.24));
     const fill = ease(seg(net, 0.72, 1));
+    // Output labels next to the last layer appear one by one as the softmax fills.
+    oLabels.forEach((l, i) => {
+      l.classList.toggle('is-on', net > 0.7 + i * 0.06);
+      l.querySelector('[data-oprob]')!.textContent = (Number(outs[i].dataset.out) * fill).toFixed(2);
+    });
     outs.forEach((o) => {
       const v = Number(o.dataset.out) * fill;
       o.style.setProperty('--v', v.toFixed(4));
@@ -424,7 +440,7 @@ const tags = dets.map((d) => {
     align-items: center;
     gap: 0.6rem;
     width: fit-content;
-    padding: 0.4rem 0.9rem 0.4rem 0.7rem;
+    padding: 0.4rem 0.9rem;
     border-radius: 999px;
     border: 1px solid rgb(255 255 255 / 0.18);
     background: rgb(255 255 255 / 0.08);
@@ -432,27 +448,6 @@ const tags = dets.map((d) => {
     font-size: 0.88rem;
     font-weight: 500;
     animation: rise 0.9s 0.1s var(--ease-out) both;
-  }
-  .pulse {
-    position: relative;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #4ade80;
-  }
-  .pulse::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: inherit;
-    animation: ping 2s var(--ease-out) infinite;
-  }
-  @keyframes ping {
-    to {
-      transform: scale(3);
-      opacity: 0;
-    }
   }
   .hero__title {
     font-size: clamp(2.5rem, 5vw, 4.4rem);
@@ -829,6 +824,41 @@ const tags = dets.map((d) => {
   .net__nodes.is-on circle {
     fill: #5cc6ff;
     stroke: #bfe9ff;
+  }
+
+  .net__labels text {
+    dominant-baseline: middle;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    fill: rgb(255 255 255 / 0.55);
+    opacity: 0;
+    transform: translateX(-6px);
+    transform-box: fill-box;
+    transition:
+      opacity 0.35s,
+      transform 0.35s var(--ease-out);
+  }
+  .net__labels text.is-on {
+    opacity: 1;
+    transform: none;
+  }
+  .net__labels .net__prob {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .net__labels text.is-top {
+    font-size: 14px;
+    font-weight: 700;
+    fill: #fff;
+  }
+  .pipe.is-done .net__labels text.is-top {
+    fill: #7dd3fc;
+  }
+  /* The winning output node glows once classification is done. */
+  .pipe.is-done .net__nodes[data-layer='3'] circle:first-child {
+    fill: #7dd3fc;
+    stroke: #fff;
+    filter: drop-shadow(0 0 6px #5cc6ff);
   }
 
   /* Softmax output */
