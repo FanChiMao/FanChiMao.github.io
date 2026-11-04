@@ -511,10 +511,25 @@ const tags = dets.map((d) => {
     }
   }
 
-  /* ---- Inference panel (always dark: it sits on the dark hero in both themes) */
+  /* ---- Inference panel. Colours are tokens so the light theme can retune them. */
   .pipe {
     --line: rgb(255 255 255 / 0.12);
     --dim: rgb(255 255 255 / 0.55);
+    --pipe-bg: rgb(7 11 22 / 0.72);
+    --pipe-ink: rgb(255 255 255 / 0.85);
+    --pipe-strong: #fff;
+    --pipe-shadow: 0 30px 80px -30px rgb(0 0 0 / 0.8);
+    --edge: rgb(255 255 255 / 0.08);
+    --edge-on: rgb(92 198 255 / 0.45);
+    --node: #0b1424;
+    --node-stroke: rgb(255 255 255 / 0.25);
+    --node-on: #5cc6ff;
+    --node-on-stroke: #bfe9ff;
+    --label: rgb(255 255 255 / 0.55);
+    --hi: #7dd3fc;
+    --hi-glow: #5cc6ff;
+    --track: rgb(255 255 255 / 0.08);
+    --bar: rgb(255 255 255 / 0.35);
     position: relative;
     display: grid;
     gap: 0.75rem;
@@ -523,12 +538,12 @@ const tags = dets.map((d) => {
     padding: 0.9rem;
     border: 1px solid var(--line);
     border-radius: 18px;
-    background: rgb(7 11 22 / 0.72);
+    background: var(--pipe-bg);
     backdrop-filter: blur(14px);
-    box-shadow: 0 30px 80px -30px rgb(0 0 0 / 0.8);
+    box-shadow: var(--pipe-shadow);
     font-family: var(--font-mono);
     font-size: 0.74rem;
-    color: rgb(255 255 255 / 0.85);
+    color: var(--pipe-ink);
     animation: rise 1s 0.5s var(--ease-out) both;
   }
   .pipe__hud {
@@ -565,7 +580,7 @@ const tags = dets.map((d) => {
     color: var(--dim);
   }
   .pipe__stats b {
-    color: #fff;
+    color: var(--pipe-strong);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
   }
@@ -712,7 +727,7 @@ const tags = dets.map((d) => {
   }
   .pipe__score {
     margin-left: auto;
-    color: #fff;
+    color: var(--pipe-strong);
     font-variant-numeric: tabular-nums;
   }
   .pipe__angle {
@@ -746,12 +761,12 @@ const tags = dets.map((d) => {
     max-height: 18svh;
   }
   .net__edges line {
-    stroke: rgb(255 255 255 / 0.08);
+    stroke: var(--edge);
     stroke-width: 1;
     transition: stroke 0.5s;
   }
   .net__edges.is-on line {
-    stroke: rgb(92 198 255 / 0.45);
+    stroke: var(--edge-on);
     stroke-dasharray: 4 6;
     animation: flow 0.9s linear infinite;
   }
@@ -761,8 +776,8 @@ const tags = dets.map((d) => {
     }
   }
   .net__nodes circle {
-    fill: #0b1424;
-    stroke: rgb(255 255 255 / 0.25);
+    fill: var(--node);
+    stroke: var(--node-stroke);
     stroke-width: 1.5;
     transition:
       fill 0.4s,
@@ -773,15 +788,15 @@ const tags = dets.map((d) => {
     stroke: var(--c);
   }
   .net__nodes.is-on circle {
-    fill: #5cc6ff;
-    stroke: #bfe9ff;
+    fill: var(--node-on);
+    stroke: var(--node-on-stroke);
   }
 
   .net__labels text {
     dominant-baseline: middle;
     font-family: var(--font-mono);
     font-size: 13px;
-    fill: rgb(255 255 255 / 0.55);
+    fill: var(--label);
     opacity: 0;
     transform: translateX(-6px);
     transform-box: fill-box;
@@ -800,16 +815,16 @@ const tags = dets.map((d) => {
   .net__labels text.is-top {
     font-size: 14px;
     font-weight: 700;
-    fill: #fff;
+    fill: var(--pipe-strong);
   }
   .pipe.is-done .net__labels text.is-top {
-    fill: #7dd3fc;
+    fill: var(--hi);
   }
   /* The winning output node glows once classification is done. */
   .pipe.is-done .net__nodes[data-layer='3'] circle:first-child {
-    fill: #7dd3fc;
-    stroke: #fff;
-    filter: drop-shadow(0 0 6px #5cc6ff);
+    fill: var(--hi);
+    stroke: var(--pipe-strong);
+    filter: drop-shadow(0 0 6px var(--hi-glow));
   }
 
   /* Softmax output */
@@ -828,13 +843,13 @@ const tags = dets.map((d) => {
     color: var(--dim);
   }
   .pipe__out li.is-top {
-    color: #fff;
+    color: var(--pipe-strong);
     font-weight: 600;
   }
   .pipe__bar {
     height: 6px;
     border-radius: 999px;
-    background: rgb(255 255 255 / 0.08);
+    background: var(--track);
     overflow: hidden;
   }
   .pipe__bar span {
@@ -842,13 +857,13 @@ const tags = dets.map((d) => {
     width: calc(var(--v, 0) * 100%);
     height: 100%;
     border-radius: inherit;
-    background: rgb(255 255 255 / 0.35);
+    background: var(--bar);
   }
   .pipe__out li.is-top .pipe__bar span {
     background: linear-gradient(90deg, #5cc6ff, #a78bfa);
   }
   .pipe.is-done .pipe__out li.is-top {
-    color: #7dd3fc;
+    color: var(--hi);
   }
   .pipe__prob {
     text-align: right;
@@ -1003,8 +1018,23 @@ const tags = dets.map((d) => {
     border-color: rgb(12 18 34 / 0.14);
   }
   :global([data-theme='light']) .pipe {
-    background: rgb(9 14 27 / 0.93);
-    box-shadow: 0 30px 70px -30px rgb(12 18 34 / 0.45);
+    --line: rgb(48 40 30 / 0.12);
+    --dim: rgb(48 40 30 / 0.58);
+    --pipe-bg: rgb(243 240 235 / 0.86);
+    --pipe-ink: rgb(36 30 22 / 0.86);
+    --pipe-strong: #1d1913;
+    --pipe-shadow: 0 30px 70px -32px rgb(60 48 32 / 0.35);
+    --edge: rgb(48 40 30 / 0.1);
+    --edge-on: rgb(10 116 194 / 0.45);
+    --node: #f6f3ee;
+    --node-stroke: rgb(48 40 30 / 0.28);
+    --node-on: #0a74c2;
+    --node-on-stroke: #8cc8ee;
+    --label: rgb(48 40 30 / 0.55);
+    --hi: #0a74c2;
+    --hi-glow: rgb(10 116 194 / 0.6);
+    --track: rgb(48 40 30 / 0.08);
+    --bar: rgb(48 40 30 / 0.28);
   }
   :global([data-theme='light']) .pipe__hint,
   :global([data-theme='light']) .hero__scroll {
