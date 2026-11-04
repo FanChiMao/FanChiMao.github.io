@@ -76,6 +76,37 @@ const ogAlt = `${t.hero.name} · ${t.hero.position}`;
     <div class="scroll-progress" aria-hidden="true"></div>
     <slot />
 
+    <script is:inline>
+      // Language switch: land on the same spot of the translated page. Runs before
+      // first paint so the view transition snapshots the restored position.
+      (() => {
+        let s = null;
+        try {
+          s = JSON.parse(sessionStorage.getItem('lang-switch') || 'null');
+          sessionStorage.removeItem('lang-switch');
+        } catch {}
+        const norm = (p) => p.replace(/\/+$/, '') || '/';
+        if (!s || norm(s.to) !== norm(location.pathname) || Date.now() - s.t > 30000) return;
+        const target = () => {
+          const el = s.id && document.getElementById(s.id);
+          if (el) return el.getBoundingClientRect().top + scrollY + s.r * el.offsetHeight;
+          return s.p * (document.documentElement.scrollHeight - innerHeight);
+        };
+        // Keep expanded "Load more" lists expanded, or the anchor section changes height.
+        if (s.more) document.querySelector('[data-comp-grid]')?.classList.add('is-expanded');
+        const go = () => scrollTo({ top: target(), behavior: 'instant' });
+        go();
+        // Show what is already on screen instead of replaying the reveal animation.
+        document.querySelectorAll('[data-reveal]').forEach((el) => {
+          const r = el.getBoundingClientRect();
+          if (r.bottom > 0 && r.top < innerHeight) el.classList.add('is-visible', 'is-instant');
+        });
+        // Web fonts can shift layout a little; re-align once unless the user already scrolled.
+        const y = scrollY;
+        document.fonts?.ready.then(() => scrollY === y && go());
+      })();
+    </script>
+
     <dialog class="media-dialog" id="media-dialog" aria-label="Media">
       <button class="icon-btn media-dialog__close" type="button" data-dialog-close aria-label={t.a11y.close}>
         <Icon name="lucide:x" />
@@ -84,6 +115,59 @@ const ogAlt = `${t.hero.name} · ${t.hero.position}`;
     </dialog>
 
     <script>
+      // ---- Language links ([data-lang-link]): prefetch on intent, remember the scroll spot.
+      const prefetched = new Set<string>();
+      const canPrefetch = document.createElement('link').relList.supports?.('prefetch');
+      const prefetch = (a: HTMLAnchorElement) => {
+        if (a.hasAttribute('aria-current') || prefetched.has(a.href)) return;
+        prefetched.add(a.href);
+        if (canPrefetch) {
+          const link = document.createElement('link');
+          link.rel = 'prefetch';
+          link.href = a.href;
+          document.head.append(link);
+        } else {
+          fetch(a.href, { credentials: 'same-origin' }).catch(() => prefetched.delete(a.href));
+        }
+      };
+      const langLink = (ev: Event) => (ev.target as Element | null)?.closest?.<HTMLAnchorElement>('a[data-lang-link]');
+      for (const type of ['pointerover', 'focusin', 'touchstart']) {
+        document.addEventListener(type, (ev) => {
+          const a = langLink(ev);
+          if (a) prefetch(a);
+        }, { passive: true });
+      }
+      // Opening the nav language menu is already a strong signal: warm every option.
+      document.querySelector<HTMLDetailsElement>('[data-lang-menu]')?.addEventListener('toggle', (ev) => {
+        const menu = ev.currentTarget as HTMLDetailsElement;
+        if (menu.open) menu.querySelectorAll<HTMLAnchorElement>('a[data-lang-link]').forEach(prefetch);
+      });
+      document.addEventListener('click', (ev) => {
+        const a = langLink(ev);
+        if (!a || ev.defaultPrevented || ev.button !== 0 || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+        if (a.hasAttribute('aria-current')) {
+          // Already in this language: no navigation, just close the menu.
+          ev.preventDefault();
+          a.closest('details')?.removeAttribute('open');
+          return;
+        }
+        // Anchor on the section at the top of the viewport (translations change heights).
+        let id = '';
+        let r = 0;
+        for (const sec of document.querySelectorAll<HTMLElement>('main section[id]')) {
+          const top = sec.getBoundingClientRect().top;
+          if (top > 1) break;
+          id = sec.id;
+          r = Math.min(1, -top / sec.offsetHeight);
+        }
+        const max = document.documentElement.scrollHeight - innerHeight;
+        const more = !!document.querySelector('[data-comp-grid].is-expanded');
+        const state = { to: new URL(a.href).pathname, id, r, p: max > 0 ? scrollY / max : 0, more, t: Date.now() };
+        try {
+          sessionStorage.setItem('lang-switch', JSON.stringify(state));
+        } catch {}
+      });
+
       // ---- Scroll reveal
       const reveal = new IntersectionObserver(
         (entries) => {

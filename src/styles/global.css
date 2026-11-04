@@ -442,6 +442,11 @@ button {
 .js [data-reveal='scale'].is-visible {
   animation-name: reveal-scale;
 }
+/* Already on screen after a language switch: show without replaying. */
+.js [data-reveal].is-visible.is-instant {
+  opacity: 1;
+  animation: none;
+}
 @keyframes reveal-up {
   from {
     opacity: 0;
