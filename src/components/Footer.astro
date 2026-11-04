@@ -48,7 +48,7 @@ const year = new Date().getFullYear();
     {
       visitors && (
         <div class="footer__visitors">
-          <script is:inline type="text/javascript" id="clustrmaps" src={`https://cdn.clustrmaps.com/map_v2.js?cl=1da1f2&w=240&t=n&d=${site.clustrmaps}&co=f2f3f7&ct=2d2121`}></script>
+          <script is:inline type="text/javascript" id="clustrmaps" onerror="this.parentElement.remove()" src={`https://cdn.clustrmaps.com/map_v2.js?cl=1da1f2&w=240&t=n&d=${site.clustrmaps}&co=f2f3f7&ct=2d2121`}></script>
         </div>
       )
     }
