@@ -33,7 +33,6 @@ const en = {
     patents: 'Patents',
     competitions: 'Competitions',
     education: 'Education',
-    gallery: 'Gallery',
     contact: 'Contact',
   },
   headings: {
@@ -43,7 +42,6 @@ const en = {
     patents: 'Patents',
     competitions: 'Competitions',
     education: 'Education',
-    gallery: 'Photo Gallery',
     contact: 'Contact',
   },
   hero: {
@@ -125,11 +123,9 @@ const en = {
   },
   github: { stars: (n: number) => `${n} GitHub star${n === 1 ? "" : "s"}`, total: 'GitHub stars' },
   gallery: {
-    intro: 'Explore my collection of memorable moments. Click an album below to visit my photo gallery.',
     title: "52HzFan's Gallery",
     subtitle: 'Night skies, city lights, and bowls of ramen: moments I wanted to keep.',
     photos: (n: number) => `${n} photo${n === 1 ? '' : 's'}`,
-    open: 'Open gallery',
     back: 'Back to home',
     allAlbums: 'All albums',
     map: 'Open in Maps',
@@ -145,7 +141,7 @@ const en = {
     copy: 'Copy email',
     copied: 'Copied!',
   },
-  footer: { visitors: 'Visitors around the world', rights: 'All rights reserved.', built: 'Built with Astro' },
+  footer: { visitors: 'Visitors around the world', rights: 'All rights reserved', built: 'Built with Astro' },
 };
 
 export type UI = typeof en;
@@ -173,7 +169,6 @@ const zhTw: UI = {
     patents: '專利',
     competitions: '競賽',
     education: '學歷',
-    gallery: '相簿',
     contact: '聯絡',
   },
   headings: {
@@ -183,7 +178,6 @@ const zhTw: UI = {
     patents: '專利',
     competitions: '競賽作品',
     education: '學歷',
-    gallery: '生活相簿',
     contact: '聯絡我',
   },
   hero: {
@@ -255,11 +249,9 @@ const zhTw: UI = {
   },
   github: { stars: (n: number) => `GitHub ${n} 顆星`, total: 'GitHub 星星' },
   gallery: {
-    intro: '探索我珍貴回憶的收藏。點擊下方相簿造訪我的照片庫。',
     title: "52HzFan's Gallery",
     subtitle: '星空、城市夜景與一碗碗拉麵，想留下來的那些時刻。',
     photos: (n: number) => `${n} 張照片`,
-    open: '前往相簿',
     back: '回到首頁',
     allAlbums: '所有相簿',
     map: '在地圖中開啟',
@@ -275,7 +267,7 @@ const zhTw: UI = {
     copy: '複製信箱',
     copied: '已複製！',
   },
-  footer: { visitors: '世界各地的訪客', rights: '版權所有。', built: '以 Astro 打造' },
+  footer: { visitors: '世界各地的訪客', rights: '版權所有', built: '以 Astro 打造' },
 };
 
 const zhCn: UI = {
@@ -301,7 +293,6 @@ const zhCn: UI = {
     patents: '专利',
     competitions: '竞赛',
     education: '学历',
-    gallery: '相册',
     contact: '联系',
   },
   headings: {
@@ -311,7 +302,6 @@ const zhCn: UI = {
     patents: '专利',
     competitions: '竞赛作品',
     education: '学历',
-    gallery: '生活相册',
     contact: '联系我',
   },
   hero: {
@@ -383,11 +373,9 @@ const zhCn: UI = {
   },
   github: { stars: (n: number) => `GitHub ${n} 颗星`, total: 'GitHub 星标' },
   gallery: {
-    intro: '探索我收藏的美好回忆，点击下方相册进入我的生活相册。',
     title: "52HzFan's Gallery",
     subtitle: '星空、城市夜景与一碗碗拉面，想留下来的那些时刻。',
     photos: (n: number) => `${n} 张照片`,
-    open: '进入相册',
     back: '返回首页',
     allAlbums: '所有相册',
     map: '在地图中打开',
@@ -403,7 +391,7 @@ const zhCn: UI = {
     copy: '复制邮箱',
     copied: '已复制！',
   },
-  footer: { visitors: '世界各地的访客', rights: '版权所有。', built: '使用 Astro 构建' },
+  footer: { visitors: '世界各地的访客', rights: '版权所有', built: '使用 Astro 构建' },
 };
 
 const ja: UI = {
@@ -429,7 +417,6 @@ const ja: UI = {
     patents: '特許',
     competitions: 'コンテスト',
     education: '学歴',
-    gallery: 'ギャラリー',
     contact: '連絡',
   },
   headings: {
@@ -439,7 +426,6 @@ const ja: UI = {
     patents: '特許',
     competitions: 'コンテスト作品',
     education: '学歴',
-    gallery: 'フォトギャラリー',
     contact: 'お問い合わせ',
   },
   hero: {
@@ -511,11 +497,9 @@ const ja: UI = {
   },
   github: { stars: (n: number) => `GitHub スター ${n}`, total: 'GitHub スター' },
   gallery: {
-    intro: '思い出の瞬間を集めたフォトコレクションをご覧ください。下のアルバムをクリックすると、フォトギャラリーに移動します。',
     title: "52HzFan's Gallery",
     subtitle: '星空、街の夜景、そしてラーメン。残しておきたかった瞬間たち。',
     photos: (n: number) => `${n} 枚`,
-    open: 'ギャラリーを開く',
     back: 'ホームに戻る',
     allAlbums: 'すべてのアルバム',
     map: 'マップで開く',
@@ -531,7 +515,7 @@ const ja: UI = {
     copy: 'メールをコピー',
     copied: 'コピーしました！',
   },
-  footer: { visitors: '世界中からの訪問者', rights: 'All rights reserved.', built: 'Built with Astro' },
+  footer: { visitors: '世界中からの訪問者', rights: 'All rights reserved', built: 'Built with Astro' },
 };
 
 export const ui: Record<Locale, UI> = { en, 'zh-tw': zhTw, 'zh-cn': zhCn, ja };

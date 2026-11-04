@@ -39,7 +39,7 @@ if (world === 'personal') {
   back = { href: localePath(lang, '/'), label: p.back, aria: p.backLabel };
 } else {
   const homeHref = localePath(lang, '/');
-  const sections = ['about', 'experience', 'publications', 'patents', 'competitions', 'education', 'gallery', 'contact'] as const;
+  const sections = ['about', 'experience', 'publications', 'patents', 'competitions', 'education', 'contact'] as const;
   brand = { href: homeHref, label: 'Chi-Mao Fan', aria: 'Chi-Mao Fan, home' };
   items = sections.map((id) => ({ href: home ? `#${id}` : `${homeHref}#${id}`, label: t.nav[id], spy: id }));
 }
