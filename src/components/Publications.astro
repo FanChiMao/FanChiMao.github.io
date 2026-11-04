@@ -28,7 +28,6 @@ for (const p of pubs) {
 <section class="section" id="publications">
   <div class="container">
     <SectionHead index={3} title={t.headings.publications} />
-    <RestorationDemo {lang} />
     <ol class="pubs">
       {
         pubs.map(({ id, data }, i) => (
@@ -114,6 +113,7 @@ for (const p of pubs) {
         ))
       }
     </ol>
+    <RestorationDemo {lang} />
   </div>
 </section>
 
