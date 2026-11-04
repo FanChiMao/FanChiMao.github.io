@@ -15,7 +15,7 @@ export const site = {
     { label: 'X', icon: 'x', href: 'https://x.com/52hzfan' },
     { label: 'YouTube', icon: 'mdi:youtube', href: 'https://www.youtube.com/@52hzfan' },
   ],
-  /** Icons for the hero interests, in the same order as ui.hero.interests. */
+  /** Icons for the interests (personal world, "Other frequencies"), in the same order as ui.hero.interests. */
   interestIcons: [
     'lucide:music',
     'lucide:wand-sparkles',

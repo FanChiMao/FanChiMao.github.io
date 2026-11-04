@@ -25,7 +25,7 @@ let back: { href: string; label: string; aria: string } | undefined;
 if (world === 'personal') {
   const p = personalUi[lang].nav;
   const here = (to: string) => path === to;
-  brand = { href: localePath(lang, '/personal/'), label: '52Hz', aria: p.brandLabel };
+  brand = { href: localePath(lang, '/personal/'), label: '52Hz Fan', aria: p.brandLabel };
   items = (
     [
       ['/personal/', p.home],

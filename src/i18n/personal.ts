@@ -10,7 +10,7 @@ import type { Locale } from './ui';
  */
 const en = {
   meta: {
-    title: '52Hz · Beyond the Code',
+    title: '52Hz Fan · Beyond the Code',
     description: 'The personal side of Chi-Mao (Jonathan) Fan: photography, travel, Ajie the orange tabby, and a few things worth finding.',
   },
   nav: {
@@ -21,7 +21,7 @@ const en = {
     achievements: 'Achievements',
     back: 'Professional',
     backLabel: 'Back to the professional site',
-    brandLabel: '52Hz, personal world home',
+    brandLabel: '52Hz Fan, personal world home',
   },
   /** "Go Deeper?" section on the professional home page. */
   deeper: {
@@ -29,14 +29,12 @@ const en = {
     title: "But there's more to who I am.",
     lead: "Beyond the algorithms, there's a whole other world.",
     cta: 'Go Deeper?',
-    signal: 'signal',
-    song: 'song',
     diving: 'Diving to the personal world…',
     skip: 'Skip',
   },
   hero: {
     eyebrow: 'Personal world',
-    title: '52Hz',
+    title: '52Hz Fan',
     subtitle: 'Beyond the Code',
     tagline: "Beyond the algorithms, there's a whole other world.",
     explore: 'Pick a star to explore',
@@ -75,7 +73,7 @@ export type PersonalUI = typeof en;
 
 const zhTw: PersonalUI = {
   meta: {
-    title: '52Hz · 程式碼之外',
+    title: '52Hz Fan · 程式碼之外',
     description: '范植貿（Jonathan）工作之外的另一面：攝影、旅行、橘貓阿桔，以及一些值得探索的小地方。',
   },
   nav: {
@@ -86,21 +84,19 @@ const zhTw: PersonalUI = {
     achievements: '成就',
     back: '專業',
     backLabel: '返回專業網站',
-    brandLabel: '52Hz，個人世界首頁',
+    brandLabel: '52Hz Fan，個人世界首頁',
   },
   deeper: {
     kicker: '你已經看過我在做什麼。',
     title: '但我不只是這樣。',
     lead: '在演算法之外，還有另一個世界。',
     cta: '再深入一點？',
-    signal: '訊號',
-    song: '歌聲',
     diving: '正在潛入個人世界…',
     skip: '略過',
   },
   hero: {
     eyebrow: '個人世界',
-    title: '52Hz',
+    title: '52Hz Fan',
     subtitle: '程式碼之外',
     tagline: '在演算法之外，還有另一個世界。',
     explore: '選一顆星星開始探索',
@@ -137,7 +133,7 @@ const zhTw: PersonalUI = {
 
 const zhCn: PersonalUI = {
   meta: {
-    title: '52Hz · 代码之外',
+    title: '52Hz Fan · 代码之外',
     description: '范植贸（Jonathan）工作之外的另一面：摄影、旅行、橘猫阿桔，以及一些值得探索的小地方。',
   },
   nav: {
@@ -148,21 +144,19 @@ const zhCn: PersonalUI = {
     achievements: '成就',
     back: '专业',
     backLabel: '返回专业网站',
-    brandLabel: '52Hz，个人世界首页',
+    brandLabel: '52Hz Fan，个人世界首页',
   },
   deeper: {
     kicker: '你已经看过我在做什么。',
     title: '但我不只是这样。',
     lead: '在算法之外，还有另一个世界。',
     cta: '再深入一点？',
-    signal: '信号',
-    song: '歌声',
     diving: '正在潜入个人世界…',
     skip: '跳过',
   },
   hero: {
     eyebrow: '个人世界',
-    title: '52Hz',
+    title: '52Hz Fan',
     subtitle: '代码之外',
     tagline: '在算法之外，还有另一个世界。',
     explore: '选一颗星星开始探索',
@@ -199,7 +193,7 @@ const zhCn: PersonalUI = {
 
 const ja: PersonalUI = {
   meta: {
-    title: '52Hz · コードの向こう側',
+    title: '52Hz Fan · コードの向こう側',
     description: '范植貿（Jonathan）の仕事以外の一面。写真、旅、茶トラ猫のアジエ、そして探すと見つかるいくつかのもの。',
   },
   nav: {
@@ -210,21 +204,19 @@ const ja: PersonalUI = {
     achievements: '実績',
     back: 'プロフィール',
     backLabel: 'プロフェッショナルサイトに戻る',
-    brandLabel: '52Hz、パーソナルワールドのホーム',
+    brandLabel: '52Hz Fan、パーソナルワールドのホーム',
   },
   deeper: {
     kicker: '私の仕事はもうご覧いただきました。',
     title: 'でも、それだけが私ではありません。',
     lead: 'アルゴリズムの向こうに、もうひとつの世界があります。',
     cta: 'もっと深く？',
-    signal: 'シグナル',
-    song: 'うた',
     diving: 'パーソナルワールドへ潜っています…',
     skip: 'スキップ',
   },
   hero: {
     eyebrow: 'パーソナルワールド',
-    title: '52Hz',
+    title: '52Hz Fan',
     subtitle: 'コードの向こう側',
     tagline: 'アルゴリズムの向こうに、もうひとつの世界があります。',
     explore: '星をひとつ選んで探検しよう',

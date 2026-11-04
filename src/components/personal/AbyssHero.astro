@@ -21,6 +21,7 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
 
 <section class="abyss" aria-labelledby="abyss-title">
   <canvas class="abyss__sky" data-abyss aria-hidden="true"></canvas>
+  <canvas class="abyss__sea" data-sea aria-hidden="true"></canvas>
   <div class="abyss__horizon" aria-hidden="true"></div>
 
   <div class="container abyss__inner">
@@ -63,12 +64,22 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
 </section>
 
 <script>
+  import { createOcean } from '@/lib/ocean';
+
   const canvas = document.querySelector<HTMLCanvasElement>('[data-abyss]');
+  const seaCanvas = document.querySelector<HTMLCanvasElement>('[data-sea]');
   const hero = canvas?.parentElement;
   const ctx = canvas?.getContext('2d');
   if (canvas && hero && ctx) {
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const HORIZON = 0.78;
+    // WebGL sea below the horizon; without it, the 2D canvas draws starlight glints instead.
+    let ocean = seaCanvas ? createOcean(seaCanvas) : null;
+    if (!ocean) seaCanvas?.remove();
+    seaCanvas?.addEventListener('ocean:lost', () => {
+      ocean = null;
+      seaCanvas.remove();
+    });
     type Star = { x: number; y: number; r: number; a: number; ph: number; sp: number };
     type Glint = { x: number; y: number; len: number; ph: number; sp: number };
     let w = 0;
@@ -118,8 +129,8 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
           ctx.fill();
         }
       }
-      // Starlight on the water: short horizontal glints.
-      for (const g of glints) {
+      // Starlight on the water: short horizontal glints (fallback when there is no WebGL sea).
+      if (!ocean) for (const g of glints) {
         const a = reduce ? 0.12 : 0.05 + 0.22 * Math.max(0, Math.sin(s * g.sp + g.ph));
         ctx.fillStyle = `rgba(170, 215, 255, ${a.toFixed(3)})`;
         ctx.fillRect(g.x - g.len / 2, g.y, g.len, 1);
@@ -153,6 +164,8 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       seed();
       draw(performance.now());
+      ocean?.resize();
+      if (reduce) ocean?.still();
     };
 
     let raf = 0;
@@ -170,7 +183,10 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
     };
     const run = () => {
       cancelAnimationFrame(raf);
-      if (!reduce && onScreen && !document.hidden) raf = requestAnimationFrame(frame);
+      ocean?.stop();
+      if (reduce || !onScreen || document.hidden) return;
+      raf = requestAnimationFrame(frame);
+      ocean?.start();
     };
 
     resize();
@@ -186,6 +202,8 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
 
 <style>
   .abyss {
+    /* Where the light sits above the horizon (fraction of the width); shared by the sea shader. */
+    --light-x: 0.28;
     position: relative;
     isolation: isolate;
     display: grid;
@@ -196,7 +214,7 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
     color: var(--abyss-ink);
     /* Night sky above, deep water below; starts at the dive overlay's colour. */
     background:
-      radial-gradient(90% 30% at 50% 78%, rgb(40 110 170 / 0.32), transparent 70%),
+      radial-gradient(90% 30% at calc(var(--light-x) * 100%) 78%, rgb(40 110 170 / 0.32), transparent 70%),
       linear-gradient(to bottom, var(--abyss) 0%, #051530 48%, #0a2645 77.6%, #041222 78.4%, #020a16 92%, var(--abyss) 100%);
   }
   .abyss__sky {
@@ -205,6 +223,16 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
     z-index: -1;
     width: 100%;
     height: 100%;
+  }
+  .abyss__sea {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 78%;
+    bottom: 0;
+    z-index: -1;
+    width: 100%;
+    height: 22%;
   }
   .abyss__horizon {
     position: absolute;
@@ -249,7 +277,7 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
     color: rgb(150 214 255 / 0.75);
   }
   .abyss__hz {
-    font-size: clamp(5rem, 13vw, 10.5rem);
+    font-size: clamp(4.2rem, 9.5vw, 8rem);
     line-height: 0.85;
     letter-spacing: -0.03em;
   }
@@ -427,6 +455,7 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
   /* Narrow screens: the constellation becomes a vertical star chart. */
   @media (max-width: 899px) {
     .abyss {
+      --light-x: 0.74;
       align-items: start;
       padding-top: calc(var(--nav-h) + 3rem);
     }

@@ -121,19 +121,6 @@ const tags = dets.map((d) => {
           </a>
         </div>
 
-        <div class="hero__interests">
-          <span class="hero__interests-label">{t.interestsLabel}</span>
-          <ul>
-            {
-              t.interests.map((label, i) => (
-                <li style={`--k:${i}`}>
-                  <Icon name={site.interestIcons[i]} />
-                  {label}
-                </li>
-              ))
-            }
-          </ul>
-        </div>
       </div>
 
       <!-- Inference pipeline: scroll drives detection (stage 1) then classification (stage 2). -->
@@ -515,52 +502,6 @@ const tags = dets.map((d) => {
       opacity: 0;
       transform: translateY(20px);
     }
-  }
-  .hero__interests {
-    margin-top: 0.6rem;
-    display: grid;
-    gap: 0.6rem;
-  }
-  .hero__interests-label {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: rgb(255 255 255 / 0.6);
-    animation: rise 0.8s 1s var(--ease-out) both;
-  }
-  .hero__interests ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  .hero__interests li {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.3rem 0.75rem;
-    border-radius: 999px;
-    border: 1px solid rgb(255 255 255 / 0.14);
-    background: rgb(255 255 255 / 0.07);
-    backdrop-filter: blur(8px);
-    font-size: 0.8rem;
-    color: rgb(255 255 255 / 0.9);
-    animation: rise 0.7s calc(1.05s + var(--k) * 0.05s) var(--ease-out) both;
-    transition:
-      background-color 0.25s,
-      transform 0.25s var(--ease-out);
-  }
-  .hero__interests li:hover {
-    background: rgb(255 255 255 / 0.16);
-    transform: translateY(-2px);
-  }
-  .hero__interests :global(svg) {
-    width: 15px;
-    height: 15px;
-    opacity: 0.85;
   }
 
   /* ---- Inference panel (always dark: it sits on the dark hero in both themes) */

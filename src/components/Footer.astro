@@ -8,15 +8,17 @@ interface Props {
   path: string;
   /** Show the ClustrMaps visitor widget (home page only). */
   visitors?: boolean;
+  /** Continue the deep-sea colour of the section above (after "Go Deeper?"), in either theme. */
+  abyss?: boolean;
 }
-const { lang, path, visitors = false } = Astro.props;
+const { lang, path, visitors = false, abyss = false } = Astro.props;
 const t = ui[lang];
 const year = new Date().getFullYear();
 const vm = site.visitorMap;
 const vmQuery = new URLSearchParams({ d: vm.id, w: String(vm.width), t: 'm', ...vm.colors }).toString();
 ---
 
-<footer class="footer">
+<footer class:list={['footer', { 'footer--abyss': abyss }]}>
   <div class="container footer__inner">
     <div class="footer__main">
     <div class="footer__brand">
@@ -91,6 +93,22 @@ const vmQuery = new URLSearchParams({ d: vm.id, w: String(vm.width), t: 'm', ...
     padding-block: 3rem 2.5rem;
     border-top: 1px solid var(--border);
     background: var(--bg-elev);
+  }
+  /* Deep water to the bottom of the page: dark tokens whatever the theme. */
+  .footer--abyss {
+    --text: #e6f1fb;
+    --text-2: #c3d3e4;
+    --muted: rgb(175 200 225 / 0.62);
+    --accent: #7fd8e6;
+    --border: rgb(170 210 240 / 0.1);
+    margin-top: 0;
+    border-top: 0;
+    color: var(--text);
+    background: var(--abyss, #020814);
+  }
+  :global([data-theme='light']) .footer--abyss .footer__visitors {
+    filter: none;
+    border-color: var(--border);
   }
   .footer__inner {
     display: grid;
