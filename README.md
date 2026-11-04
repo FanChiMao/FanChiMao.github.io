@@ -29,6 +29,7 @@ Requires Node 24 (see `.nvmrc`).
 | GitHub star counts (fetched at build; hidden if the API fails) | `src/lib/github.ts` |
 | Social preview images (1200x630, one per language) | `public/og/*.png`, regenerate with `npx -y -p puppeteer-core node scripts/og.mjs` |
 | Structured data (schema.org Person, WebSite, ScholarlyArticle) | `src/components/StructuredData.astro` |
+| Google Search Console ownership file (**do not delete**, verification depends on it) | `public/googlea75f55073ef5610a.html` |
 | Photo albums | `src/content/albums/*.json` + photos in `src/assets/gallery/<album>/` |
 | Standalone apps (not processed by Astro) | `public/playground/` |
 | Content schema (validated at build time) | `src/content.config.ts` |
