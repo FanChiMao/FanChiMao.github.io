@@ -70,6 +70,8 @@ const ogAlt = Astro.props.ogAlt ?? `${t.hero.name} · ${t.hero.position}`;
       (() => {
         const d = document.documentElement;
         d.classList.add('js');
+        // Mouse / trackpad: overlay scrollbar (lib/scrollbar.ts) instead of the native gutter.
+        if (matchMedia('(pointer: fine)').matches) d.classList.add('has-overlay-scrollbar');
         let theme = null;
         try { theme = localStorage.getItem('theme'); } catch {}
         if (theme !== 'light' && theme !== 'dark') theme = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
@@ -81,6 +83,7 @@ const ogAlt = Astro.props.ogAlt ?? `${t.hero.name} · ${t.hero.position}`;
   <body>
     <a class="skip-link" href="#main">{t.a11y.skip}</a>
     <div class="scroll-progress" aria-hidden="true"></div>
+    <div class="scrollbar" data-scrollbar aria-hidden="true" hidden><div class="scrollbar__thumb"></div></div>
     <slot />
 
     <script is:inline>
@@ -123,6 +126,10 @@ const ogAlt = Astro.props.ogAlt ?? `${t.hero.name} · ${t.hero.position}`;
 
     <script>
       import { swapLanguage, warm, handleHistory } from '@/lib/lang-swap';
+      import { setupScrollbar } from '@/lib/scrollbar';
+
+      const bar = document.querySelector<HTMLElement>('[data-scrollbar]');
+      if (bar && document.documentElement.classList.contains('has-overlay-scrollbar')) setupScrollbar(bar);
 
       // ---- Language links ([data-lang-link])
       // Personal world: swap text in place (no reload). Elsewhere, or if the swap is not

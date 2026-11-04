@@ -104,6 +104,52 @@ html {
   scrollbar-color: var(--scroll-thumb) transparent;
 }
 
+/* Fine pointers get an overlay scrollbar instead of the root's native one (see
+   lib/scrollbar.ts): no gutter, so page backgrounds run underneath it, and it only shows
+   while scrolling or when the pointer is at the right edge. Inner scrollers keep theirs. */
+html.has-overlay-scrollbar {
+  scrollbar-width: none;
+}
+html.has-overlay-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar {
+  position: fixed;
+  top: 3px;
+  right: 0;
+  bottom: 3px;
+  z-index: 70;
+  width: 14px;
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+.scrollbar[hidden] {
+  display: none;
+}
+.scrollbar:hover,
+.scrollbar.is-active {
+  opacity: 1;
+}
+.scrollbar__thumb {
+  position: absolute;
+  top: 0;
+  right: 3px;
+  width: 6px;
+  border-radius: 999px;
+  background: var(--scroll-thumb);
+  /* Faint outline in the opposite tone, so it reads over dark heroes and light pages alike. */
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bg) 35%, transparent);
+  will-change: transform;
+  transition:
+    width 0.15s,
+    background-color 0.15s;
+}
+.scrollbar:hover .scrollbar__thumb,
+.scrollbar.is-dragging .scrollbar__thumb {
+  width: 9px;
+  background: var(--scroll-thumb-hover);
+}
+
 /* Safari and older Chromium fall back to the -webkit- pseudo-elements. */
 ::-webkit-scrollbar {
   width: 8px;
