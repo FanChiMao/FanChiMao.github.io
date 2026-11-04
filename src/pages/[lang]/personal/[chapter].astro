@@ -1,0 +1,15 @@
+---
+import ChapterStub from '@/views/personal/ChapterStub.astro';
+import { STUBS } from '@/views/personal/stubs';
+import { locales, defaultLocale, type Locale } from '@/i18n/ui';
+
+export function getStaticPaths() {
+  return locales
+    .filter((l) => l !== defaultLocale)
+    .flatMap((lang) => STUBS.map(({ id, slug }) => ({ params: { lang, chapter: slug }, props: { id } })));
+}
+const { id } = Astro.props;
+const lang = Astro.params.lang as Locale;
+---
+
+<ChapterStub {lang} chapter={id} />

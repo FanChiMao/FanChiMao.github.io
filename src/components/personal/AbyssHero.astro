@@ -1,0 +1,471 @@
+---
+import { localePath, type Locale } from '@/i18n/ui';
+import { personalUi, chapters } from '@/i18n/personal';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const p = personalUi[lang];
+
+// Star positions of the four chapters inside the constellation box (percent).
+const pos: Record<string, [number, number]> = {
+  gallery: [14, 16],
+  journey: [66, 30],
+  companion: [30, 62],
+  secrets: [70, 86],
+};
+const nodes = chapters.map((c) => ({ ...c, href: localePath(lang, c.path), at: pos[c.id], copy: p.chapters[c.id] }));
+const line = nodes.map((n) => n.at.join(',')).join(' ');
+---
+
+<section class="abyss" aria-labelledby="abyss-title">
+  <canvas class="abyss__sky" data-abyss aria-hidden="true"></canvas>
+  <div class="abyss__horizon" aria-hidden="true"></div>
+
+  <div class="container abyss__inner">
+    <div class="abyss__copy">
+      <p class="abyss__eyebrow">{p.hero.eyebrow}</p>
+      <h1 class="abyss__title" id="abyss-title">
+        <span class="abyss__hz serif">{p.hero.title}</span>
+        <span class="abyss__sub serif">{p.hero.subtitle}</span>
+      </h1>
+      <p class="abyss__tagline">{p.hero.tagline}</p>
+    </div>
+
+    <nav class="sky-map" aria-label={p.hero.explore}>
+      <p class="sky-map__hint">{p.hero.explore}</p>
+      <svg class="sky-map__lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <polyline points={line} />
+      </svg>
+      <ol>
+        {
+          nodes.map((n, i) => (
+            <li style={`--x:${n.at[0]}%;--y:${n.at[1]}%;--i:${i}`}>
+              <a href={n.href} class="sky-node">
+                <span class="sky-node__star" aria-hidden="true" />
+                <span class="sky-node__text">
+                  <span class="sky-node__name serif">{n.copy.name}</span>
+                  <span class="sky-node__kind">{n.copy.kind}</span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+  </div>
+
+  <a class="abyss__dive" href="#why">
+    <span>{p.hero.scroll}</span>
+    <span class="abyss__dive-line" aria-hidden="true"></span>
+  </a>
+</section>
+
+<script>
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-abyss]');
+  const hero = canvas?.parentElement;
+  const ctx = canvas?.getContext('2d');
+  if (canvas && hero && ctx) {
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const HORIZON = 0.78;
+    type Star = { x: number; y: number; r: number; a: number; ph: number; sp: number };
+    type Glint = { x: number; y: number; len: number; ph: number; sp: number };
+    let w = 0;
+    let h = 0;
+    let stars: Star[] = [];
+    let glints: Glint[] = [];
+    let shoot: { x: number; y: number; vx: number; vy: number; t0: number } | null = null;
+    let nextShoot = performance.now() + 4000 + Math.random() * 6000;
+
+    const seed = () => {
+      const sky = h * HORIZON;
+      const n = Math.max(60, Math.min(260, Math.round((w * sky) / 5200)));
+      stars = Array.from({ length: n }, () => {
+        const bright = Math.random() < 0.08;
+        return {
+          x: Math.random() * w,
+          // Denser towards the top of the sky.
+          y: Math.pow(Math.random(), 1.5) * sky * 0.97,
+          r: bright ? 1.2 + Math.random() * 0.7 : 0.35 + Math.random() * 0.75,
+          a: 0.35 + Math.random() * 0.6,
+          ph: Math.random() * Math.PI * 2,
+          sp: 0.5 + Math.random() * 1.5,
+        };
+      });
+      glints = Array.from({ length: Math.round(w / 28) }, () => ({
+        x: Math.random() * w,
+        y: sky + 6 + Math.pow(Math.random(), 1.3) * (h - sky - 6),
+        len: 6 + Math.random() * 28,
+        ph: Math.random() * Math.PI * 2,
+        sp: 0.6 + Math.random() * 1.2,
+      }));
+    };
+
+    const draw = (t: number) => {
+      ctx.clearRect(0, 0, w, h);
+      const s = t / 1000;
+      for (const st of stars) {
+        const a = reduce ? st.a : st.a * (0.62 + 0.38 * Math.sin(s * st.sp + st.ph));
+        ctx.fillStyle = `rgba(222, 236, 255, ${a.toFixed(3)})`;
+        ctx.beginPath();
+        ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
+        ctx.fill();
+        if (st.r > 1.1) {
+          ctx.fillStyle = `rgba(150, 205, 255, ${(a * 0.12).toFixed(3)})`;
+          ctx.beginPath();
+          ctx.arc(st.x, st.y, st.r * 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      // Starlight on the water: short horizontal glints.
+      for (const g of glints) {
+        const a = reduce ? 0.12 : 0.05 + 0.22 * Math.max(0, Math.sin(s * g.sp + g.ph));
+        ctx.fillStyle = `rgba(170, 215, 255, ${a.toFixed(3)})`;
+        ctx.fillRect(g.x - g.len / 2, g.y, g.len, 1);
+      }
+      if (shoot) {
+        const k = (t - shoot.t0) / 900;
+        if (k >= 1) shoot = null;
+        else {
+          const x = shoot.x + shoot.vx * k;
+          const y = shoot.y + shoot.vy * k;
+          const grad = ctx.createLinearGradient(x, y, x - shoot.vx * 0.25, y - shoot.vy * 0.25);
+          const a = Math.sin(k * Math.PI);
+          grad.addColorStop(0, `rgba(235, 245, 255, ${a})`);
+          grad.addColorStop(1, 'rgba(235, 245, 255, 0)');
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x - shoot.vx * 0.25, y - shoot.vy * 0.25);
+          ctx.stroke();
+        }
+      }
+    };
+
+    const resize = () => {
+      const dpr = Math.min(devicePixelRatio || 1, 1.5);
+      w = hero.clientWidth;
+      h = hero.clientHeight;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      seed();
+      draw(performance.now());
+    };
+
+    let raf = 0;
+    let last = 0;
+    let onScreen = true;
+    const frame = (t: number) => {
+      raf = requestAnimationFrame(frame);
+      if (t - last < 33) return; // ~30 fps is plenty for twinkling.
+      last = t;
+      if (!shoot && t > nextShoot) {
+        shoot = { x: w * (0.15 + Math.random() * 0.6), y: h * HORIZON * (0.05 + Math.random() * 0.35), vx: 220 + Math.random() * 160, vy: 90 + Math.random() * 60, t0: t };
+        nextShoot = t + 9000 + Math.random() * 9000;
+      }
+      draw(t);
+    };
+    const run = () => {
+      cancelAnimationFrame(raf);
+      if (!reduce && onScreen && !document.hidden) raf = requestAnimationFrame(frame);
+    };
+
+    resize();
+    new ResizeObserver(() => resize()).observe(hero);
+    new IntersectionObserver(([e]) => {
+      onScreen = e.isIntersecting;
+      run();
+    }).observe(hero);
+    document.addEventListener('visibilitychange', run);
+    run();
+  }
+</script>
+
+<style>
+  .abyss {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    align-items: center;
+    min-height: 100svh;
+    padding: calc(var(--nav-h) + 2rem) 0 7rem;
+    overflow: hidden;
+    color: var(--abyss-ink);
+    /* Night sky above, deep water below; starts at the dive overlay's colour. */
+    background:
+      radial-gradient(90% 30% at 50% 78%, rgb(40 110 170 / 0.32), transparent 70%),
+      linear-gradient(to bottom, var(--abyss) 0%, #051530 48%, #0a2645 77.6%, #041222 78.4%, #020a16 92%, var(--abyss) 100%);
+  }
+  .abyss__sky {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+  }
+  .abyss__horizon {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 78%;
+    z-index: -1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgb(170 220 255 / 0.55) 30%, rgb(170 220 255 / 0.55) 70%, transparent);
+    box-shadow: 0 0 28px 3px rgb(90 170 230 / 0.3);
+  }
+
+  .abyss__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    align-items: center;
+    gap: clamp(2rem, 5vw, 4rem);
+  }
+
+  .abyss__copy > * {
+    animation: rise 1.1s var(--ease-out) both;
+  }
+  .abyss__title {
+    display: grid;
+    margin: 0.6rem 0 1.4rem;
+    animation-delay: 0.12s;
+  }
+  .abyss__tagline {
+    animation-delay: 0.3s;
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+  }
+  .abyss__eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgb(150 214 255 / 0.75);
+  }
+  .abyss__hz {
+    font-size: clamp(5rem, 13vw, 10.5rem);
+    line-height: 0.85;
+    letter-spacing: -0.03em;
+  }
+  .abyss__sub {
+    font-style: italic;
+    font-size: clamp(2rem, 4.6vw, 3.6rem);
+    line-height: 1.1;
+    color: rgb(190 222 245 / 0.9);
+  }
+  .abyss__tagline {
+    max-width: 26rem;
+    font-size: 1.08rem;
+    color: rgb(200 220 240 / 0.72);
+  }
+
+  /* ---- Constellation of chapters */
+  .sky-map {
+    position: relative;
+    height: clamp(340px, 54vh, 520px);
+  }
+  .sky-map__hint {
+    position: absolute;
+    right: 0;
+    top: -2rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgb(150 214 255 / 0.5);
+    animation: rise 1s 0.9s var(--ease-out) both;
+  }
+  .sky-map__lines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .sky-map__lines polyline {
+    fill: none;
+    stroke: rgb(160 210 245 / 0.28);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+    animation: appear-line 1.6s 1.4s var(--ease-out) both;
+  }
+  @keyframes appear-line {
+    from {
+      opacity: 0;
+    }
+  }
+  .sky-map ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .sky-map li {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    /* padding-left (0.5rem) + half the star (0.75rem) */
+    translate: -1.25rem -50%;
+    animation: appear 0.9s calc(0.45s + var(--i) * 0.28s) var(--ease-out) both;
+  }
+  @keyframes appear {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+  }
+  .sky-node {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.5rem 0.75rem 0.5rem 0.5rem;
+    border-radius: 999px;
+  }
+  .sky-node__star {
+    position: relative;
+    flex: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: grid;
+    place-items: center;
+  }
+  .sky-node__star::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #f2f9ff;
+    box-shadow:
+      0 0 10px 2px rgb(170 220 255 / 0.8),
+      0 0 30px 6px rgb(92 198 255 / 0.25);
+    transition: transform 0.4s var(--ease-out);
+  }
+  .sky-node__star::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgb(170 220 255 / 0.45);
+    transform: scale(0.4);
+    opacity: 0;
+    transition:
+      transform 0.5s var(--ease-out),
+      opacity 0.3s;
+  }
+  .sky-node:hover .sky-node__star::before,
+  .sky-node:focus-visible .sky-node__star::before {
+    transform: scale(1.4);
+  }
+  .sky-node:hover .sky-node__star::after,
+  .sky-node:focus-visible .sky-node__star::after {
+    transform: scale(1.5);
+    opacity: 1;
+  }
+  .sky-node__text {
+    display: grid;
+    line-height: 1.15;
+  }
+  .sky-node__name {
+    font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+    color: #f2f9ff;
+  }
+  .sky-node__kind {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgb(150 214 255 / 0.6);
+    transition: color 0.3s;
+  }
+  .sky-node:hover .sky-node__kind {
+    color: #7fd8e6;
+  }
+  .sky-node:focus-visible {
+    outline: 2px solid #7fd8e6;
+    outline-offset: 2px;
+  }
+
+  .abyss__dive {
+    position: absolute;
+    left: 50%;
+    bottom: 1.5rem;
+    display: grid;
+    justify-items: center;
+    gap: 0.5rem;
+    transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgb(150 214 255 / 0.6);
+  }
+  .abyss__dive-line {
+    width: 1px;
+    height: 36px;
+    background: linear-gradient(to bottom, rgb(150 214 255 / 0.7), transparent);
+    transform-origin: top;
+    animation: sink 2.4s var(--ease-in-out) infinite;
+  }
+  @keyframes sink {
+    0% {
+      transform: scaleY(0);
+    }
+    50% {
+      transform: scaleY(1);
+    }
+    100% {
+      transform: scaleY(1) translateY(36px);
+      opacity: 0;
+    }
+  }
+
+  /* Narrow screens: the constellation becomes a vertical star chart. */
+  @media (max-width: 899px) {
+    .abyss {
+      align-items: start;
+      padding-top: calc(var(--nav-h) + 3rem);
+    }
+    .abyss__inner {
+      grid-template-columns: 1fr;
+    }
+    .sky-map {
+      height: auto;
+    }
+    .sky-map__hint {
+      position: static;
+      margin-bottom: 0.75rem;
+    }
+    .sky-map__lines {
+      display: none;
+    }
+    .sky-map ol {
+      display: grid;
+      gap: 0.25rem;
+      border-left: 1px solid rgb(160 210 245 / 0.22);
+      margin-left: 0.75rem;
+    }
+    .sky-map li {
+      position: static;
+      translate: none;
+    }
+    .sky-node {
+      margin-left: -1.25rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .abyss__dive-line {
+      animation: none;
+    }
+    .sky-map__lines polyline,
+    .sky-map li,
+    .abyss__copy > * {
+      animation: none;
+    }
+  }
+</style>

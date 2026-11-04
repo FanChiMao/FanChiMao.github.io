@@ -1,0 +1,132 @@
+---
+import { Icon } from 'astro-icon/components';
+import { localePath, type Locale } from '@/i18n/ui';
+import { personalUi, chapters } from '@/i18n/personal';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const p = personalUi[lang];
+const numerals = ['I', 'II', 'III', 'IV'];
+---
+
+<section class="section chapters" aria-labelledby="chapters-title">
+  <div class="container">
+    <h2 class="pw-kicker chapters__head" id="chapters-title" data-reveal>{p.chaptersHeading}</h2>
+    <ol class="chapters__list">
+      {
+        chapters.map((c, i) => (
+          <li data-reveal style={`--i:${i}`}>
+            <a class="chapter" href={localePath(lang, c.path)}>
+              <span class="chapter__num serif" aria-hidden="true">
+                {numerals[i]}
+              </span>
+              <span class="chapter__main">
+                <span class="chapter__name serif">{p.chapters[c.id].name}</span>
+                <span class="chapter__kind">{p.chapters[c.id].kind}</span>
+              </span>
+              <span class="chapter__blurb">{p.chapters[c.id].blurb}</span>
+              <Icon name="lucide:arrow-right" class="chapter__go" />
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .chapters__head {
+    margin-bottom: 1.5rem;
+  }
+  .chapters__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--border);
+  }
+  .chapters__list li {
+    border-bottom: 1px solid var(--border);
+  }
+  .chapter {
+    position: relative;
+    display: grid;
+    grid-template-columns: 4rem minmax(0, 1.1fr) minmax(0, 1.4fr) auto;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.6rem 0.5rem;
+    transition: padding 0.4s var(--ease-out);
+  }
+  /* A tide line that fills in on hover. */
+  .chapter::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 1px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.6s var(--ease-out);
+  }
+  .chapter:hover::after,
+  .chapter:focus-visible::after {
+    transform: scaleX(1);
+  }
+  .chapter:hover {
+    padding-left: 1rem;
+  }
+  .chapter__num {
+    font-style: italic;
+    font-size: 1.6rem;
+    color: var(--muted);
+  }
+  .chapter__main {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .chapter__name {
+    font-size: clamp(1.7rem, 3vw, 2.3rem);
+    line-height: 1.1;
+  }
+  .chapter__kind {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .chapter__blurb {
+    color: var(--text-2);
+  }
+  .chapter :global(.chapter__go) {
+    width: 22px;
+    height: 22px;
+    color: var(--muted);
+    transition:
+      transform 0.4s var(--ease-out),
+      color 0.3s;
+  }
+  .chapter:hover :global(.chapter__go) {
+    transform: translateX(4px);
+    color: var(--accent);
+  }
+
+  @media (max-width: 759px) {
+    .chapter {
+      grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+      row-gap: 0.5rem;
+    }
+    .chapter__blurb {
+      grid-column: 2;
+      grid-row: 2;
+      font-size: 0.95rem;
+    }
+    .chapter :global(.chapter__go) {
+      grid-column: 3;
+      grid-row: 1;
+    }
+  }
+</style>

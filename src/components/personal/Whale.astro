@@ -1,0 +1,26 @@
+---
+/** Side-on whale silhouette (head right). Decorative: always aria-hidden. */
+interface Props {
+  class?: string;
+}
+const { class: cls } = Astro.props;
+const id = `whale-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<svg class:list={['whale', cls]} viewBox="0 0 200 80" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="currentColor" stop-opacity="0.95" />
+      <stop offset="1" stop-color="currentColor" stop-opacity="0.55" />
+    </linearGradient>
+  </defs>
+  <g fill={`url(#${id})`}>
+    <!-- Blue-whale profile: long flat rostrum, small dorsal fin far back, flukes edge-on. -->
+    <path
+      d="M196 40C194 33 182 29 162 29C130 29 95 31 66 33L58 29.5C55 31.5 52 33.5 50 34.5C40 35.5 30 37 21 38.5C14 36 8 34.5 2 35C7 38 10 39.5 12 40.5C9 42 6 44 3 46.5C10 46 15 44 21 42.5C35 44 48 46.5 66 48.5C95 52 130 53 160 51C182 49.5 194 46 196 40Z"
+    />
+    <path d="M140 50.5C136 56 130 60 122 62C127 57 130 53 131 50.5Z" />
+  </g>
+  <circle cx="179" cy="40.5" r="1.3" fill="var(--whale-eye, #020611)" />
+  <path d="M148 49.5C164 49 180 47 191 43.5M150 47.2C165 46.7 179 45 189 42" fill="none" stroke="var(--whale-eye, #020611)" stroke-opacity="0.3" stroke-width="0.6" />
+</svg>

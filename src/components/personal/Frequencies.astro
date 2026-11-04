@@ -1,0 +1,95 @@
+---
+import { Icon } from 'astro-icon/components';
+import { ui, type Locale } from '@/i18n/ui';
+import { personalUi } from '@/i18n/personal';
+import { site } from '@/lib/site';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const p = personalUi[lang].frequencies;
+// Same interests as the professional hero ("Off the clock"), minus the work one.
+const WORK = 3; // 'AI & Computer Vision'
+const items = ui[lang].hero.interests
+  .map((label, i) => ({ label, icon: site.interestIcons[i] }))
+  .filter((_, i) => i !== WORK);
+
+// Each interest gets its own little wave: a different frequency per row.
+const wave = (i: number) => {
+  const cycles = 1.5 + i * 0.75;
+  const pts: string[] = [];
+  for (let x = 0; x <= 120; x += 2) pts.push(`${x},${(10 - Math.sin((x / 120) * cycles * Math.PI * 2) * 7).toFixed(1)}`);
+  return `M${pts.join(' L')}`;
+};
+---
+
+<section class="section freqs" aria-labelledby="freqs-title">
+  <div class="container">
+    <p class="pw-kicker" data-reveal>{p.kicker}</p>
+    <h2 class="freqs__title serif" id="freqs-title" data-reveal style="--i:1">{p.title}</h2>
+    <ul class="freqs__list">
+      {
+        items.map((it, i) => (
+          <li class="freqs__item" data-reveal style={`--i:${i % 4}`}>
+            <Icon name={it.icon} class="freqs__icon" />
+            <span class="freqs__label">{it.label}</span>
+            <svg class="freqs__wave" viewBox="0 0 120 20" preserveAspectRatio="none" aria-hidden="true">
+              <path d={wave(i)} />
+            </svg>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .freqs__title {
+    margin: 0.75rem 0 2.25rem;
+    font-size: clamp(2.2rem, 4.4vw, 3.4rem);
+    line-height: 1.05;
+  }
+  .freqs__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+    gap: 0 2.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .freqs__item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 0.75rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .freqs__item :global(.freqs__icon) {
+    width: 18px;
+    height: 18px;
+    color: var(--accent);
+  }
+  .freqs__label {
+    font-weight: 500;
+  }
+  .freqs__wave {
+    grid-column: 1 / -1;
+    width: 100%;
+    height: 18px;
+    margin-top: 0.5rem;
+  }
+  .freqs__wave path {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 1.2;
+    opacity: 0.45;
+    vector-effect: non-scaling-stroke;
+    transition: opacity 0.3s;
+  }
+  .freqs__item:hover .freqs__wave path {
+    opacity: 1;
+  }
+</style>

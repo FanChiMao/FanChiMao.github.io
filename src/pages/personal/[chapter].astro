@@ -1,0 +1,13 @@
+---
+// Chapters not built yet. A dedicated page (e.g. personal/journey/index.astro)
+// takes precedence over this dynamic route once it exists; then drop it from STUBS.
+import ChapterStub from '@/views/personal/ChapterStub.astro';
+import { STUBS } from '@/views/personal/stubs';
+
+export function getStaticPaths() {
+  return STUBS.map(({ id, slug }) => ({ params: { chapter: slug }, props: { id } }));
+}
+const { id } = Astro.props;
+---
+
+<ChapterStub lang="en" chapter={id} />

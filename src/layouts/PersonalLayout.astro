@@ -1,0 +1,30 @@
+---
+import Base from './Base.astro';
+import Nav from '@/components/Nav.astro';
+import Footer from '@/components/Footer.astro';
+import '@/styles/personal.css';
+import type { Locale } from '@/i18n/ui';
+import { personalUi } from '@/i18n/personal';
+
+interface Props {
+  lang: Locale;
+  /** Locale-agnostic path, e.g. '/personal/journey/'. */
+  path: string;
+  /** Page name; the tab reads "<title> · 52Hz". Omit on the personal home. */
+  title?: string;
+  description?: string;
+  /** Nav floats over a dark full-bleed hero. */
+  overlay?: boolean;
+}
+const { lang, path, title, description, overlay = true } = Astro.props;
+const p = personalUi[lang];
+---
+
+<Base {lang} {path} world="personal" fullTitle={title ? `${title} · 52Hz` : p.meta.title} description={description ?? p.meta.description} ogAlt={p.meta.title}>
+  <slot name="head" slot="head" />
+  <Nav {lang} {path} world="personal" {overlay} />
+  <main id="main" class="pw">
+    <slot />
+  </main>
+  <Footer {lang} {path} />
+</Base>

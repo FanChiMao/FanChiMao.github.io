@@ -1,0 +1,475 @@
+---
+import { Icon } from 'astro-icon/components';
+import Whale from './personal/Whale.astro';
+import { localePath, type Locale } from '@/i18n/ui';
+import { personalUi } from '@/i18n/personal';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const t = personalUi[lang].deeper;
+
+// A digital "signal" (left) that tunes itself into a smooth "song" (right).
+// Built once at build time: the period stretches and the square edges soften.
+const W = 1200;
+const H = 120;
+const smooth = (a: number, b: number, x: number) => {
+  const k = Math.min(1, Math.max(0, (x - a) / (b - a)));
+  return k * k * (3 - 2 * k);
+};
+let phase = 0;
+const pts: string[] = [];
+for (let x = 0; x <= W; x += 3) {
+  const m = smooth(420, 820, x);
+  const period = 46 + m * 124;
+  phase += (2 * Math.PI * 3) / period;
+  const square = Math.tanh(6 * Math.sin(phase)) * 20;
+  const sine = Math.sin(phase) * 28;
+  pts.push(`${x},${(H / 2 - ((1 - m) * square + m * sine)).toFixed(1)}`);
+}
+const wave = `M${pts.join(' L')}`;
+
+// Drifting motes, deterministic so builds are stable.
+let seed = 52;
+const rand = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+const motes = Array.from({ length: 14 }, () => ({
+  x: (rand() * 100).toFixed(1),
+  s: (2 + rand() * 5).toFixed(1),
+  d: (9 + rand() * 9).toFixed(1),
+  delay: (-rand() * 18).toFixed(1),
+}));
+---
+
+<section class="deeper" id="deeper" aria-labelledby="deeper-title" data-deeper>
+  <svg class="deeper__surface" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 0H1200V22C1100 40 1000 44 900 34S700 10 600 20 400 50 300 40 100 12 0 26Z" />
+  </svg>
+  <div class="deeper__sea" aria-hidden="true">
+    {motes.map((m) => <span class="deeper__mote" style={`--x:${m.x}%;--s:${m.s}px;--d:${m.d}s;--delay:${m.delay}s`} />)}
+  </div>
+
+  <div class="container deeper__inner">
+    <p class="deeper__kicker" data-reveal>{t.kicker}</p>
+    <h2 class="deeper__title" id="deeper-title" data-reveal style="--i:1">{t.title}</h2>
+    <p class="deeper__lead" data-reveal style="--i:2">{t.lead}</p>
+
+    <div class="deeper__cta-wrap" data-reveal="scale" style="--i:3">
+      <a class="deeper__cta" href={localePath(lang, '/personal/')} data-dive>
+        <span class="deeper__sonar" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="deeper__cta-text">{t.cta}</span>
+        <Icon name="lucide:arrow-down-right" class="deeper__cta-icon" />
+      </a>
+    </div>
+  </div>
+
+  <figure class="deeper__signal" aria-hidden="true">
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="deeper-grad" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0" stop-color="#5cc6ff" stop-opacity="0" />
+          <stop offset="0.12" stop-color="#5cc6ff" stop-opacity="0.55" />
+          <stop offset="0.55" stop-color="#7fd8e6" stop-opacity="0.7" />
+          <stop offset="0.9" stop-color="#9fe7d8" stop-opacity="0.55" />
+          <stop offset="1" stop-color="#9fe7d8" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      <path class="deeper__wave" d={wave} stroke="url(#deeper-grad)" />
+      <path class="deeper__pulse" d={wave} pathLength="100" />
+    </svg>
+    <figcaption>
+      <span>{t.signal}</span>
+      <span>{t.song}</span>
+    </figcaption>
+  </figure>
+
+  <template data-dive-template>
+    <div class="dive">
+      <div class="dive__flood"></div>
+      <span class="dive__ring"></span>
+      <span class="dive__ring"></span>
+      <span class="dive__ring"></span>
+      <div class="dive__depth"></div>
+      <div class="dive__bubbles"></div>
+      <Whale class="dive__whale" />
+      <p class="dive__label">52 Hz</p>
+      <p class="sr-only" role="status">{t.diving}</p>
+      <button class="dive__skip" type="button" data-dive-skip>
+        {t.skip}
+        <Icon name="lucide:chevrons-down" />
+      </button>
+    </div>
+  </template>
+</section>
+
+<script>
+  import { setupDive } from '@/lib/dive';
+
+  const section = document.querySelector<HTMLElement>('[data-deeper]');
+  if (section) {
+    setupDive(section);
+    // Ambient motion only while the section is on screen.
+    new IntersectionObserver(([e]) => section.classList.toggle('is-live', e.isIntersecting)).observe(section);
+  }
+</script>
+
+<style>
+  .deeper {
+    --abyss: #020814;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding: clamp(7rem, 16vw, 12rem) 0 clamp(9rem, 18vw, 13rem);
+    color: #e6f1fb;
+    /* Descends from the page background into deep water, whatever the theme. */
+    background:
+      radial-gradient(70% 55% at 50% 62%, rgb(24 92 140 / 0.28), transparent 70%),
+      linear-gradient(to bottom, var(--bg) 0%, #051226 30%, #030c1c 62%, var(--abyss) 100%);
+  }
+
+  /* Light theme: no grey fade; the page meets a water surface instead. */
+  .deeper__surface {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1px;
+    width: 100%;
+    height: clamp(36px, 5vw, 64px);
+    fill: var(--bg);
+  }
+  :global([data-theme='light']) .deeper {
+    background:
+      radial-gradient(70% 55% at 50% 62%, rgb(24 92 140 / 0.28), transparent 70%),
+      linear-gradient(to bottom, #0d3150 0%, #061a33 35%, #030c1c 70%, var(--abyss) 100%);
+  }
+  :global([data-theme='light']) .deeper__surface {
+    display: block;
+  }
+
+  /* CJK: wide mono tracking reads as gaps between characters. */
+  .deeper:is(:lang(zh), :lang(ja)) .deeper__kicker {
+    letter-spacing: 0.12em;
+  }
+  .deeper:is(:lang(zh), :lang(ja)) .deeper__title {
+    word-break: auto-phrase;
+  }
+
+  .deeper__inner {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    gap: 1.1rem;
+  }
+  .deeper__kicker {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgb(150 214 255 / 0.75);
+  }
+  .deeper__title {
+    max-width: 18ch;
+    font-size: clamp(2.2rem, 5.2vw, 4rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+  .deeper__lead {
+    max-width: 34rem;
+    font-size: clamp(1.02rem, 1.6vw, 1.2rem);
+    color: rgb(200 220 240 / 0.72);
+  }
+
+  .deeper__cta-wrap {
+    margin-top: 2.25rem;
+  }
+  .deeper__cta {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1rem 1.6rem 1rem 1.9rem;
+    border-radius: 999px;
+    border: 1px solid rgb(127 216 230 / 0.45);
+    background: rgb(8 32 54 / 0.55);
+    backdrop-filter: blur(6px);
+    color: #f2fbff;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    transition:
+      border-color 0.3s,
+      background-color 0.3s,
+      transform 0.4s var(--ease-out);
+  }
+  .deeper__cta:hover {
+    border-color: rgb(127 216 230 / 0.9);
+    background: rgb(12 46 74 / 0.7);
+    transform: translateY(2px);
+  }
+  .deeper__cta:focus-visible {
+    outline: 2px solid #7fd8e6;
+    outline-offset: 5px;
+    border-radius: 999px;
+  }
+  .deeper__cta :global(.deeper__cta-icon) {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.4s var(--ease-out);
+  }
+  .deeper__cta:hover :global(.deeper__cta-icon) {
+    transform: translate(3px, 3px);
+  }
+
+  /* Sonar pings around the call to action. */
+  .deeper__sonar {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .deeper__sonar span {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 1px solid rgb(127 216 230 / 0.5);
+    border-radius: 999px;
+    opacity: 0;
+  }
+  .is-live .deeper__sonar span {
+    animation: sonar 3.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  }
+  .is-live .deeper__sonar span:nth-child(2) {
+    animation-delay: 1.2s;
+  }
+  .is-live .deeper__sonar span:nth-child(3) {
+    animation-delay: 2.4s;
+  }
+  @keyframes sonar {
+    0% {
+      transform: scale(1);
+      opacity: 0.7;
+    }
+    100% {
+      transform: scale(1.35, 1.9);
+      opacity: 0;
+    }
+  }
+
+  /* Pixels drifting up and rounding into bubbles. */
+  .deeper__sea {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .deeper__mote {
+    position: absolute;
+    left: var(--x);
+    bottom: -12px;
+    width: var(--s);
+    height: var(--s);
+    border: 1px solid rgb(150 220 255 / 0.55);
+    background: rgb(92 198 255 / 0.18);
+    border-radius: 1px;
+    opacity: 0;
+  }
+  .is-live .deeper__mote {
+    animation: mote var(--d) linear var(--delay) infinite;
+  }
+  @keyframes mote {
+    0% {
+      transform: translate3d(0, 0, 0);
+      opacity: 0;
+      border-radius: 1px;
+    }
+    10% {
+      opacity: 0.8;
+    }
+    55% {
+      border-radius: 1px;
+    }
+    75% {
+      border-radius: 50%;
+      background: transparent;
+    }
+    100% {
+      transform: translate3d(14px, -120vh, 0);
+      opacity: 0;
+      border-radius: 50%;
+      background: transparent;
+    }
+  }
+
+  .deeper__signal {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: clamp(2rem, 5vw, 3.5rem);
+    margin: 0;
+    pointer-events: none;
+  }
+  .deeper__signal svg {
+    width: 100%;
+    height: clamp(56px, 8vw, 96px);
+    overflow: visible;
+  }
+  .deeper__wave {
+    fill: none;
+    stroke-width: 1.4;
+    vector-effect: non-scaling-stroke;
+  }
+  .deeper__pulse {
+    fill: none;
+    stroke: #dff8ff;
+    stroke-width: 2;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+    stroke-dasharray: 4 96;
+    stroke-dashoffset: 100;
+    opacity: 0;
+    filter: drop-shadow(0 0 6px #7fd8e6);
+  }
+  .is-live .deeper__pulse {
+    animation: pulse 6s linear infinite;
+  }
+  @keyframes pulse {
+    0% {
+      stroke-dashoffset: 100;
+      opacity: 0;
+    }
+    8%,
+    92% {
+      opacity: 1;
+    }
+    100% {
+      stroke-dashoffset: 0;
+      opacity: 0;
+    }
+  }
+  .deeper__signal figcaption {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem clamp(1.25rem, 8vw, 6rem) 0;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: rgb(150 214 255 / 0.45);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .deeper__mote,
+    .deeper__sonar {
+      display: none;
+    }
+  }
+
+  /* ---- Dive overlay (cloned from the template into <body>, so unscoped) */
+  :global(.is-diving) {
+    overflow: hidden;
+  }
+  :global(.dive) {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    overflow: hidden;
+    cursor: pointer;
+    contain: strict;
+  }
+  :global(.dive__flood),
+  :global(.dive__ring) {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: var(--d);
+    height: var(--d);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    will-change: transform;
+  }
+  :global(.dive__flood) {
+    background: radial-gradient(circle, #0b2c4a 0%, #061a31 38%, #030c1c 62%, #020814 72%);
+  }
+  :global(.dive__ring) {
+    width: calc(var(--d) * 0.75);
+    height: calc(var(--d) * 0.75);
+    border: 1.5px solid rgb(127 216 230 / 0.6);
+    opacity: 0;
+  }
+  :global(.dive__depth) {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    background:
+      radial-gradient(60% 40% at 50% -5%, rgb(90 170 220 / 0.18), transparent 70%),
+      linear-gradient(to bottom, #04122a, #020814 55%, #01040b);
+  }
+  :global(.dive__bubbles) {
+    position: absolute;
+    inset: 0;
+  }
+  :global(.dive__bubble) {
+    position: absolute;
+    top: 0;
+    border: 1px solid rgb(170 228 255 / 0.7);
+    background: rgb(120 200 255 / 0.12);
+    opacity: 0;
+    will-change: transform;
+  }
+  :global(.dive__whale) {
+    position: absolute;
+    left: 50%;
+    top: 44%;
+    width: min(56vw, 440px);
+    height: auto;
+    color: #5fa6d1;
+    --whale-eye: #020814;
+    opacity: 0;
+    filter: drop-shadow(0 0 40px rgb(92 198 255 / 0.25));
+  }
+  :global(.dive__label) {
+    position: absolute;
+    left: 0;
+    right: 0;
+    /* below the whale: its top + its height (viewBox 200x80) + a gap */
+    top: calc(44% + min(56vw, 440px) * 0.4 + 1.25rem);
+    margin: 0;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.32em;
+    color: #a6dcf5;
+    opacity: 0;
+  }
+  :global(.dive.is-short .dive__whale),
+  :global(.dive.is-short .dive__label) {
+    display: none;
+  }
+  :global(.dive__skip) {
+    position: absolute;
+    right: clamp(1rem, 4vw, 2rem);
+    bottom: clamp(1rem, 4vw, 2rem);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 0.9rem;
+    border: 1px solid rgb(166 220 245 / 0.35);
+    border-radius: 999px;
+    background: rgb(2 8 20 / 0.5);
+    color: #cfeaf7;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  :global(.dive__skip svg) {
+    width: 14px;
+    height: 14px;
+  }
+  :global(.dive__skip:focus-visible) {
+    outline: 2px solid #7fd8e6;
+    outline-offset: 3px;
+  }
+</style>

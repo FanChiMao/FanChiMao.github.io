@@ -1,0 +1,92 @@
+---
+import { Icon } from 'astro-icon/components';
+import PersonalLayout from '@/layouts/PersonalLayout.astro';
+import Whale from '@/components/personal/Whale.astro';
+import { localePath, type Locale } from '@/i18n/ui';
+import { personalUi, chapters, type ChapterId } from '@/i18n/personal';
+
+/** Placeholder for a chapter that has not been built yet; replaced by its own page later. */
+interface Props {
+  lang: Locale;
+  chapter: ChapterId;
+}
+const { lang, chapter } = Astro.props;
+const p = personalUi[lang];
+const c = p.chapters[chapter];
+const path = chapters.find((x) => x.id === chapter)!.path;
+---
+
+<PersonalLayout {lang} {path} title={c.name} description={c.blurb}>
+  <section class="stub" aria-labelledby="stub-title">
+    <div class="container stub__inner">
+      <p class="stub__kind">{c.kind}</p>
+      <h1 class="stub__title serif" id="stub-title">{c.name}</h1>
+      <p class="stub__blurb">{c.blurb}</p>
+      <Whale class="stub__whale" />
+      <p class="stub__soon">{p.stub.soon}</p>
+      <a class="btn btn--glass" href={localePath(lang, '/personal/')}>
+        <Icon name="lucide:arrow-up" />
+        {p.stub.back}
+      </a>
+    </div>
+  </section>
+</PersonalLayout>
+
+<style>
+  .stub {
+    min-height: 100svh;
+    display: grid;
+    align-items: center;
+    padding: calc(var(--nav-h) + 3rem) 0 4rem;
+    color: var(--abyss-ink);
+    background:
+      radial-gradient(70% 45% at 50% 30%, rgb(40 110 170 / 0.25), transparent 70%),
+      linear-gradient(to bottom, var(--abyss), #051530 60%, var(--abyss));
+  }
+  .stub__inner {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+    text-align: center;
+  }
+  .stub__kind {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgb(150 214 255 / 0.75);
+  }
+  .stub__title {
+    font-size: clamp(3rem, 9vw, 6rem);
+    line-height: 1;
+  }
+  .stub__blurb {
+    max-width: 30rem;
+    color: rgb(200 220 240 / 0.75);
+  }
+  .stub :global(.stub__whale) {
+    width: min(60vw, 260px);
+    margin: 2.5rem 0 0.5rem;
+    color: #6fb7e0;
+    opacity: 0.4;
+    --whale-eye: #041022;
+    animation: drift 9s var(--ease-in-out) infinite alternate;
+  }
+  @keyframes drift {
+    to {
+      transform: translate(14px, -6px);
+    }
+  }
+  .stub__soon {
+    margin-bottom: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    color: rgb(150 214 255 / 0.6);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .stub :global(.stub__whale) {
+      animation: none;
+    }
+  }
+</style>

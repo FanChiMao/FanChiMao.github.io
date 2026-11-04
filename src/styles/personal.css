@@ -1,0 +1,72 @@
+/* ============================================================
+   Personal world (/personal/): same structure and components as the
+   professional site, retuned for deep water and night sky.
+   Loaded only by PersonalLayout, so the professional bundle is untouched.
+   ============================================================ */
+@import '@fontsource/instrument-serif/latin-400.css';
+@import '@fontsource/instrument-serif/latin-400-italic.css';
+
+:root[data-world='personal'] {
+  /* Latin glyphs get the editorial serif; CJK falls back to the sans stack. */
+  --font-serif: 'Instrument Serif', var(--font-sans);
+  --abyss: #020814;
+  --abyss-ink: #e6f1fb;
+
+  --bg: #eef3f7;
+  --bg-elev: #ffffff;
+  --surface-2: #e1e9f0;
+  --text: #0a1626;
+  --text-2: #263a52;
+  --muted: #566a80;
+  --border: rgb(10 22 38 / 0.1);
+  --border-strong: rgb(10 22 38 / 0.18);
+  --accent: #0b6f8c;
+  --accent-2: #4b5bd0;
+  --accent-soft: rgb(11 111 140 / 0.1);
+  --glass: rgb(238 243 247 / 0.75);
+}
+
+:root[data-world='personal'][data-theme='dark'] {
+  --bg: #030915;
+  --bg-elev: #08111f;
+  --surface-2: #0c1829;
+  --text: #e6eef8;
+  --text-2: #bccadb;
+  --muted: #8a9bb1;
+  --border: rgb(170 210 240 / 0.09);
+  --border-strong: rgb(170 210 240 / 0.18);
+  --accent: #7fd8e6;
+  --accent-2: #93a9ff;
+  --accent-soft: rgb(127 216 230 / 0.12);
+  --accent-contrast: #021219;
+  --glass: rgb(3 9 21 / 0.72);
+}
+
+[data-world='personal'] .serif {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* Mono kicker shared by personal sections. */
+[data-world='personal'] .pw-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* No synthetic italics on CJK: those glyphs fall back to the sans stack. */
+[data-world='personal'] :is(:lang(zh), :lang(ja)) .serif,
+[data-world='personal'] .serif:is(:lang(zh), :lang(ja)) {
+  font-style: normal;
+}
+
+/* CJK: keep words together when headings wrap, and tighten mono tracking. */
+[data-world='personal'] :is(:lang(zh), :lang(ja)) :is(h1, h2, h3) {
+  word-break: auto-phrase;
+}
+[data-world='personal'] :is(:lang(zh), :lang(ja)) :is(.pw-kicker, .abyss__eyebrow, .sky-map__hint, .sky-node__kind, .chapter__kind, .abyss__dive, .freq__cap, .stub__kind, .stub__soon) {
+  letter-spacing: 0.1em;
+}

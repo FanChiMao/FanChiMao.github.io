@@ -1,36 +1,75 @@
 ---
 import { Icon } from 'astro-icon/components';
 import { locales, localeMeta, localePath, ui, type Locale } from '@/i18n/ui';
+import { personalUi } from '@/i18n/personal';
 
 interface Props {
   lang: Locale;
   path: string;
   /** On the home page links are in-page anchors with scroll-spy. */
   home?: boolean;
+  /** Professional site (default) or the personal world under /personal/. */
+  world?: 'pro' | 'personal';
+  /** Transparent over a dark full-bleed hero until the page scrolls. Defaults to `home`. */
+  overlay?: boolean;
 }
-const { lang, path, home = false } = Astro.props;
+const { lang, path, home = false, world = 'pro' } = Astro.props;
+const overlay = Astro.props.overlay ?? home;
 const t = ui[lang];
-const homeHref = localePath(lang, '/');
-const sections = ['about', 'experience', 'publications', 'patents', 'competitions', 'education', 'gallery', 'contact'] as const;
-const href = (id: string) => (home ? `#${id}` : `${homeHref}#${id}`);
+
+type Item = { href: string; label: string; spy?: string; current?: boolean };
+let brand: { href: string; label: string; aria: string };
+let items: Item[];
+let back: { href: string; label: string; aria: string } | undefined;
+
+if (world === 'personal') {
+  const p = personalUi[lang].nav;
+  const here = (to: string) => path === to;
+  brand = { href: localePath(lang, '/personal/'), label: '52Hz', aria: p.brandLabel };
+  items = (
+    [
+      ['/personal/', p.home],
+      ['/gallery/', p.gallery],
+      ['/personal/journey/', p.journey],
+      ['/personal/companion/', p.companion],
+      ['/personal/achievements/', p.achievements],
+    ] as const
+  ).map(([to, label]) => ({ href: localePath(lang, to), label, current: here(to) }));
+  back = { href: localePath(lang, '/'), label: p.back, aria: p.backLabel };
+} else {
+  const homeHref = localePath(lang, '/');
+  const sections = ['about', 'experience', 'publications', 'patents', 'competitions', 'education', 'gallery', 'contact'] as const;
+  brand = { href: homeHref, label: 'Chi-Mao Fan', aria: 'Chi-Mao Fan, home' };
+  items = sections.map((id) => ({ href: home ? `#${id}` : `${homeHref}#${id}`, label: t.nav[id], spy: id }));
+}
 ---
 
-<header class="nav" data-nav data-home={home ? '' : undefined}>
+<header class="nav" data-nav data-home={home ? '' : undefined} data-overlay={overlay ? '' : undefined} data-world={world}>
   <div class="nav__inner container">
-    <a class="nav__brand" href={homeHref} aria-label="Chi-Mao Fan, home">
-      <span class="nav__name">Chi-Mao Fan</span>
+    <a class="nav__brand" href={brand.href} aria-label={brand.aria}>
+      <span class="nav__name">{brand.label}</span>
     </a>
 
     <nav class="nav__links" aria-label="Primary" data-nav-panel>
       <ul>
         {
-          sections.map((id, i) => (
+          items.map((item, i) => (
             <li style={`--i:${i}`}>
-              <a href={href(id)} data-spy={id}>
-                {t.nav[id]}
+              <a href={item.href} data-spy={item.spy} aria-current={item.current ? 'page' : undefined} class={item.current ? 'is-active' : undefined}>
+                {item.label}
               </a>
             </li>
           ))
+        }
+        {
+          back && (
+            <li class="nav__back-item" style={`--i:${items.length}`}>
+              <a class="nav__back" href={back.href} title={back.aria}>
+                <Icon name="lucide:arrow-up-left" />
+                {back.label}
+              </a>
+            </li>
+          )
         }
       </ul>
     </nav>
@@ -131,7 +170,7 @@ const href = (id: string) => (home ? `#${id}` : `${homeHref}#${id}`);
       backdrop-filter 0.35s;
     border-bottom: 1px solid transparent;
   }
-  .nav:not([data-home]),
+  .nav:not([data-overlay]),
   .nav.is-scrolled,
   .nav.is-open {
     color: var(--text);
@@ -283,6 +322,29 @@ const href = (id: string) => (home ? `#${id}` : `${homeHref}#${id}`);
     font-weight: 700;
   }
 
+  /* Personal world: the way back up to the professional site. */
+  .nav__back-item {
+    margin-left: 0.5rem;
+    padding-left: 0.75rem;
+    border-left: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  }
+  .nav__links a.nav__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .nav__back :global(svg) {
+    width: 15px;
+    height: 15px;
+    transition: transform 0.3s var(--ease-out);
+  }
+  .nav__back:hover :global(svg) {
+    transform: translate(-2px, -2px);
+  }
+  .nav__links a.nav__back::after {
+    display: none;
+  }
+
   /* Burger */
   .nav__burger {
     display: none;
@@ -372,6 +434,16 @@ const href = (id: string) => (home ? `#${id}` : `${homeHref}#${id}`);
     }
     .nav__links a::after {
       display: none;
+    }
+    .nav__back-item {
+      margin: 1.25rem 0 0;
+      padding: 0;
+      border: 0;
+    }
+    .nav__links a.nav__back {
+      font-size: 1.1rem;
+      color: var(--muted);
+      border-bottom: 0;
     }
   }
   :global(.nav-locked) {
