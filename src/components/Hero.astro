@@ -976,4 +976,47 @@ const tags = dets.map((d) => {
       grid-template-columns: minmax(6.5rem, auto) minmax(0, 1fr) 2.4rem;
     }
   }
+
+  /* ---- Light theme: the same plate, inverted into a pale, misty print with dark ink.
+     The inference panel keeps its dark "device" look in both themes. */
+  :global([data-theme='light']) .hero__bg :global(img) {
+    filter: invert(1) grayscale(0.3) contrast(0.8) brightness(1.08);
+  }
+  :global([data-theme='light']) .hero__shade {
+    background:
+      radial-gradient(120% 80% at 15% 40%, rgb(245 247 251 / 0.55), rgb(245 247 251 / 0.86) 75%),
+      linear-gradient(180deg, rgb(245 247 251 / 0.5) 0%, transparent 30%, rgb(245 247 251 / 0.6) 85%, var(--bg) 100%);
+  }
+  :global([data-theme='light']) .hero__eyebrow {
+    border-color: rgb(12 18 34 / 0.14);
+    background: rgb(255 255 255 / 0.55);
+  }
+  :global([data-theme='light']) .rot {
+    background-image: linear-gradient(90deg, #0a74c2, #6d4dff 60%, #b0399f);
+  }
+  :global([data-theme='light']) .hero__taglines {
+    color: rgb(12 18 34 / 0.74);
+  }
+  :global([data-theme='light']) .hero :global(.btn--glass) {
+    --btn-bg: rgb(255 255 255 / 0.6);
+    --btn-fg: var(--text);
+    border-color: rgb(12 18 34 / 0.14);
+  }
+  :global([data-theme='light']) .pipe {
+    background: rgb(9 14 27 / 0.93);
+    box-shadow: 0 30px 70px -30px rgb(12 18 34 / 0.45);
+  }
+  :global([data-theme='light']) .pipe__hint,
+  :global([data-theme='light']) .hero__scroll {
+    color: rgb(12 18 34 / 0.6);
+  }
+  :global([data-theme='light']) .w1 {
+    stroke: rgb(10 116 194 / 0.5);
+  }
+  :global([data-theme='light']) .w2 {
+    stroke: rgb(109 77 255 / 0.3);
+  }
+  :global([data-theme='light']) .w3 {
+    stroke: rgb(12 18 34 / 0.16);
+  }
 </style>

@@ -69,6 +69,12 @@
   --glass: rgb(9 14 27 / 0.7);
 }
 
+/* Professional hero is a pale print in light mode: dark ink for it and the nav over it.
+   (The personal hero stays a night sky, so its nav keeps white ink.) */
+:root[data-theme='light'][data-world='pro'] {
+  --hero-ink: #0c1222;
+}
+
 :lang(zh-Hans-CN) {
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei',
     'Noto Sans SC', sans-serif;
