@@ -61,7 +61,7 @@ const years = [...new Set(items.map((x) => x.data.date.slice(0, 4)))].map((y) =>
                           <Icon name={`lucide:${ICON[m.data.category]}`} />
                         </span>
                         {/* Collapsible: the summary is one bar (date, category, title, place); all start collapsed. */}
-                        <details class="milestone__card">
+                        <details class="milestone__card" data-milestone={m.id}>
                           <summary class="milestone__head">
                             <time class="milestone__when" datetime={m.data.date}>
                               <span class="milestone__day">{dayMonth.format(asDate(m.data.date))}</span>
@@ -109,6 +109,13 @@ const years = [...new Set(items.map((x) => x.data.date.slice(0, 4)))].map((y) =>
     </div>
   </div>
 </PersonalLayout>
+
+<script>
+  import { track } from '@/lib/passport';
+  document.querySelectorAll<HTMLDetailsElement>('details[data-milestone]').forEach((d) =>
+    d.addEventListener('toggle', () => d.open && track('milestone', d.dataset.milestone ?? '')),
+  );
+</script>
 
 <style>
   .journey__inner {

@@ -38,6 +38,10 @@ export const ACHIEVEMENTS = [
   { id: 'sailor', scope: 'personal', icon: 'sailboat', event: 'boat' },
   /** Light theme: watched the boat sail across the rising sun. */
   { id: 'sunrise-sail', scope: 'personal', icon: 'sunrise', event: 'boat-sun' },
+  /** Opened one of Ajie's posts. */
+  { id: 'cat-person', scope: 'personal', icon: 'cat', event: 'ajie-post' },
+  /** Opened one of the Journey milestones. */
+  { id: 'fellow-traveller', scope: 'personal', icon: 'route', event: 'milestone' },
   /** Opened a photo album. */
   { id: 'leafing-through', scope: 'personal', icon: 'book-image', event: 'album' },
   /** Opened every chapter of the personal world. */

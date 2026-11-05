@@ -31,7 +31,8 @@ const facts = [
   { label: p.ajie.posts, value: String(posts.length) },
   ajieProfile.adopted && { label: p.ajie.adopted, value: day(ajieProfile.adopted) },
   ajieProfile.born && { label: p.ajie.born, value: day(ajieProfile.born) },
-].filter(Boolean) as { label: string; value: string }[];
+  ajieProfile.sex && { label: p.ajie.sexLabel, value: p.ajie.sex[ajieProfile.sex], sex: ajieProfile.sex },
+].filter(Boolean) as { label: string; value: string; sex?: 'male' | 'female' }[];
 const bio = pick(ajieProfile.bio);
 ---
 
@@ -48,7 +49,14 @@ const bio = pick(ajieProfile.bio);
             facts.map((f) => (
               <div>
                 <dt>{f.label}</dt>
-                <dd>{f.value}</dd>
+                <dd>
+                  {f.sex && (
+                    <span class:list={['ajie__sex', `ajie__sex--${f.sex}`]} aria-hidden="true">
+                      <Icon name={f.sex === 'male' ? 'lucide:mars' : 'lucide:venus'} />
+                    </span>
+                  )}
+                  {f.value}
+                </dd>
               </div>
             ))
           }
@@ -94,7 +102,7 @@ const bio = pick(ajieProfile.bio);
         const caption = pick(post.data.caption) ?? '';
         const place = pick(post.data.location);
         return (
-          <dialog class="ajie-post" data-post={i} aria-label={`${c.name} · ${day(post.data.date)}`}>
+          <dialog class="ajie-post" data-post={i} data-slug={post.id} aria-label={`${c.name} · ${day(post.data.date)}`}>
             <div class="ajie-post__media">
               <PostMedia {lang} media={post.data.media} label={`${c.name} · ${day(post.data.date)}`} ratio="4 / 5" sizes="(min-width: 900px) 520px, 100vw" />
             </div>
@@ -138,6 +146,7 @@ const bio = pick(ajieProfile.bio);
 </PersonalLayout>
 
 <script>
+  import { track } from '@/lib/passport';
   const root = document.querySelector<HTMLElement>('[data-ajie]');
   if (root) {
     const dialogs = Array.from(root.querySelectorAll<HTMLDialogElement>('dialog[data-post]'));
@@ -146,6 +155,7 @@ const bio = pick(ajieProfile.bio);
     const open = (i: number) => {
       dialogs.forEach((d) => d.open && d.close());
       dialogs[i]?.showModal();
+      if (dialogs[i]) track('ajie-post', dialogs[i].dataset.slug ?? String(i));
     };
     tiles.forEach((t) =>
       t.addEventListener('click', () => {
@@ -180,6 +190,27 @@ const bio = pick(ajieProfile.bio);
   }
 
   /* Profile header: the shared centred .pw-head, plus Ajie's facts. */
+  .ajie__facts dd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+  }
+  .ajie__sex {
+    display: inline-grid;
+    place-items: center;
+  }
+  .ajie__sex :global(svg) {
+    width: 1.05em;
+    height: 1.05em;
+    stroke-width: 2.6;
+  }
+  .ajie__sex--male {
+    color: #3b8fd9;
+  }
+  .ajie__sex--female {
+    color: #e0679a;
+  }
   .ajie__facts {
     display: flex;
     flex-wrap: wrap;

@@ -1,0 +1,60 @@
+{
+  "date": "2025-10-04",
+  "pinned": true,
+  "location": {
+    "en": "Taipei City Animal Shelter, Neihu",
+    "zh-tw": "臺北市動物之家（內湖）",
+    "zh-cn": "台北市动物之家（内湖）",
+    "ja": "台北市動物之家（内湖）"
+  },
+  "media": [
+    {
+      "type": "image",
+      "src": "ajie/2025-10-04-adoption/paw.jpg",
+      "alt": {
+        "en": "Ajie reaching out a paw",
+        "zh-tw": "阿桔伸出貓掌",
+        "zh-cn": "阿桔伸出猫爪",
+        "ja": "前足を伸ばすアジエ"
+      }
+    },
+    {
+      "type": "video",
+      "src": "/media/ajie/2025-10-04-chin-scratch.mp4",
+      "poster": "ajie/2025-10-04-adoption/chin-scratch-poster.jpg",
+      "alt": {
+        "en": "Ajie enjoying a chin scratch",
+        "zh-tw": "阿桔享受被摸下巴",
+        "zh-cn": "阿桔享受被摸下巴",
+        "ja": "あごを撫でられて気持ちよさそうなアジエ"
+      }
+    },
+    {
+      "type": "video",
+      "src": "/media/ajie/2025-10-04-first-meal.mp4",
+      "poster": "ajie/2025-10-04-adoption/first-meal-poster.jpg",
+      "alt": {
+        "en": "Ajie eating at home",
+        "zh-tw": "阿桔在家吃飯",
+        "zh-cn": "阿桔在家吃饭",
+        "ja": "家でごはんを食べるアジエ"
+      }
+    },
+    {
+      "type": "image",
+      "src": "ajie/2025-10-04-adoption/box-nap.jpg",
+      "alt": {
+        "en": "Ajie napping in a cardboard box",
+        "zh-tw": "阿桔窩在紙箱裡睡覺",
+        "zh-cn": "阿桔窝在纸箱里睡觉",
+        "ja": "段ボール箱で昼寝するアジエ"
+      }
+    }
+  ],
+  "caption": {
+    "en": "On the afternoon of October 4, 2025, I adopted Ajie from the Taipei City Animal Shelter in Neihu.\n\nI had already made up my mind to get a cat, and even moved to a place that allows pets. I had no particular colour or personality in mind. I simply wanted some company.\n\nThat day was the first time Ajie and I met. I sat down on the floor, and Ajie walked straight over and curled up on my lap. That was the moment I knew.\n\nBack home, Ajie came out of the carrier right away and started inspecting the new territory. I went out for dinner, and when I came back there was a big surprise waiting on my duvet. I completely lost it, and thought the days ahead might not be easy.\n\nSince Ajie was adopted, nobody knows the exact birthday. Judging by the wear on the teeth, Ajie is somewhere between 3 and 7, so I just go with 7.",
+    "zh-tw": "2025 年 10 月 4 日下午，在內湖的臺北市動物之家領養了阿桔。\n\n其實我早就決定要養貓，還為此特地搬家，找了一間可以養寵物的宿舍。對花色和個性都沒有特別的堅持，只是單純想要有個陪伴。\n\n那天是我第一次和阿桔互動。我坐在地上，牠就主動走過來，窩到我腿上休息。那一刻我就想：就是牠了。\n\n帶回家後，阿桔一出籠就開始四處巡視新環境。晚上我出門吃個晚餐，回來就發現牠在我的棉被上大了一大坨……當下整個崩潰，心想接下來的日子大概不好過。\n\n因為是領養的，不知道確切的出生日期，只能從牙齒的磨損程度推估大約 3 到 7 歲，所以我都直接當牠 7 歲。",
+    "zh-cn": "2025 年 10 月 4 日下午，在内湖的台北市动物之家领养了阿桔。\n\n其实我早就决定要养猫，还为此特地搬家，找了一间可以养宠物的宿舍。对花色和性格都没有特别的坚持，只是单纯想要有个陪伴。\n\n那天是我第一次和阿桔互动。我坐在地上，它就主动走过来，窝到我腿上休息。那一刻我就想：就是它了。\n\n带回家后，阿桔一出笼就开始四处巡视新环境。晚上我出门吃个晚饭，回来就发现它在我的被子上拉了一大坨……当下整个崩溃，心想接下来的日子大概不好过。\n\n因为是领养的，不知道确切的出生日期，只能从牙齿的磨损程度推估大约 3 到 7 岁，所以我都直接当它 7 岁。",
+    "ja": "2025年10月4日の午後、内湖にある台北市動物之家からアジエを迎えました。\n\n猫を飼うことはもともと決めていて、そのためにペット可の部屋へ引っ越したほどです。毛色や性格にこだわりはなく、ただそばにいてくれる存在がほしかった。\n\nその日がアジエとの初対面でした。床に座っていると、アジエのほうから歩いてきて、僕のひざの上で丸くなったんです。その瞬間、この子だと思いました。\n\n家に着くと、アジエはすぐにキャリーから出て新しい縄張りを見回り始めました。夜、晩ごはんを食べに出かけて帰ってくると、布団の上に大きな置き土産が……。完全に心が折れて、この先の日々は大変そうだと思いました。\n\n保護猫なので正確な誕生日はわかりません。歯のすり減り具合から3〜7歳くらいと推定されたので、7歳ということにしています。"
+  }
+}
