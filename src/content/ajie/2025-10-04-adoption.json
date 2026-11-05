@@ -7,6 +7,15 @@
     "zh-cn": "台北市动物之家（内湖）",
     "ja": "台北市動物之家（内湖）"
   },
+  "cover": {
+    "src": "ajie/2025-10-04-adoption/cover.jpg",
+    "alt": {
+      "en": "Illustration: Ajie proudly standing next to a surprise on the duvet",
+      "zh-tw": "插畫：阿桔得意地站在棉被上的「驚喜」旁邊",
+      "zh-cn": "插画：阿桔得意地站在被子上的「惊喜」旁边",
+      "ja": "イラスト：布団の上の「置き土産」の横で得意げなアジエ"
+    }
+  },
   "media": [
     {
       "type": "image",

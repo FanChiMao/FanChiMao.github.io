@@ -163,6 +163,8 @@ const ajie = defineCollection({
   schema: z.object({
     date: z.iso.date(),
     media: z.array(media).min(1),
+    /** Illustrated cover: the grid thumbnail and the first slide of the post. */
+    cover: z.object({ src: asset, alt: textOrT.optional() }).optional(),
     caption: textOrT,
     location: textOrT.optional(),
     /** Pinned posts stay at the front of the grid. */

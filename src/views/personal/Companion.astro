@@ -74,13 +74,13 @@ const bio = pick(ajieProfile.bio);
           <ul class="ajie__grid">
             {posts.map((post, i) => {
               const first = post.data.media[0];
-              const multi = post.data.media.length > 1;
-              const isVideo = first.type !== 'image';
+              const multi = post.data.media.length + (post.data.cover ? 1 : 0) > 1;
+              const isVideo = !post.data.cover && first.type !== 'image';
               const caption = pick(post.data.caption) ?? '';
               return (
                 <li data-reveal style={`--i:${i % 3}`}>
                   <button class="ajie__tile" type="button" data-open={i} aria-label={`${p.ajie.open}: ${day(post.data.date)}, ${caption.slice(0, 60)}`}>
-                    <Image src={asset(thumbOf(first)!)} alt="" widths={[320, 480, 720]} sizes="(min-width: 900px) 33vw, 50vw" quality={74} loading={i < 6 ? 'eager' : 'lazy'} />
+                    <Image src={asset(post.data.cover?.src ?? thumbOf(first)!)} alt="" widths={[320, 480, 720]} sizes="(min-width: 900px) 33vw, 50vw" quality={74} loading={i < 6 ? 'eager' : 'lazy'} />
                     {(multi || isVideo) && (
                       <span class="ajie__badge" aria-hidden="true">
                         <Icon name={isVideo ? 'lucide:clapperboard' : 'lucide:copy'} />
@@ -111,7 +111,7 @@ const bio = pick(ajieProfile.bio);
         return (
           <dialog class="ajie-post" data-post={i} data-slug={post.id} aria-label={`${c.name} · ${day(post.data.date)}`}>
             <div class="ajie-post__media">
-              <PostMedia {lang} media={post.data.media} label={`${c.name} · ${day(post.data.date)}`} ratio="4 / 5" sizes="(min-width: 900px) 520px, 100vw" />
+              <PostMedia {lang} media={post.data.cover ? [{ type: 'image', src: post.data.cover.src, alt: post.data.cover.alt, fit: 'contain' }, ...post.data.media] : post.data.media} label={`${c.name} · ${day(post.data.date)}`} ratio="4 / 5" sizes="(min-width: 900px) 520px, 100vw" />
             </div>
             <div class="ajie-post__text">
               <header class="ajie-post__head">

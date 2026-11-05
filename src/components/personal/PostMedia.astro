@@ -13,7 +13,8 @@ import { ui, type Locale } from '@/i18n/ui';
 import { personalUi } from '@/i18n/personal';
 import { asset } from '@/lib/assets';
 
-type Media = CollectionEntry<'ajie'>['data']['media'][number];
+/** `fit: 'contain'` shows the whole picture (e.g. a square illustration) instead of cropping it. */
+type Media = CollectionEntry<'ajie'>['data']['media'][number] & { fit?: 'contain' };
 
 interface Props {
   lang: Locale;
@@ -44,7 +45,7 @@ const items = await Promise.all(
     {
       items.map((m, i) => (
         <li class="pmedia__slide" aria-label={items.length > 1 ? `${i + 1} / ${items.length}` : undefined}>
-          {m.type === 'image' && <Image src={m.img} alt={m.alt} widths={[480, 800, 1200]} {sizes} quality={80} loading={eager && i === 0 ? 'eager' : 'lazy'} />}
+          {m.type === 'image' && <Image class:list={{ 'pmedia__contain': m.fit === 'contain' }} src={m.img} alt={m.alt} widths={[480, 800, 1200]} {sizes} quality={80} loading={eager && i === 0 ? 'eager' : 'lazy'} />}
           {m.type === 'video' &&
             (m.loop ? (
               <>
@@ -187,6 +188,10 @@ const items = await Promise.all(
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+  .pmedia__slide > img.pmedia__contain {
+    object-fit: contain;
+    background: #f7ecdf;
   }
   .pmedia__yt {
     position: absolute;
