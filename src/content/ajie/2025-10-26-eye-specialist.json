@@ -1,5 +1,14 @@
 {
   "date": "2025-10-26",
+  "cover": {
+    "src": "ajie/2025-10-26-eye-specialist/cover.jpg",
+    "alt": {
+      "en": "Illustration: Ajie loafing on the bed in his cone, glaring with a teary, squinting right eye, while I hide behind the blanket clutching the eye drops",
+      "zh-tw": "插畫：阿桔戴著頭套趴在床上，右眼瞇著含淚、一臉鬱悶；我拿著眼藥水躲在被子後面，滿臉為難",
+      "zh-cn": "插画：阿桔戴着头套趴在床上，右眼眯着含泪、一脸郁闷；我拿着眼药水躲在被子后面，满脸为难",
+      "ja": "イラスト：エリザベスカラーをつけてベッドで香箱座りのアジエ。涙のにじむ右目を細めて不機嫌顔。僕は目薬を握って布団の陰でおろおろ"
+    }
+  },
   "media": [
     {
       "type": "image",
