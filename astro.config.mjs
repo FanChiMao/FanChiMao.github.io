@@ -2,10 +2,17 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import icon from 'astro-icon';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 
-/** Placeholder chapters (src/views/personal/stubs.ts): noindex pages, so not in the sitemap either. */
-const STUB_SLUGS = ['journey', 'companion'];
-const stubPath = new RegExp(`^/(?:(?:zh-tw|zh-cn|ja)/)?personal/(?:${STUB_SLUGS.join('|')})/$`);
+/** A chapter with no published posts yet is noindex (see its view), so keep it out of the sitemap too. */
+/** @param {string} dir */
+const published = (dir) =>
+  existsSync(dir) && readdirSync(dir).some((f) => f.endsWith('.json') && !JSON.parse(readFileSync(`${dir}/${f}`, 'utf8')).draft);
+const STUB_SLUGS = [
+  ...(published('./src/content/journey') ? [] : ['journey']),
+  ...(published('./src/content/ajie') ? [] : ['companion']),
+];
+const stubPath = STUB_SLUGS.length ? new RegExp(`^/(?:(?:zh-tw|zh-cn|ja)/)?personal/(?:${STUB_SLUGS.join('|')})/$`) : /^$/;
 
 export default defineConfig({
   site: 'https://52hzfan.com',

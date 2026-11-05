@@ -71,6 +71,35 @@ Lower `order` shows first. The first 4 cards are shown; the rest sit behind "Loa
 
 Every build runs `npm run photos:check` first and fails if any image under `src/assets` or `public` still carries GPS, so a location can never be deployed by accident. The repo is public: run `npm run photos` **before committing** new photos.
 
+### Ajie and Journey posts
+
+Each post is one JSON file. Text fields take a plain string (used for every language) or `{ "en", "zh-tw", "zh-cn", "ja" }`.
+
+- **Ajie** (`/personal/companion/`, IG-style grid): `src/content/ajie/<date>-<slug>.json`, photos in `src/assets/ajie/`.
+  Profile facts (adoption date, birthday, bio) live in `src/data/ajie.ts`.
+- **Journey** (`/personal/journey/`, timeline): `src/content/journey/<date>-<slug>.json`, photos in `src/assets/journey/`.
+  `category` is one of `run`, `dive`, `jump`, `hike`, `ride`, `travel`, `other`.
+
+```json
+{
+  "date": "2025-02-16",
+  "category": "run",
+  "title": { "en": "First marathon", "zh-tw": "第一次全馬", "zh-cn": "第一次全马", "ja": "はじめてのフルマラソン" },
+  "place": "Taipei",
+  "stat": "4:28:10",
+  "media": [
+    { "type": "image", "src": "journey/2025-marathon/1.jpg" },
+    { "type": "video", "src": "/media/journey/2025-marathon.mp4", "poster": "journey/2025-marathon/poster.jpg" },
+    { "type": "youtube", "id": "VIDEO_ID" }
+  ],
+  "story": "First paragraph.
+
+Second paragraph."
+}
+```
+
+An Ajie post has `date`, `media`, `caption`, and optionally `location` and `pinned`. Short clips go in `public/media/<ajie|journey>/` (H.264 MP4, a few MB; they loop muted like an IG clip, or set `"loop": false` for controls and sound); long ones are better on YouTube. `npm run photos` also strips GPS from photos in these folders, and the build fails if a video still carries a location (iPhone: Share → Options → turn off Location before exporting). A chapter with no posts yet stays noindex and out of the sitemap.
+
 ### Explorer Passport (achievements)
 
 Rules live in `src/lib/passport.ts` (`ACHIEVEMENTS`); texts in `src/i18n/personal.ts` (`passport.items`). Components only report events with `track('event', 'detail')`. Progress is stored in the visitor's localStorage; the page is `/personal/achievements/`.

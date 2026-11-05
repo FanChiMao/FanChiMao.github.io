@@ -42,7 +42,7 @@ const en = {
   },
   chapters: {
     gallery: { name: 'The Gallery', kind: 'Photography', blurb: 'Night skies, city lights and small everyday moments, seen through a lens.' },
-    journey: { name: 'The Journey', kind: 'Adventures', blurb: 'Places visited and trails walked, pinned on a globe.' },
+    journey: { name: 'The Journey', kind: 'Adventures', blurb: 'First times and journeys worth remembering.' },
     companion: { name: 'Ajie', kind: 'Orange tabby', blurb: 'Ajie, the orange tabby who runs the house.' },
     secrets: { name: 'Achievements', kind: '52Hz Logbook', blurb: 'Badges you earn by exploring this site.' },
   },
@@ -72,6 +72,28 @@ const en = {
     soon: 'This chapter is still being written.',
     back: 'Back to the surface',
   },
+  /** Shared by the Ajie and Journey posts. */
+  posts: {
+    play: 'Play video',
+    prev: 'Previous post',
+    next: 'Next post',
+    sound: 'Sound on or off',
+    close: 'Close',
+    photos: (n: number) => `${n} photo${n === 1 ? '' : 's'}`,
+    video: 'Video',
+    empty: 'The first post is on its way.',
+  },
+  ajie: {
+    adopted: 'Adopted',
+    born: 'Born',
+    posts: 'Posts',
+    open: 'Open post',
+  },
+  journey: {
+    first: 'First time',
+    empty: 'The first milestone is on its way.',
+    categories: { run: 'Running', dive: 'Diving', jump: 'Jumping', hike: 'Hiking', ride: 'Riding', travel: 'Travel', other: 'Milestone' },
+  },
   passport: {
     kicker: '52Hz Logbook',
     lead: 'Badges you earn by exploring this site. They are kept in this browser only.',
@@ -94,7 +116,7 @@ const en = {
       polyglot: { name: 'Polyglot', desc: 'Read the site in all four of its languages.', hint: 'This site speaks more than one language.' },
       'tide-turner': { name: 'Tide Turner', desc: 'Watched both the sunrise and the moonlit night over the sea.', hint: 'Night and day each have their view.' },
       researcher: { name: 'Researcher', desc: 'Read three paper abstracts on the professional site.', hint: 'The surface has its own reading list.' },
-      'lonely-whale': { name: 'The Lonely Whale', desc: 'Earned every other badge. You are on the same frequency.', hint: 'Earn every other badge.' },
+      'lonely-whale': { name: 'The 52Hz Whale', desc: 'Earned every other badge. You are on the same frequency.', hint: 'Earn every other badge.' },
     },
   },
 };
@@ -134,7 +156,7 @@ const zhTw: PersonalUI = {
   },
   chapters: {
     gallery: { name: '相簿', kind: '攝影', blurb: '星空、城市燈火與日常裡的小片刻，透過鏡頭留下來。' },
-    journey: { name: '旅程', kind: '冒險', blurb: '去過的地方、走過的路，標記在一顆地球上。' },
+    journey: { name: '旅程', kind: '冒險', blurb: '人生中的第一次，和印象深刻的旅途。' },
     companion: { name: '阿桔', kind: '橘貓', blurb: '阿桔，家裡真正的主人，一隻橘色虎斑貓。' },
     secrets: { name: '成就', kind: '52Hz 航海日誌', blurb: '在網站裡四處探索，就能獲得成就徽章。' },
   },
@@ -164,6 +186,27 @@ const zhTw: PersonalUI = {
     soon: '這一章還在撰寫中。',
     back: '回到水面',
   },
+  posts: {
+    play: '播放影片',
+    prev: '上一則',
+    next: '下一則',
+    sound: '開啟或關閉聲音',
+    close: '關閉',
+    photos: (n: number) => `${n} 張照片`,
+    video: '影片',
+    empty: '第一則貼文準備中。',
+  },
+  ajie: {
+    adopted: '領養日',
+    born: '生日',
+    posts: '貼文',
+    open: '打開貼文',
+  },
+  journey: {
+    first: '第一次',
+    empty: '第一個里程碑準備中。',
+    categories: { run: '跑步', dive: '潛水', jump: '極限挑戰', hike: '登山健行', ride: '騎行', travel: '旅行', other: '里程碑' },
+  },
   passport: {
     kicker: '52Hz 航海日誌',
     lead: '在網站裡四處探索，就能獲得成就徽章。紀錄只會存在這個瀏覽器裡。',
@@ -186,7 +229,7 @@ const zhTw: PersonalUI = {
       polyglot: { name: '多語者', desc: '用四種語言都讀過這個網站。', hint: '這個網站不只說一種語言。' },
       'tide-turner': { name: '晝夜交替', desc: '看過海上的日出，也看過月夜。', hint: '白天和夜晚，各有各的風景。' },
       researcher: { name: '研究者', desc: '在工作頁面讀了三篇論文摘要。', hint: '水面上也有一份閱讀清單。' },
-      'lonely-whale': { name: '孤獨的鯨', desc: '獲得了其他所有成就徽章。你和我在同一個頻率上。', hint: '獲得其他所有成就徽章。' },
+      'lonely-whale': { name: '52Hz 的鯨魚', desc: '獲得了其他所有成就徽章。你和我在同一個頻率上。', hint: '獲得其他所有成就徽章。' },
     },
   },
 };
@@ -224,7 +267,7 @@ const zhCn: PersonalUI = {
   },
   chapters: {
     gallery: { name: '相册', kind: '摄影', blurb: '星空、城市灯火与日常里的小片刻，通过镜头留下来。' },
-    journey: { name: '旅程', kind: '冒险', blurb: '去过的地方、走过的路，标记在一颗地球上。' },
+    journey: { name: '旅程', kind: '冒险', blurb: '人生中的第一次，和印象深刻的旅途。' },
     companion: { name: '阿桔', kind: '橘猫', blurb: '阿桔，家里真正的主人，一只橘色虎斑猫。' },
     secrets: { name: '成就', kind: '52Hz 航海日志', blurb: '在网站里四处探索，就能获得成就徽章。' },
   },
@@ -254,6 +297,27 @@ const zhCn: PersonalUI = {
     soon: '这一章还在撰写中。',
     back: '回到水面',
   },
+  posts: {
+    play: '播放视频',
+    prev: '上一则',
+    next: '下一则',
+    sound: '开启或关闭声音',
+    close: '关闭',
+    photos: (n: number) => `${n} 张照片`,
+    video: '视频',
+    empty: '第一则帖子准备中。',
+  },
+  ajie: {
+    adopted: '领养日',
+    born: '生日',
+    posts: '帖子',
+    open: '打开帖子',
+  },
+  journey: {
+    first: '第一次',
+    empty: '第一个里程碑准备中。',
+    categories: { run: '跑步', dive: '潜水', jump: '极限挑战', hike: '登山徒步', ride: '骑行', travel: '旅行', other: '里程碑' },
+  },
   passport: {
     kicker: '52Hz 航海日志',
     lead: '在网站里四处探索，就能获得成就徽章。记录只会保存在这个浏览器里。',
@@ -276,7 +340,7 @@ const zhCn: PersonalUI = {
       polyglot: { name: '多语者', desc: '用四种语言都读过这个网站。', hint: '这个网站不只说一种语言。' },
       'tide-turner': { name: '昼夜交替', desc: '看过海上的日出，也看过月夜。', hint: '白天和夜晚，各有各的风景。' },
       researcher: { name: '研究者', desc: '在工作页面读了三篇论文摘要。', hint: '水面上也有一份阅读清单。' },
-      'lonely-whale': { name: '孤独的鲸', desc: '获得了其他所有成就徽章。你和我在同一个频率上。', hint: '获得其他所有成就徽章。' },
+      'lonely-whale': { name: '52Hz 的鲸鱼', desc: '获得了其他所有成就徽章。你和我在同一个频率上。', hint: '获得其他所有成就徽章。' },
     },
   },
 };
@@ -314,7 +378,7 @@ const ja: PersonalUI = {
   },
   chapters: {
     gallery: { name: 'ギャラリー', kind: '写真', blurb: '星空、街の灯り、日常のささやかな瞬間をレンズ越しに。' },
-    journey: { name: '旅', kind: '冒険', blurb: '訪れた場所と歩いた道を、地球儀の上に。' },
+    journey: { name: '旅', kind: '冒険', blurb: '人生ではじめての挑戦と、心に残る旅。' },
     companion: { name: 'アジエ', kind: '茶トラ猫', blurb: '家の本当の主、茶トラ猫のアジエ。' },
     secrets: { name: '実績', kind: '52Hz 航海日誌', blurb: 'サイトを探検して実績バッジを集めよう。' },
   },
@@ -344,6 +408,27 @@ const ja: PersonalUI = {
     soon: 'この章はまだ執筆中です。',
     back: '水面に戻る',
   },
+  posts: {
+    play: '動画を再生',
+    prev: '前の投稿',
+    next: '次の投稿',
+    sound: '音声のオン／オフ',
+    close: '閉じる',
+    photos: (n: number) => `写真 ${n} 枚`,
+    video: '動画',
+    empty: '最初の投稿を準備中です。',
+  },
+  ajie: {
+    adopted: 'お迎えした日',
+    born: '誕生日',
+    posts: '投稿',
+    open: '投稿を開く',
+  },
+  journey: {
+    first: 'はじめて',
+    empty: '最初のマイルストーンを準備中です。',
+    categories: { run: 'ランニング', dive: 'ダイビング', jump: 'チャレンジ', hike: '登山・ハイキング', ride: 'ライド', travel: '旅', other: 'マイルストーン' },
+  },
   passport: {
     kicker: '52Hz 航海日誌',
     lead: 'サイトを探検すると実績バッジがもらえます。記録はこのブラウザにだけ保存されます。',
@@ -366,7 +451,7 @@ const ja: PersonalUI = {
       polyglot: { name: 'ポリグロット', desc: '4つの言語すべてでサイトを読んだ。', hint: 'このサイトは一つの言語だけではない。' },
       'tide-turner': { name: '昼と夜', desc: '海の日の出も、月夜も見た。', hint: '昼にも夜にも、それぞれの景色がある。' },
       researcher: { name: 'リサーチャー', desc: '仕事側のページで論文の概要を3本読んだ。', hint: '水面にも読書リストがある。' },
-      'lonely-whale': { name: '孤独なクジラ', desc: 'ほかのバッジをすべて獲得した。同じ周波数だね。', hint: 'ほかのバッジをすべて獲得する。' },
+      'lonely-whale': { name: '52Hz のクジラ', desc: 'ほかのバッジをすべて獲得した。同じ周波数だね。', hint: 'ほかのバッジをすべて獲得する。' },
     },
   },
 };

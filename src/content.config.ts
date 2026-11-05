@@ -137,4 +137,58 @@ const albums = defineCollection({
   }),
 });
 
-export const collections = { experience, competitions, publications, patents, education, albums };
+/**
+ * One photo or video in a post. Images live in src/assets (resolved like everything else);
+ * short clips are files under public/media/ (shown like an IG video: muted loop by default),
+ * long ones are YouTube embeds.
+ */
+const media = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('image'), src: asset, alt: textOrT.optional() }),
+  z.object({
+    type: z.literal('video'),
+    /** Path under /public, e.g. "/media/ajie/first-day.mp4". */
+    src: z.string().startsWith('/media/'),
+    /** Still frame shown before playing (path under src/assets). */
+    poster: asset,
+    /** Play muted on a loop like an IG clip (default), or show controls with sound. */
+    loop: z.boolean().default(true),
+    alt: textOrT.optional(),
+  }),
+  z.object({ type: z.literal('youtube'), id: z.string(), poster: asset.optional(), alt: textOrT.optional() }),
+]);
+
+/** Ajie, the orange tabby: posts shown as an IG-style profile grid. */
+const ajie = defineCollection({
+  loader: glob({ pattern: '*.json', base: './src/content/ajie' }),
+  schema: z.object({
+    date: z.iso.date(),
+    media: z.array(media).min(1),
+    caption: textOrT,
+    location: textOrT.optional(),
+    /** Pinned posts stay at the front of the grid. */
+    pinned: z.boolean().optional(),
+    draft: z.boolean().optional(),
+  }),
+});
+
+export const journeyCategories = ['run', 'dive', 'jump', 'hike', 'ride', 'travel', 'other'] as const;
+
+/** The Journey: first times and journeys worth remembering, on a timeline. */
+const journey = defineCollection({
+  loader: glob({ pattern: '*.json', base: './src/content/journey' }),
+  schema: z.object({
+    date: z.iso.date(),
+    category: z.enum(journeyCategories),
+    title: textOrT,
+    /** Marks a "first time" milestone. */
+    first: z.boolean().default(true),
+    place: textOrT.optional(),
+    /** A result worth showing, e.g. "4:28:10" or "18 m". */
+    stat: z.string().optional(),
+    media: z.array(media).default([]),
+    story: textOrT,
+    draft: z.boolean().optional(),
+  }),
+});
+
+export const collections = { experience, competitions, publications, patents, education, albums, ajie, journey };

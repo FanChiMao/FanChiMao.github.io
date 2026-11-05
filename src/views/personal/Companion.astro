@@ -1,0 +1,408 @@
+---
+/**
+ * /personal/companion/: Ajie, as an IG-style profile. A header with Ajie's facts, a grid of
+ * square thumbnails, and one dialog per post (photos / clips, caption, date, place).
+ * Posts come from src/content/ajie/*.json; nothing here is invented.
+ */
+import { Image } from 'astro:assets';
+import { Icon } from 'astro-icon/components';
+import { getCollection } from 'astro:content';
+import PersonalLayout from '@/layouts/PersonalLayout.astro';
+import PostMedia from '@/components/personal/PostMedia.astro';
+import { localeMeta, type Locale } from '@/i18n/ui';
+import { personalUi } from '@/i18n/personal';
+import { asset } from '@/lib/assets';
+import { ajieProfile } from '@/data/ajie';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const p = personalUi[lang];
+const c = p.chapters.companion;
+const pick = (v: string | Record<Locale, string> | null | undefined) => (v == null ? undefined : typeof v === 'string' ? v : v[lang]);
+const fmt = new Intl.DateTimeFormat(localeMeta[lang].htmlLang, { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+const day = (iso: string) => (/^\d{4}$/.test(iso) ? iso : fmt.format(new Date(`${iso}T00:00:00Z`)));
+
+const posts = (await getCollection('ajie', ({ data }) => !data.draft)).sort((a, b) => Number(!!b.data.pinned) - Number(!!a.data.pinned) || b.data.date.localeCompare(a.data.date));
+/** Thumbnail: the first photo, or the poster of the first clip. */
+const thumbOf = (m: (typeof posts)[number]['data']['media'][number]) => (m.type === 'image' ? m.src : m.poster);
+const facts = [
+  { label: p.ajie.posts, value: String(posts.length) },
+  ajieProfile.adopted && { label: p.ajie.adopted, value: day(ajieProfile.adopted) },
+  ajieProfile.born && { label: p.ajie.born, value: day(ajieProfile.born) },
+].filter(Boolean) as { label: string; value: string }[];
+const bio = pick(ajieProfile.bio);
+---
+
+<PersonalLayout {lang} path="/personal/companion/" title={c.name} description={c.blurb} overlay={false} noindex={posts.length === 0}>
+  <div class="ajie pw-page pw-sea" data-ajie>
+    <div class="container ajie__inner">
+      <!-- Same centred header as the other chapters, plus Ajie's facts. -->
+      <header class="ajie__profile pw-head">
+        <p class="pw-kicker" data-reveal>{c.kind}</p>
+        <h1 class="pw-head__title serif" data-reveal style="--i:1">{c.name}</h1>
+        <p class="pw-head__lead" data-reveal style="--i:2">{bio ?? c.blurb}</p>
+        <dl class="ajie__facts" data-reveal style="--i:3">
+          {
+            facts.map((f) => (
+              <div>
+                <dt>{f.label}</dt>
+                <dd>{f.value}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </header>
+
+      {
+        posts.length === 0 ? (
+          <p class="ajie__empty" data-reveal>
+            <Icon name="lucide:paw-print" />
+            {p.posts.empty}
+          </p>
+        ) : (
+          <ul class="ajie__grid">
+            {posts.map((post, i) => {
+              const first = post.data.media[0];
+              const multi = post.data.media.length > 1;
+              const isVideo = first.type !== 'image';
+              const caption = pick(post.data.caption) ?? '';
+              return (
+                <li data-reveal style={`--i:${i % 3}`}>
+                  <button class="ajie__tile" type="button" data-open={i} aria-label={`${p.ajie.open}: ${day(post.data.date)}, ${caption.slice(0, 60)}`}>
+                    <Image src={asset(thumbOf(first)!)} alt="" widths={[320, 480, 720]} sizes="(min-width: 900px) 33vw, 50vw" quality={74} loading={i < 6 ? 'eager' : 'lazy'} />
+                    {(multi || isVideo) && (
+                      <span class="ajie__badge" aria-hidden="true">
+                        <Icon name={isVideo ? 'lucide:clapperboard' : 'lucide:copy'} />
+                      </span>
+                    )}
+                    <span class="ajie__hover" aria-hidden="true">
+                      {day(post.data.date)}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )
+      }
+    </div>
+
+    {
+      posts.map((post, i) => {
+        const caption = pick(post.data.caption) ?? '';
+        const place = pick(post.data.location);
+        return (
+          <dialog class="ajie-post" data-post={i} aria-label={`${c.name} · ${day(post.data.date)}`}>
+            <div class="ajie-post__media">
+              <PostMedia {lang} media={post.data.media} label={`${c.name} · ${day(post.data.date)}`} ratio="4 / 5" sizes="(min-width: 900px) 520px, 100vw" />
+            </div>
+            <div class="ajie-post__text">
+              <header class="ajie-post__head">
+                <span class="ajie-post__who">{c.name}</span>
+                {place && (
+                  <span class="ajie-post__place">
+                    <Icon name="lucide:map-pin" />
+                    {place}
+                  </span>
+                )}
+              </header>
+              <div class="ajie-post__caption">
+                {caption.split(/\n{2,}/).map((para) => (
+                  <p>{para}</p>
+                ))}
+              </div>
+              <time class="ajie-post__date" datetime={post.data.date}>
+                {day(post.data.date)}
+              </time>
+            </div>
+            <button class="icon-btn ajie-post__close" type="button" data-close aria-label={p.posts.close}>
+              <Icon name="lucide:x" />
+            </button>
+            {i > 0 && (
+              <button class="ajie-post__nav ajie-post__nav--prev" type="button" data-step="-1" aria-label={p.posts.prev}>
+                <Icon name="lucide:chevron-left" />
+              </button>
+            )}
+            {i < posts.length - 1 && (
+              <button class="ajie-post__nav ajie-post__nav--next" type="button" data-step="1" aria-label={p.posts.next}>
+                <Icon name="lucide:chevron-right" />
+              </button>
+            )}
+          </dialog>
+        );
+      })
+    }
+  </div>
+</PersonalLayout>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-ajie]');
+  if (root) {
+    const dialogs = Array.from(root.querySelectorAll<HTMLDialogElement>('dialog[data-post]'));
+    const tiles = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-open]'));
+    let opener: HTMLElement | null = null;
+    const open = (i: number) => {
+      dialogs.forEach((d) => d.open && d.close());
+      dialogs[i]?.showModal();
+    };
+    tiles.forEach((t) =>
+      t.addEventListener('click', () => {
+        opener = t;
+        open(Number(t.dataset.open));
+      }),
+    );
+    for (const d of dialogs) {
+      d.addEventListener('click', (ev) => {
+        const target = ev.target as Element;
+        if (ev.target === d || target.closest('[data-close]')) return d.close();
+        const step = target.closest<HTMLElement>('[data-step]');
+        if (step) open(Number(d.dataset.post) + Number(step.dataset.step));
+      });
+      d.addEventListener('keydown', (ev) => {
+        if (ev.key === 'ArrowRight' && !(ev.target as Element).closest('.pmedia__track')) d.querySelector<HTMLElement>('[data-step="1"]')?.click();
+        if (ev.key === 'ArrowLeft' && !(ev.target as Element).closest('.pmedia__track')) d.querySelector<HTMLElement>('[data-step="-1"]')?.click();
+      });
+      d.addEventListener('close', () => {
+        d.querySelectorAll('video').forEach((v) => v.pause());
+        if (!dialogs.some((x) => x.open)) opener?.focus({ preventScroll: true });
+      });
+    }
+  }
+</script>
+
+<style>
+  .ajie__inner {
+    display: grid;
+    gap: 2.5rem;
+    max-width: 960px;
+  }
+
+  /* Profile header: the shared centred .pw-head, plus Ajie's facts. */
+  .ajie__facts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem 2rem;
+    margin: 0.4rem 0 0;
+  }
+  .ajie__facts div {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  .ajie__facts dt {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .ajie__facts dd {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 650;
+  }
+  .ajie__empty {
+    display: grid;
+    justify-items: center;
+    gap: 0.8rem;
+    padding: 4rem 1rem;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+    color: var(--muted);
+    text-align: center;
+  }
+  .ajie__empty :global(svg) {
+    width: 2rem;
+    height: 2rem;
+    color: #ff9a3d;
+  }
+
+  /* Grid */
+  .ajie__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(3px, 0.6vw, 8px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ajie__tile {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--surface-2);
+    cursor: pointer;
+  }
+  .ajie__tile :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s var(--ease-out);
+  }
+  .ajie__tile:hover :global(img) {
+    transform: scale(1.04);
+  }
+  .ajie__tile:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .ajie__badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    color: #fff;
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.6));
+  }
+  .ajie__badge :global(svg) {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+  .ajie__hover {
+    position: absolute;
+    inset: auto 0 0;
+    padding: 1.6rem 0.7rem 0.55rem;
+    background: linear-gradient(transparent, rgb(0 0 0 / 0.6));
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-align: left;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .ajie__tile:hover .ajie__hover,
+  .ajie__tile:focus-visible .ajie__hover {
+    opacity: 1;
+  }
+
+  /* Post dialog */
+  .ajie-post {
+    width: min(100% - 2rem, 900px);
+    max-height: calc(100dvh - 2rem);
+    padding: 0;
+    border: 1px solid var(--border-strong);
+    border-radius: 18px;
+    background: var(--bg-elev);
+    color: var(--text);
+    overflow: visible;
+    box-shadow: 0 30px 80px -20px rgb(0 0 0 / 0.55);
+  }
+  .ajie-post[open] {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    animation: post-in 0.35s var(--ease-out);
+  }
+  @keyframes post-in {
+    from {
+      opacity: 0;
+      scale: 0.97;
+    }
+  }
+  .ajie-post::backdrop {
+    background: rgb(2 8 20 / 0.7);
+    backdrop-filter: blur(6px);
+  }
+  .ajie-post__media :global(.pmedia) {
+    border-radius: 18px 0 0 18px;
+    height: 100%;
+  }
+  .ajie-post__text {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 0;
+    padding: 1.4rem 1.5rem 1.2rem;
+    overflow-y: auto;
+  }
+  .ajie-post__head {
+    display: grid;
+    gap: 0.15rem;
+    padding-right: 2.2rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .ajie-post__who {
+    font-family: var(--font-display);
+    font-weight: 650;
+  }
+  .ajie-post__place {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .ajie-post__place :global(svg) {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+  .ajie-post__caption {
+    display: grid;
+    gap: 0.75rem;
+    color: var(--text-2);
+    line-height: 1.75;
+    white-space: pre-line;
+  }
+  .ajie-post__date {
+    margin-top: auto;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .ajie-post__close {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+  }
+  .ajie-post__nav {
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+    display: grid;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.9);
+    color: #0a1626;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgb(0 0 0 / 0.35);
+  }
+  .ajie-post__nav--prev {
+    left: -3.2rem;
+  }
+  .ajie-post__nav--next {
+    right: -3.2rem;
+  }
+
+  @media (max-width: 899px) {
+    .ajie-post[open] {
+      grid-template-columns: 1fr;
+      overflow-y: auto;
+    }
+    .ajie-post__media :global(.pmedia) {
+      border-radius: 18px 18px 0 0;
+    }
+    .ajie-post__nav {
+      top: auto;
+      bottom: 0.8rem;
+      translate: none;
+    }
+    .ajie-post__nav--prev {
+      left: 0.8rem;
+    }
+    .ajie-post__nav--next {
+      right: 0.8rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ajie-post[open] {
+      animation: none;
+    }
+  }
+</style>

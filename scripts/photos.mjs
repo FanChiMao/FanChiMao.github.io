@@ -5,7 +5,10 @@
  *                                   then add new photos, with their date and camera settings, to
  *                                   src/content/albums/<album>.json. Hand-written captions are never touched.
  *   npm run photos -- --refresh     Also rewrite date/EXIF of photos already listed.
- *   npm run photos:check            Fail if any image under src/assets or public still carries GPS.
+ *                                   Photos in src/assets/ajie and src/assets/journey get their GPS
+ *                                   stripped too (their post JSON is written by hand).
+ *   npm run photos:check            Fail if any image under src/assets or public, or any video under
+ *                                   public/media, still carries a location.
  *                                   Runs automatically before every build (and therefore in CI).
  *
  * Why before commit and not at build time: the repo is public and Astro also serves the original
@@ -25,6 +28,9 @@ const GALLERY = join(root, 'src/assets/gallery');
 const ALBUMS = join(root, 'src/content/albums');
 const IMAGE = /\.(jpe?g|png|webp|avif|tiff?|heic|heif)$/i;
 const JPEG = /\.jpe?g$/i;
+const VIDEO = /\.(mp4|m4v|mov|webm)$/i;
+/** Post photos outside the gallery: GPS is stripped too, but no album JSON is written. */
+const POST_DIRS = ['src/assets/ajie', 'src/assets/journey'].map((d) => join(root, d));
 /** GPS in EXIF, XMP (exif:GPSLatitude) or vendor XMP such as DJI drones (drone-dji:GpsLatitude). */
 const GPS_TEXT = /GPS ?(?:Latitude|Longitude)|Gps(?:Latitude|Longitude)/i;
 
@@ -33,13 +39,22 @@ const CHECK = args.has('--check');
 const REFRESH = args.has('--refresh');
 
 const rel = (p) => relative(root, p).replaceAll('\\', '/');
-const walk = (dir) =>
+const walk = (dir, re = IMAGE) =>
   existsSync(dir)
     ? readdirSync(dir).flatMap((f) => {
         const p = join(dir, f);
-        return statSync(p).isDirectory() ? walk(p) : IMAGE.test(f) ? [p] : [];
+        return statSync(p).isDirectory() ? walk(p, re) : re.test(f) ? [p] : [];
       })
     : [];
+
+/**
+ * Phone videos store where they were shot in QuickTime metadata: the "©xyz" atom and/or
+ * com.apple.quicktime.location.ISO6709. There is no lossless fix without ffmpeg, so only detect.
+ */
+function videoHasLocation(file) {
+  const buf = readFileSync(file);
+  return buf.includes(Buffer.from([0xa9, 0x78, 0x79, 0x7a])) || buf.includes('com.apple.quicktime.location');
+}
 
 // ---------------------------------------------------------------- GPS detection
 
@@ -182,14 +197,42 @@ function newAlbum(id, cover) {
 
 async function check() {
   const files = [...walk(join(root, 'src/assets')), ...walk(join(root, 'public'))];
+  const videos = walk(join(root, 'public/media'), VIDEO);
   const bad = [];
   for (const f of files) if (await hasGps(f)) bad.push(rel(f));
+  const badVideos = videos.filter(videoHasLocation).map(rel);
   if (bad.length) {
     console.error(`\n✖ ${bad.length} image(s) still contain GPS location data:\n${bad.map((b) => `  - ${b}`).join('\n')}`);
-    console.error('\nRun `npm run photos` to strip it (gallery JPEGs), or remove the location before committing.\n');
-    process.exit(1);
+    console.error('\nRun `npm run photos` to strip it (JPEGs), or remove the location before committing.\n');
   }
-  console.log(`✔ photos: no GPS data in ${files.length} images`);
+  if (badVideos.length) {
+    console.error(`\n✖ ${badVideos.length} video(s) still contain a location:\n${badVideos.map((b) => `  - ${b}`).join('\n')}`);
+    console.error('\nRe-export without location (iPhone: Share → Options → turn off Location), then replace the file.\n');
+  }
+  if (bad.length || badVideos.length) process.exit(1);
+  console.log(`✔ photos: no GPS data in ${files.length} images${videos.length ? ` and ${videos.length} videos` : ''}`);
+}
+
+/** GPS removal for post photos (Ajie, Journey); their JSON is written by hand. */
+async function stripPostPhotos() {
+  let n = 0;
+  const problems = [];
+  for (const file of POST_DIRS.flatMap((d) => walk(d))) {
+    if (!(await hasGps(file))) continue;
+    if (!JPEG.test(file)) {
+      problems.push(`${rel(file)}: has GPS but is not a JPEG; remove the location in your photo app and re-export`);
+      continue;
+    }
+    const clean = stripJpegGps(readFileSync(file));
+    if (!clean || (await hasGps(clean))) {
+      problems.push(`${rel(file)}: could not remove GPS automatically`);
+      continue;
+    }
+    writeFileSync(file, clean);
+    n++;
+    console.log(`  stripped GPS  ${rel(file)}`);
+  }
+  return { n, problems };
 }
 
 async function sync() {
@@ -256,6 +299,9 @@ async function sync() {
     }
   }
 
+  const posts = await stripPostPhotos();
+  stripped += posts.n;
+  problems.push(...posts.problems);
   console.log(`\nphotos: ${added} added, ${stripped} GPS removed`);
   if (problems.length) {
     console.error(`\n✖ needs attention:\n${problems.map((p) => `  - ${p}`).join('\n')}`);
