@@ -30,6 +30,8 @@ jobs:
       - run: npm run build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Stats Worker URL (repo Settings → Secrets and variables → Actions → Variables). Empty: stats off.
+          PUBLIC_PASSPORT_STATS_API_URL: ${{ vars.PUBLIC_PASSPORT_STATS_API_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

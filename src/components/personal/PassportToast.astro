@@ -18,6 +18,10 @@ import { ACHIEVEMENTS } from '@/lib/passport';
 
 <script>
   import { markSeen, track, unseen, type AchievementId } from '@/lib/passport';
+  import { startSync } from '@/lib/passport-stats';
+
+  // Anonymous badge stats: register this browser and report its badges (personal world only).
+  startSync();
 
   const toast = document.querySelector<HTMLElement>('[data-ptoast]')!;
   const strings = () => {

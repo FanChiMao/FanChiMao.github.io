@@ -9,6 +9,7 @@ import PersonalLayout from '@/layouts/PersonalLayout.astro';
 import { localePath, type Locale } from '@/i18n/ui';
 import { personalUi } from '@/i18n/personal';
 import { ACHIEVEMENTS, SCOPES } from '@/lib/passport';
+import { statsEnabled } from '@/lib/passport-stats';
 import Medal from '@/components/personal/Medal.astro';
 
 interface Props {
@@ -18,10 +19,24 @@ const { lang } = Astro.props;
 const p = personalUi[lang];
 const pp = p.passport;
 const c = p.chapters.secrets;
+const st = pp.stats;
+// Localised rate phrases for the script; "{pct}" / "{t}" are filled in at runtime.
+const rateText = JSON.stringify({
+  loading: st.loading,
+  collecting: st.collecting,
+  none: st.none,
+  lessThan: st.lessThan,
+  about: st.about('{pct}'),
+  over: st.over,
+  all: st.all,
+  unavailable: st.unavailable,
+  updated: st.updated('{t}'),
+  lastUpdated: st.lastUpdated('{t}'),
+});
 ---
 
 <PersonalLayout {lang} path="/personal/achievements/" title={c.name} description={c.blurb} overlay={false}>
-  <section class="pass pw-page pw-sea" aria-labelledby="pass-title" data-passport data-progress={pp.progress('{n}', ACHIEVEMENTS.length)} data-unlocked-on={pp.unlockedOn}>
+  <section class="pass pw-page pw-sea" data-rate-text={rateText} aria-labelledby="pass-title" data-passport data-progress={pp.progress('{n}', ACHIEVEMENTS.length)} data-unlocked-on={pp.unlockedOn}>
     <div class="container pass__inner">
       <header class="pass__head pw-head">
         <p class="pw-kicker" data-reveal>{pp.kicker}</p>
@@ -58,6 +73,7 @@ const c = p.chapters.secrets;
                     <span class="stamp__desc">{it.desc}</span>
                     <span class="stamp__hint">{it.hint}</span>
                     <span class="stamp__date" data-swap-skip></span>
+                    {statsEnabled && <span class="stamp__rate" data-rate data-swap-skip />}
                   </span>
                 </button>
               </li>
@@ -67,6 +83,15 @@ const c = p.chapters.secrets;
       </ol>
           </section>
         ))
+      }
+
+      {
+        statsEnabled && (
+          <aside class="pass__stats" data-stats-note>
+            <p>{st.note}</p>
+            <p class="pass__stats-time" data-stats-time data-swap-skip />
+          </aside>
+        )
       }
 
       <footer class="pass__foot">
@@ -101,12 +126,14 @@ const c = p.chapters.secrets;
         <b data-dlg-count data-swap-skip></b>
       </div>
       <p class="stamp-dlg__date" data-dlg-date data-swap-skip></p>
+      {statsEnabled && <p class="stamp-dlg__rate" data-dlg-rate data-swap-skip />}
     </dialog>
   </section>
 </PersonalLayout>
 
 <script>
   import { ACHIEVEMENTS, enabled, markSeen, progressOf, reset, unlocked, type AchievementId } from '@/lib/passport';
+  import { getStats, rateOf, statsEnabled, type StatsResult } from '@/lib/passport-stats';
 
   const found = document.querySelector<HTMLElement>('[data-passport]');
   if (found) {
@@ -119,6 +146,40 @@ const c = p.chapters.secrets;
     const $ = <T extends HTMLElement = HTMLElement>(sel: string) => dlg.querySelector<T>(sel)!;
     const dateFmt = () => new Intl.DateTimeFormat(document.documentElement.lang, { year: 'numeric', month: 'long', day: 'numeric' });
     let openId: AchievementId | null = null;
+
+    // ---- Group stats ("about 12.3% of explorers have this"): read once, re-rendered on language swap.
+    let statsResult: StatsResult | null = null;
+    const rateLine = (id: AchievementId) => {
+      const tx = JSON.parse(root.dataset.rateText ?? '{}') as Record<string, string>;
+      if (!statsResult) return tx.loading ?? '';
+      const r = rateOf(statsResult.stats, id);
+      if (r.kind !== 'about') return tx[r.kind] ?? '';
+      const pct = new Intl.NumberFormat(document.documentElement.lang, { maximumFractionDigits: 1 }).format(r.pct!);
+      return (tx.about ?? '').replace('{pct}', pct);
+    };
+    const renderRates = () => {
+      if (!statsEnabled) return;
+      for (const el of stamps) {
+        const line = el.querySelector<HTMLElement>('[data-rate]');
+        if (line) line.textContent = rateLine(el.dataset.id as AchievementId);
+      }
+      const time = root.querySelector<HTMLElement>('[data-stats-time]');
+      if (time) {
+        const tx = JSON.parse(root.dataset.rateText ?? '{}') as Record<string, string>;
+        const at = statsResult?.stats ? Date.parse(statsResult.stats.asOf) : NaN;
+        const fmt = new Intl.DateTimeFormat(document.documentElement.lang, { dateStyle: 'medium', timeStyle: 'short' });
+        time.textContent = Number.isNaN(at) ? '' : (statsResult!.stale ? tx.lastUpdated : tx.updated).replace('{t}', fmt.format(at));
+      }
+      if (openId && dlg.open) $('[data-dlg-rate]').textContent = rateLine(openId);
+    };
+    if (statsEnabled) {
+      renderRates();
+      getStats().then((r) => {
+        statsResult = r;
+        renderRates();
+      });
+      document.addEventListener('langswap', renderRates);
+    }
 
     const render = () => {
       const got = unlocked();
@@ -162,6 +223,8 @@ const c = p.chapters.secrets;
         $('[data-dlg-prog]').style.setProperty('--p', String(have / prog.need));
       }
       $('[data-dlg-date]').textContent = at ? `${root.dataset.unlockedOn} ${dateFmt().format(at)}` : '';
+      const dlgRate = dlg.querySelector<HTMLElement>('[data-dlg-rate]');
+      if (dlgRate) dlgRate.textContent = rateLine(id);
     }
 
     // ---- Card flip: the stamp turns edge-on in place, then the dialog turns out of it and
@@ -614,6 +677,28 @@ const c = p.chapters.secrets;
     display: none;
   }
 
+  .stamp__rate,
+  .stamp-dlg__rate {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.78rem;
+    color: var(--pass-faint);
+  }
+  .stamp-dlg__rate {
+    font-size: 0.85rem;
+  }
+  .pass__stats {
+    display: grid;
+    gap: 0.25rem;
+    justify-self: center;
+    max-width: 40rem;
+    font-size: 0.82rem;
+    color: var(--pass-faint);
+    text-align: center;
+  }
+  .pass__stats-time:empty {
+    display: none;
+  }
   .pass__foot {
     display: flex;
     flex-wrap: wrap;

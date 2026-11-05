@@ -145,6 +145,11 @@ describe('Ajie likes', () => {
     expect((await (await like(a, '2025-10-04-adoption', 'DELETE')).json<{ count: number }>()).count).toBe(1);
     const all = await (await SELF.fetch(`${API}/v1/ajie/likes`)).json<{ counts: Record<string, number> }>();
     expect(all.counts).toEqual({ '2025-10-04-adoption': 1 });
+    // A like after the counts were read (and cached) shows up on the next read.
+    await like(b, '2025-10-04-adoption', 'DELETE');
+    await new Promise((r) => setTimeout(r, 50));
+    const again = await (await SELF.fetch(`${API}/v1/ajie/likes`)).json<{ counts: Record<string, number> }>();
+    expect(again.counts).toEqual({});
   });
 
   it('rejects malformed post ids and missing secrets', async () => {

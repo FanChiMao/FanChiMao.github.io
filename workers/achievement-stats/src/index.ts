@@ -97,15 +97,27 @@ async function readJson(req: Request): Promise<unknown> {
 }
 
 /** Serve from the Worker cache under a fixed key (independent of Origin and identity). */
-async function cached(ctx: ExecutionContext, key: string, ttl: number, compute: () => Promise<unknown>): Promise<Response> {
-  const cache = (caches as unknown as { default: Cache }).default;
-  const req = new Request(`https://cache.internal${key}`);
-  const hit = await cache.match(req);
-  if (hit) return new Response(hit.body, hit);
+const cacheKey = (key: string) => new Request(`https://cache.internal${key}`);
+const workerCache = () => (caches as unknown as { default: Cache }).default;
+
+/**
+ * Serve from the Worker cache under a fixed key (independent of Origin and identity).
+ * `ttl` is how long the Worker keeps it; browsers get `clientTtl` (0 = always revalidate here).
+ */
+async function cached(ctx: ExecutionContext, key: string, ttl: number, clientTtl: number, compute: () => Promise<unknown>): Promise<Response> {
+  const hit = await workerCache().match(cacheKey(key));
+  const browser = clientTtl > 0 ? `public, max-age=${clientTtl}` : 'no-cache';
+  if (hit) {
+    const out = new Response(hit.body, hit);
+    out.headers.set('Cache-Control', browser);
+    return out;
+  }
   const body = await compute(); // throws on failure: errors are never cached
   const res = json(body, 200, { 'Cache-Control': `public, max-age=${ttl}` });
-  ctx.waitUntil(cache.put(req, res.clone()));
-  return res;
+  ctx.waitUntil(workerCache().put(cacheKey(key), res.clone()));
+  const out = new Response(res.body, res);
+  out.headers.set('Cache-Control', browser);
+  return out;
 }
 
 // ---------------------------------------------------------------- handlers
@@ -156,7 +168,7 @@ async function likeCounts(env: Env) {
   return { version: 1, asOf: new Date().toISOString(), counts: Object.fromEntries(results.map((r) => [r.id, r.c])) };
 }
 
-async function like(req: Request, env: Env, postId: string, on: boolean) {
+async function like(req: Request, env: Env, ctx: ExecutionContext, postId: string, on: boolean) {
   if (!POST_ID.test(postId)) throw new HttpError('BAD_REQUEST', 'Malformed post id.');
   const visitor = await visitorHash(req);
   await limit(req, env, visitor);
@@ -169,6 +181,8 @@ async function like(req: Request, env: Env, postId: string, on: boolean) {
     : [env.DB.prepare('DELETE FROM ajie_likes WHERE post_id = ?1 AND visitor_hash = ?2').bind(postId, visitor)];
   const results = await env.DB.batch([...write, env.DB.prepare('SELECT COUNT(*) AS c FROM ajie_likes WHERE post_id = ?1').bind(postId)]);
   const count = (results.at(-1)!.results[0] as { c: number }).c;
+  // The next read of the counts must include this change.
+  ctx.waitUntil(workerCache().delete(cacheKey('/v1/ajie/likes')));
   return json({ version: 1, postId, liked: on, count }, 200, { 'Cache-Control': 'no-store' });
 }
 
@@ -185,16 +199,16 @@ async function route(req: Request, env: Env, ctx: ExecutionContext): Promise<Res
   }
   if (pathname === '/v1/passport/stats') {
     if (m !== 'GET') throw new HttpError('METHOD_NOT_ALLOWED', 'Use GET.');
-    return cached(ctx, '/v1/passport/stats', STATS_TTL, () => stats(env));
+    return cached(ctx, '/v1/passport/stats', STATS_TTL, STATS_TTL, () => stats(env));
   }
   if (pathname === '/v1/ajie/likes') {
     if (m !== 'GET') throw new HttpError('METHOD_NOT_ALLOWED', 'Use GET.');
-    return cached(ctx, '/v1/ajie/likes', LIKES_TTL, () => likeCounts(env));
+    return cached(ctx, '/v1/ajie/likes', LIKES_TTL, 0, () => likeCounts(env));
   }
   const lm = /^\/v1\/ajie\/likes\/([^/]+)$/.exec(pathname);
   if (lm) {
-    if (m === 'PUT') return like(req, env, decodeURIComponent(lm[1]), true);
-    if (m === 'DELETE') return like(req, env, decodeURIComponent(lm[1]), false);
+    if (m === 'PUT') return like(req, env, ctx, decodeURIComponent(lm[1]), true);
+    if (m === 'DELETE') return like(req, env, ctx, decodeURIComponent(lm[1]), false);
     throw new HttpError('METHOD_NOT_ALLOWED', 'Use PUT or DELETE.');
   }
   throw new HttpError('NOT_FOUND', 'Not found.');

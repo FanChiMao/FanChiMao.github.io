@@ -104,6 +104,31 @@ An Ajie post has `date`, `media`, `caption`, and optionally `location` and `pinn
 
 Rules live in `src/lib/passport.ts` (`ACHIEVEMENTS`); texts in `src/i18n/personal.ts` (`passport.items`). Components only report events with `track('event', 'detail')`. Progress is stored in the visitor's localStorage; the page is `/personal/achievements/`.
 
+## Stats API (badge rates, Ajie likes)
+
+`workers/achievement-stats/` is a Cloudflare Worker with a D1 database. It counts, anonymously, how many explorers (visitors who entered the personal world) hold each badge, and the likes on Ajie's posts. Spec: `docs/specs/achievement-statistics.md`.
+
+- The browser keeps a random installation secret (`passport-stats:identity:v1`); the Worker stores only its SHA-256. No IP, user agent or location is stored.
+- Professional pages never call the API. Personal pages register once and report new badges (batched, at most a few requests per visit).
+- If `PUBLIC_PASSPORT_STATS_API_URL` is not set, the site builds and works exactly as before: no requests, no rates, no hearts.
+- Resetting the logbook only clears this browser; badges already counted stay counted.
+
+**Setup (Cloudflare Dashboard)**
+
+1. D1 → Create database `passport-stats`; put its Database ID in `workers/achievement-stats/wrangler.jsonc`.
+2. D1 → `passport-stats` → Console: run `workers/achievement-stats/migrations/0001_init.sql`, then record it:
+   `CREATE TABLE d1_migrations (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL); INSERT INTO d1_migrations (name) VALUES ('0001_init.sql');`
+   (or `npm run migrate:remote` from the Worker folder after `npx wrangler login`).
+3. Workers & Pages → Create → Import a repository → this repo; name `achievement-stats`, root directory `workers/achievement-stats`, no build command, deploy command `npx wrangler deploy`. Pushes to `main` redeploy it.
+4. Worker → Settings → Variables and Secrets → Secret `RATE_SALT` (any long random string; used to hash IPs for rate limiting).
+5. GitHub → Settings → Secrets and variables → Actions → Variables: `PUBLIC_PASSPORT_STATS_API_URL` = the Worker URL. The Pages build reads it.
+
+**Develop / test** (in `workers/achievement-stats`): `npm test` (local throwaway D1), `npm run check`, `npm run dev` (local Worker on :8787; copy `.dev.vars.example` to `.dev.vars`, run `npm run migrate:local` once). Build the site against it with `PUBLIC_PASSPORT_STATS_API_URL=http://localhost:8787 npm run build`.
+
+**Operate**: health check `GET /health`. Usage: Workers → `achievement-stats` → Metrics (requests) and D1 → `passport-stats` → Metrics (rows read/written) are billed separately; check current free-plan limits on Cloudflare's pricing page. Backup: D1 → `passport-stats` → Backups / Time Travel, or `npx wrangler d1 export passport-stats --remote --output backup.sql`. Rate limits (10/min per identity, 30/min per IP) use Workers rate limiting, which is approximate and per location, not an exact global quota. Allowed origins: `ALLOWED_ORIGINS` in `wrangler.jsonc`.
+
+**Turn it off**: clear the `PUBLIC_PASSPORT_STATS_API_URL` variable and redeploy the site. Badges keep working; do not delete the D1 data to roll back.
+
 ## URLs
 
 | Page | English | 繁中 | 简中 | 日本語 |

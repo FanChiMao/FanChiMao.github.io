@@ -13,6 +13,7 @@ import { localeMeta, type Locale } from '@/i18n/ui';
 import { personalUi } from '@/i18n/personal';
 import { asset } from '@/lib/assets';
 import { ajieProfile } from '@/data/ajie';
+import { statsEnabled } from '@/lib/passport-stats';
 
 interface Props {
   lang: Locale;
@@ -86,7 +87,13 @@ const bio = pick(ajieProfile.bio);
                       </span>
                     )}
                     <span class="ajie__hover" aria-hidden="true">
-                      {day(post.data.date)}
+                      <span>{day(post.data.date)}</span>
+                      {statsEnabled && (
+                        <span class="ajie__tile-likes" data-tile-likes={post.id} data-swap-skip hidden>
+                          <svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
+                          <b />
+                        </span>
+                      )}
                     </span>
                   </button>
                 </li>
@@ -121,9 +128,19 @@ const bio = pick(ajieProfile.bio);
                   <p>{para}</p>
                 ))}
               </div>
-              <time class="ajie-post__date" datetime={post.data.date}>
-                {day(post.data.date)}
-              </time>
+              <footer class="ajie-post__foot">
+                {statsEnabled && (
+                  <button class="ajie-like" type="button" data-like={post.id} aria-pressed="false" aria-label={p.ajie.like} data-label-on={p.ajie.unlike} data-label-off={p.ajie.like} data-count-label={p.ajie.likes(0)} hidden>
+                    <svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
+                    <span class="ajie-like__count" data-like-count data-swap-skip>
+                      0
+                    </span>
+                  </button>
+                )}
+                <time class="ajie-post__date" datetime={post.data.date}>
+                  {day(post.data.date)}
+                </time>
+              </footer>
             </div>
             <button class="icon-btn ajie-post__close" type="button" data-close aria-label={p.posts.close}>
               <Icon name="lucide:x" />
@@ -147,6 +164,7 @@ const bio = pick(ajieProfile.bio);
 
 <script>
   import { track } from '@/lib/passport';
+  import { canLike, getLikes, likedPosts, setLike, startSync, statsEnabled } from '@/lib/passport-stats';
   const root = document.querySelector<HTMLElement>('[data-ajie]');
   if (root) {
     const dialogs = Array.from(root.querySelectorAll<HTMLDialogElement>('dialog[data-post]'));
@@ -163,6 +181,55 @@ const bio = pick(ajieProfile.bio);
         open(Number(t.dataset.open));
       }),
     );
+    // ---- Likes: optimistic heart, server count when it answers.
+    if (statsEnabled) {
+      startSync();
+      const counts = new Map<string, number>();
+      const liked = likedPosts();
+      const paint = () => {
+        root.querySelectorAll<HTMLElement>('[data-tile-likes]').forEach((el) => {
+          const n = counts.get(el.dataset.tileLikes!) ?? 0;
+          el.querySelector('b')!.textContent = String(n);
+          el.hidden = n === 0;
+        });
+        root.querySelectorAll<HTMLButtonElement>('[data-like]').forEach((b) => {
+          const id = b.dataset.like!;
+          const on = liked.has(id);
+          b.hidden = !canLike() && !counts.has(id);
+          b.disabled = !canLike();
+          b.setAttribute('aria-pressed', String(on));
+          b.setAttribute('aria-label', (on ? b.dataset.labelOn : b.dataset.labelOff) ?? '');
+          b.querySelector<HTMLElement>('[data-like-count]')!.textContent = String(counts.get(id) ?? 0);
+        });
+      };
+      paint();
+      getLikes().then((c) => {
+        if (c) for (const [k, v] of Object.entries(c)) counts.set(k, v);
+        paint();
+      });
+      root.querySelectorAll<HTMLButtonElement>('[data-like]').forEach((b) =>
+        b.addEventListener('click', async () => {
+          const id = b.dataset.like!;
+          const on = !liked.has(id);
+          const before = counts.get(id) ?? 0;
+          // Optimistic: flip straight away, then settle on the server's number.
+          if (on) liked.add(id);
+          else liked.delete(id);
+          counts.set(id, Math.max(0, before + (on ? 1 : -1)));
+          b.classList.toggle('is-popping', on);
+          paint();
+          const server = await setLike(id, on);
+          if (server === null) {
+            if (on) liked.delete(id);
+            else liked.add(id);
+            counts.set(id, before);
+          } else counts.set(id, server);
+          paint();
+        }),
+      );
+      document.addEventListener('langswap', paint);
+    }
+
     for (const d of dialogs) {
       d.addEventListener('click', (ev) => {
         const target = ev.target as Element;
@@ -294,6 +361,10 @@ const bio = pick(ajieProfile.bio);
     height: 1.15rem;
   }
   .ajie__hover {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
     position: absolute;
     inset: auto 0 0;
     padding: 1.6rem 0.7rem 0.55rem;
@@ -378,8 +449,89 @@ const bio = pick(ajieProfile.bio);
     line-height: 1.75;
     white-space: pre-line;
   }
-  .ajie-post__date {
+  .ajie-post__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
     margin-top: auto;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--border);
+  }
+  .ajie-like {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.7rem 0.35rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: none;
+    color: var(--text-2);
+    font: inherit;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition:
+      border-color 0.25s,
+      color 0.25s;
+  }
+  .ajie-like[hidden] {
+    display: none;
+  }
+  /* Inline heart (not an astro-icon sprite) so its fill can change. */
+  .heart {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .ajie-like .heart {
+    width: 1.25rem;
+    height: 1.25rem;
+    transition:
+      fill 0.25s,
+      color 0.25s,
+      transform 0.25s var(--ease-out);
+  }
+  .ajie-like:hover {
+    border-color: #f26b8a;
+    color: #f26b8a;
+  }
+  .ajie-like[aria-pressed='true'] {
+    border-color: color-mix(in srgb, #f26b8a 50%, transparent);
+    color: #f26b8a;
+  }
+  .ajie-like[aria-pressed='true'] .heart {
+    fill: #f26b8a;
+  }
+  .ajie-like.is-popping .heart {
+    animation: heart-pop 0.45s var(--ease-out);
+  }
+  @keyframes heart-pop {
+    40% {
+      transform: scale(1.35);
+    }
+  }
+  .ajie-like:disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+  .ajie__tile-likes {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .ajie__tile-likes[hidden] {
+    display: none;
+  }
+  .ajie__tile-likes .heart {
+    width: 0.95rem;
+    height: 0.95rem;
+    fill: #fff;
+    stroke: #fff;
+  }
+  .ajie-post__date {
     font-family: var(--font-mono);
     font-size: 0.75rem;
     color: var(--muted);
@@ -432,7 +584,8 @@ const bio = pick(ajieProfile.bio);
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .ajie-post[open] {
+    .ajie-post[open],
+    .ajie-like.is-popping .heart {
       animation: none;
     }
   }
