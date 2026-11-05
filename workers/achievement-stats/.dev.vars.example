@@ -1,0 +1,2 @@
+# Local secrets for `wrangler dev` (copy to .dev.vars; never commit .dev.vars)
+RATE_SALT=change-me-to-a-long-random-string
