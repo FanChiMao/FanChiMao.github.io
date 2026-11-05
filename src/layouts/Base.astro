@@ -288,6 +288,9 @@ const ogAlt = Astro.props.ogAlt ?? `${t.hero.name} · ${t.hero.position}`;
       const reportLang = () => track('lang', LOCALE_OF[document.documentElement.lang] ?? document.documentElement.lang);
       reportLang();
       document.addEventListener('langswap', reportLang);
+      // One entry per local calendar day, for the "regular" badge.
+      const today = new Date();
+      track('day', `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`);
       // Paper abstracts on the professional home (toggle does not bubble: listen in the capture phase).
       document.addEventListener(
         'toggle',
@@ -297,6 +300,20 @@ const ogAlt = Astro.props.ogAlt ?? `${t.hero.name} · ${t.hero.position}`;
         },
         true,
       );
+      // Outbound links: a patent record, or any project's code on GitHub (mouse, keyboard or middle click).
+      const onLink = (e: Event) => {
+        const a = (e.target as Element).closest?.<HTMLAnchorElement>('a[href]');
+        if (!a) return;
+        const url = new URL(a.href, location.href);
+        if (url.hostname === 'patents.google.com') track('patent', url.pathname);
+        if (url.hostname === 'github.com' && url.pathname.split('/').filter(Boolean).length >= 2) track('github', url.pathname);
+      };
+      document.addEventListener('click', onLink, true);
+      document.addEventListener('auxclick', onLink, true);
+      // Dragging the thesis restoration before/after slider.
+      document.addEventListener('input', (e) => {
+        if ((e.target as Element).matches?.('.ba__range')) track('restore');
+      });
       // Theme changes on a page with its own sunrise / moonlit scene (the personal hero).
       document.querySelectorAll('[data-theme-toggle]').forEach((btn) =>
         btn.addEventListener('click', () => {

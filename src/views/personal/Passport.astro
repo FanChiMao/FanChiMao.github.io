@@ -8,7 +8,7 @@ import { Icon } from 'astro-icon/components';
 import PersonalLayout from '@/layouts/PersonalLayout.astro';
 import { localePath, type Locale } from '@/i18n/ui';
 import { personalUi } from '@/i18n/personal';
-import { ACHIEVEMENTS } from '@/lib/passport';
+import { ACHIEVEMENTS, SCOPES } from '@/lib/passport';
 import Medal from '@/components/personal/Medal.astro';
 
 interface Props {
@@ -35,12 +35,19 @@ const c = p.chapters.secrets;
 
       <p class="pass__unavailable" data-unavailable hidden>{pp.unavailable}</p>
 
+      {
+        SCOPES.map((scope) => (
+          <section class="stamp-group" aria-labelledby={`scope-${scope}`}>
+            <h2 class="stamp-group__title" id={`scope-${scope}`} data-reveal>
+              <Icon name={scope === 'pro' ? 'lucide:briefcase' : scope === 'personal' ? 'lucide:waves' : 'lucide:globe'} />
+              {pp.scopes[scope]}
+            </h2>
       <ol class="stamps">
         {
-          ACHIEVEMENTS.map((a, i) => {
+          ACHIEVEMENTS.filter((a) => a.scope === scope).map((a, i) => {
             const it = pp.items[a.id];
             return (
-              <li class="stamp" data-id={a.id} data-state="locked" style={`--i:${i}`}>
+              <li class="stamp" data-id={a.id} data-scope={pp.scopes[a.scope]} data-state="locked" style={`--i:${i}`}>
                 <button class="stamp__btn" type="button" aria-haspopup="dialog">
                   <Medal icon={a.icon} class="stamp__seal" />
                   <span class="stamp__text">
@@ -58,6 +65,9 @@ const c = p.chapters.secrets;
           })
         }
       </ol>
+          </section>
+        ))
+      }
 
       <footer class="pass__foot">
         <a class="btn btn--glass" href={localePath(lang, '/personal/')}>
@@ -78,6 +88,7 @@ const c = p.chapters.secrets;
       </button>
       <div class="stamp-dlg__seal" data-dlg-seal data-swap-skip aria-hidden="true"></div>
       <p class="stamp-dlg__status" data-dlg-status data-swap-skip></p>
+      <p class="stamp-dlg__scope" data-dlg-scope data-swap-skip></p>
       <h2 class="stamp-dlg__name" id="stamp-dlg-name" data-dlg-name data-swap-skip></h2>
       <p class="stamp-dlg__desc" data-dlg-desc data-swap-skip></p>
       <div class="stamp-dlg__how" data-dlg-how>
@@ -142,6 +153,7 @@ const c = p.chapters.secrets;
       $('[data-dlg-desc]').textContent = on ? text('.stamp__desc') : '';
       $('[data-dlg-desc]').hidden = !on;
       $('[data-dlg-hint]').textContent = text('.stamp__hint');
+      $('[data-dlg-scope]').textContent = el.dataset.scope ?? '';
       const prog = progressOf(id);
       $('[data-dlg-prog]').hidden = !prog || prog.need <= 1;
       if (prog) {
@@ -335,6 +347,39 @@ const c = p.chapters.secrets;
     text-align: center;
   }
 
+  .stamp-group {
+    display: grid;
+    gap: 1rem;
+  }
+  .stamp-group__title {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 650;
+    color: var(--pass-dim);
+  }
+  .stamp-group__title :global(svg) {
+    width: 1.1rem;
+    height: 1.1rem;
+    color: var(--pass-accent);
+  }
+  .stamp-group__title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    margin-left: 0.4rem;
+    background: var(--pass-line);
+  }
+  .stamp-dlg__scope {
+    display: inline-flex;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--pass-line);
+    font-size: 0.78rem;
+    color: var(--pass-dim);
+  }
   .stamps {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5rem), 1fr));

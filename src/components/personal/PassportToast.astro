@@ -39,15 +39,24 @@ import { ACHIEVEMENTS } from '@/lib/passport';
   const chapter = document.querySelector<HTMLElement>('[data-chapter]')?.dataset.chapter;
   if (chapter) track('visit', chapter);
   document.addEventListener('breach', () => track('breach'));
+  if (new Date().getHours() < 4) track('night');
   document.addEventListener('meteor', () => track('meteor'));
+  document.addEventListener('whale-touch', () => track('whale-touch'));
+  document.addEventListener('boat', () => track('boat'));
+  document.addEventListener('boat-sun', () => track('boat-sun'));
+  // Opening an album page.
+  const album = location.pathname.match(/\/personal\/gallery\/([^/]+)\/?$/)?.[1];
+  if (album) track('album', album);
 
-  // ---- Toast queue: one at a time; anything unlocked elsewhere (or before) is shown once.
+  // ---- Stack up to three toasts; keep the rest pending until a card leaves.
   const queue: AchievementId[] = [];
-  let showing = false;
+  const active = new Set<AchievementId>();
+  const announced = new Set<AchievementId>();
+  const maxVisible = 3;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function next(): void {
-    if (showing) return;
+    if (active.size >= maxVisible) return;
     const id = queue.shift();
     if (!id) return;
     // The passport page shows (and marks) every stamp itself.
@@ -57,9 +66,9 @@ import { ACHIEVEMENTS } from '@/lib/passport';
     }
     const s = strings();
     if (!s) return;
-    showing = true;
+    active.add(id);
+    announced.add(id);
     markSeen(id);
-    toast.replaceChildren();
     const link = document.createElement('a');
     link.className = 'ptoast__card';
     link.href = s.href;
@@ -79,29 +88,40 @@ import { ACHIEVEMENTS } from '@/lib/passport';
     link.append(text);
     toast.append(link);
     toast.hidden = false;
-    requestAnimationFrame(() => toast.classList.add('is-in'));
+    requestAnimationFrame(() => link.classList.add('is-in'));
     let done = false;
+    let timer: ReturnType<typeof setTimeout>;
     const hide = () => {
       if (done) return;
       done = true;
-      toast.classList.remove('is-in');
+      clearTimeout(timer);
+      link.classList.remove('is-in');
       setTimeout(
         () => {
-          toast.hidden = true;
-          showing = false;
+          link.remove();
+          active.delete(id);
+          toast.hidden = active.size === 0;
           next();
         },
         reduce ? 0 : 350,
       );
     };
-    const timer = setTimeout(hide, 5000);
+    timer = setTimeout(hide, 5000);
     // Hovering or focusing keeps it up; leaving lets it go.
-    link.addEventListener('pointerenter', () => clearTimeout(timer), { once: true });
-    link.addEventListener('pointerleave', () => setTimeout(hide, 1500), { once: true });
+    const pause = () => clearTimeout(timer);
+    const resume = () => {
+      clearTimeout(timer);
+      if (!done && !link.matches(':hover, :focus-within')) timer = setTimeout(hide, 1500);
+    };
+    link.addEventListener('pointerenter', pause);
+    link.addEventListener('pointerleave', resume);
+    link.addEventListener('focusin', pause);
+    link.addEventListener('focusout', resume);
+    next();
   }
 
   const enqueue = (id: AchievementId) => {
-    if (!queue.includes(id)) queue.push(id);
+    if (!announced.has(id) && !queue.includes(id)) queue.push(id);
     next();
   };
   for (const id of unseen()) enqueue(id);
@@ -119,9 +139,19 @@ import { ACHIEVEMENTS } from '@/lib/passport';
     left: max(1rem, env(safe-area-inset-left));
     bottom: max(1rem, env(safe-area-inset-bottom));
     z-index: 80;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: min(24rem, calc(100vw - max(1rem, env(safe-area-inset-left)) - max(1rem, env(safe-area-inset-right))));
+    max-height: calc(100dvh - max(1rem, env(safe-area-inset-top)) - max(1rem, env(safe-area-inset-bottom)));
+    overflow-y: auto;
+  }
+  .ptoast[hidden] {
+    display: none;
   }
   .ptoast__card {
     display: flex;
+    flex: none;
     align-items: center;
     gap: 0.85rem;
     padding: 0.75rem 1.1rem 0.75rem 0.8rem;
@@ -137,7 +167,7 @@ import { ACHIEVEMENTS } from '@/lib/passport';
       opacity 0.35s,
       translate 0.45s var(--ease-out);
   }
-  .ptoast.is-in .ptoast__card {
+  .ptoast__card.is-in {
     opacity: 1;
     translate: 0 0;
   }
@@ -145,7 +175,7 @@ import { ACHIEVEMENTS } from '@/lib/passport';
     --size: 3.4rem;
     flex: none;
   }
-  .ptoast.is-in .ptoast__medal {
+  .ptoast__card.is-in .ptoast__medal {
     animation: ptoast-medal 0.7s 0.1s var(--ease-out) both;
   }
   @keyframes ptoast-medal {
@@ -157,6 +187,8 @@ import { ACHIEVEMENTS } from '@/lib/passport';
   }
   .ptoast__text {
     display: grid;
+    min-width: 0;
+    overflow-wrap: anywhere;
     line-height: 1.3;
   }
   .ptoast__text small {
@@ -185,7 +217,7 @@ import { ACHIEVEMENTS } from '@/lib/passport';
   }
   @media (prefers-reduced-motion: reduce) {
     .ptoast__card,
-    .ptoast.is-in .ptoast__medal {
+    .ptoast__card.is-in .ptoast__medal {
       transition: none;
       animation: none;
     }

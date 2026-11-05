@@ -247,6 +247,7 @@ const tags = dets.map((d) => {
 </section>
 
 <script>
+  import { track } from '@/lib/passport';
   // ---- Rotating subtitle
   const root = document.querySelector<HTMLElement>('[data-rotator]');
   const items = root ? Array.from(root.querySelectorAll<HTMLElement>('.rot')) : [];
@@ -294,6 +295,7 @@ const tags = dets.map((d) => {
   }
 
   let last = -1;
+  let armed = false;
   function render() {
     const p = progress();
     if (Math.abs(p - last) < 0.0005) return;
@@ -334,6 +336,12 @@ const tags = dets.map((d) => {
       o.querySelector('[data-prob]')!.textContent = v.toFixed(2);
     });
     pipe.classList.toggle('is-done', net >= 1);
+    // 52Hz Logbook: one run = back to the start, then all the way to the result.
+    if (p <= 0.02) armed = true;
+    else if (net >= 1 && armed) {
+      armed = false;
+      track('pipeline', String(Date.now()));
+    }
 
     status.textContent = (net >= 1 ? status.dataset.done : net > 0 ? status.dataset.classify : scan > 0 ? status.dataset.detect : status.dataset.ready) ?? '';
   }

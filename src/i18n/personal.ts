@@ -10,7 +10,7 @@ import type { Locale } from './ui';
  */
 const en = {
   meta: {
-    title: '52Hz Fan · Beyond the Code',
+    title: '52Hz Fan · Beyond Work',
     description: 'The personal side of Chi-Mao (Jonathan) Fan: photography, travel, Ajie the orange tabby, and a few things worth finding.',
   },
   nav: {
@@ -35,7 +35,7 @@ const en = {
   hero: {
     eyebrow: 'Personal world',
     title: '52Hz Fan',
-    subtitle: 'Beyond the Code',
+    subtitle: 'Beyond Work',
     tagline: "Beyond the algorithms, there's a whole other world.",
     explore: 'Pick a star to explore',
     scroll: 'Dive',
@@ -108,6 +108,7 @@ const en = {
     resetConfirm: 'Tap again to erase every badge',
     unavailable: 'This browser blocks local storage, so badges cannot be saved here. Everything else works as usual.',
     detail: { collected: 'Earned', locked: 'Not yet', how: 'How to get it', progress: 'Progress', close: 'Close' },
+    scopes: { pro: 'On the professional site', personal: 'In the personal world', any: 'Anywhere on the site' },
     items: {
       'deep-diver': { name: 'Deep Diver', desc: 'Took the plunge from the professional site into this one.', hint: 'Some doors on the surface lead down.' },
       'whale-watcher': { name: 'Whale Watcher', desc: 'Saw the humpback breach.', hint: 'Keep an eye on the sea.' },
@@ -116,6 +117,16 @@ const en = {
       polyglot: { name: 'Polyglot', desc: 'Read the site in all four of its languages.', hint: 'This site speaks more than one language.' },
       'tide-turner': { name: 'Tide Turner', desc: 'Watched both the sunrise and the moonlit night over the sea.', hint: 'Night and day each have their view.' },
       researcher: { name: 'Researcher', desc: 'Read three paper abstracts on the professional site.', hint: 'The surface has its own reading list.' },
+      'inventor': { name: 'The Inventor', desc: 'Opened one of the patents.', hint: 'Some ideas here are officially registered.' },
+      'source-diver': { name: 'Source Diver', desc: "Opened a project's code on GitHub.", hint: 'Every project here has its code close by.' },
+      'restorer': { name: 'The Restorer', desc: 'Dragged the slider on the thesis restoration demo.', hint: 'Somewhere on the surface, a noisy photo is waiting to be cleaned up.' },
+      'inference-loop': { name: 'Inference Loop', desc: 'Ran the front-page model five times.', hint: 'The model at the top runs again when you scroll back.' },
+      'whale-whisperer': { name: 'Whale Whisperer', desc: 'Touched the whale mid-leap.', hint: 'When the whale leaps, reach out.' },
+      'sailor': { name: 'Fellow Sailor', desc: 'Said hello to the little boat and the cat on board.', hint: 'Someone is out on the water.' },
+      'sunrise-sail': { name: 'Sailing into the Sun', desc: 'Watched the little boat sail across the rising sun.', hint: 'On a morning sea, wait for the boat to meet the sun.' },
+      'leafing-through': { name: 'Leafing Through', desc: 'Opened one of the photo albums.', hint: 'The gallery has more than covers.' },
+      'night-owl': { name: 'Night Owl', desc: 'Visited the personal world between midnight and 4 a.m.', hint: 'Some views are best in the small hours.' },
+      'regular': { name: 'Regular', desc: 'Came back on three different days.', hint: 'Drop by again another day.' },
       'lonely-whale': { name: 'The 52Hz Whale', desc: 'Earned every other badge. You are on the same frequency.', hint: 'Earn every other badge.' },
     },
   },
@@ -125,7 +136,7 @@ export type PersonalUI = typeof en;
 
 const zhTw: PersonalUI = {
   meta: {
-    title: '52Hz Fan · 程式碼之外',
+    title: '52Hz Fan · 工作之外',
     description: '范植貿（Jonathan）工作之外的另一面：攝影、旅行、橘貓阿桔，以及一些值得探索的小地方。',
   },
   nav: {
@@ -149,7 +160,7 @@ const zhTw: PersonalUI = {
   hero: {
     eyebrow: '個人世界',
     title: '52Hz Fan',
-    subtitle: '程式碼之外',
+    subtitle: '工作之外',
     tagline: '在演算法之外，還有另一個世界。',
     explore: '選一顆星星開始探索',
     scroll: '下潛',
@@ -221,6 +232,7 @@ const zhTw: PersonalUI = {
     resetConfirm: '再按一次就會清除所有成就徽章',
     unavailable: '這個瀏覽器封鎖了本機儲存，無法保存成就徽章；網站其他功能不受影響。',
     detail: { collected: '已獲得', locked: '尚未取得', how: '取得方式', progress: '進度', close: '關閉' },
+    scopes: { pro: '在專業頁面', personal: '在個人頁面', any: '全站皆可' },
     items: {
       'deep-diver': { name: '深潛者', desc: '從工作那一面的網站，一路潛進了這裡。', hint: '水面上有些門，是通往深處的。' },
       'whale-watcher': { name: '賞鯨人', desc: '看到了座頭鯨躍出海面。', hint: '留意一下海面。' },
@@ -229,6 +241,16 @@ const zhTw: PersonalUI = {
       polyglot: { name: '多語者', desc: '用四種語言都讀過這個網站。', hint: '這個網站不只說一種語言。' },
       'tide-turner': { name: '晝夜交替', desc: '看過海上的日出，也看過月夜。', hint: '白天和夜晚，各有各的風景。' },
       researcher: { name: '研究者', desc: '在工作頁面讀了三篇論文摘要。', hint: '水面上也有一份閱讀清單。' },
+      'inventor': { name: '發明家', desc: '打開了其中一件專利。', hint: '這裡有些點子是正式登記過的。' },
+      'source-diver': { name: '原始碼潛水員', desc: '在 GitHub 上打開了某個專案的程式碼。', hint: '這裡的每個專案，程式碼都不遠。' },
+      'restorer': { name: '修復師', desc: '拖動了論文影像修復成果的滑桿。', hint: '水面上有一張滿是雜訊的照片，等著被修好。' },
+      'inference-loop': { name: '推論迴圈', desc: '讓首頁的模型跑了五次。', hint: '往回捲，首頁的模型會再跑一次。' },
+      'whale-whisperer': { name: '鯨語者', desc: '在鯨魚躍出時摸到了牠。', hint: '鯨魚躍起時，伸手試試看。' },
+      'sailor': { name: '同船的人', desc: '跟小船和船上的貓打了招呼。', hint: '海面上有人。' },
+      'sunrise-sail': { name: '駛向日出', desc: '看著小船從日出的太陽前方駛過。', hint: '在早晨的海上，等小船遇見太陽。' },
+      'leafing-through': { name: '翻開相簿', desc: '打開了其中一本相簿。', hint: '相簿不只有封面。' },
+      'night-owl': { name: '夜貓子', desc: '在凌晨 0 點到 4 點之間來到個人世界。', hint: '有些風景，要在深夜才看得到。' },
+      'regular': { name: '常客', desc: '在三個不同的日子來訪。', hint: '改天再來逛逛吧。' },
       'lonely-whale': { name: '52Hz 的鯨魚', desc: '獲得了其他所有成就徽章。你和我在同一個頻率上。', hint: '獲得其他所有成就徽章。' },
     },
   },
@@ -236,7 +258,7 @@ const zhTw: PersonalUI = {
 
 const zhCn: PersonalUI = {
   meta: {
-    title: '52Hz Fan · 代码之外',
+    title: '52Hz Fan · 工作之外',
     description: '范植贸（Jonathan）工作之外的另一面：摄影、旅行、橘猫阿桔，以及一些值得探索的小地方。',
   },
   nav: {
@@ -260,7 +282,7 @@ const zhCn: PersonalUI = {
   hero: {
     eyebrow: '个人世界',
     title: '52Hz Fan',
-    subtitle: '代码之外',
+    subtitle: '工作之外',
     tagline: '在算法之外，还有另一个世界。',
     explore: '选一颗星星开始探索',
     scroll: '下潜',
@@ -332,6 +354,7 @@ const zhCn: PersonalUI = {
     resetConfirm: '再按一次就会清除所有成就徽章',
     unavailable: '这个浏览器屏蔽了本地存储，无法保存成就徽章；网站其他功能不受影响。',
     detail: { collected: '已获得', locked: '尚未获得', how: '获得方式', progress: '进度', close: '关闭' },
+    scopes: { pro: '在专业页面', personal: '在个人页面', any: '全站均可' },
     items: {
       'deep-diver': { name: '深潜者', desc: '从工作那一面的网站，一路潜进了这里。', hint: '水面上有些门，是通往深处的。' },
       'whale-watcher': { name: '观鲸人', desc: '看到了座头鲸跃出海面。', hint: '留意一下海面。' },
@@ -340,6 +363,16 @@ const zhCn: PersonalUI = {
       polyglot: { name: '多语者', desc: '用四种语言都读过这个网站。', hint: '这个网站不只说一种语言。' },
       'tide-turner': { name: '昼夜交替', desc: '看过海上的日出，也看过月夜。', hint: '白天和夜晚，各有各的风景。' },
       researcher: { name: '研究者', desc: '在工作页面读了三篇论文摘要。', hint: '水面上也有一份阅读清单。' },
+      'inventor': { name: '发明家', desc: '打开了其中一件专利。', hint: '这里有些点子是正式登记过的。' },
+      'source-diver': { name: '源码潜水员', desc: '在 GitHub 上打开了某个项目的代码。', hint: '这里的每个项目，代码都不远。' },
+      'restorer': { name: '修复师', desc: '拖动了论文图像修复成果的滑杆。', hint: '水面上有一张满是噪点的照片，等着被修好。' },
+      'inference-loop': { name: '推理循环', desc: '让首页的模型跑了五次。', hint: '往回滚动，首页的模型会再跑一次。' },
+      'whale-whisperer': { name: '鲸语者', desc: '在鲸鱼跃出时摸到了它。', hint: '鲸鱼跃起时，伸手试试看。' },
+      'sailor': { name: '同船的人', desc: '和小船以及船上的猫打了招呼。', hint: '海面上有人。' },
+      'sunrise-sail': { name: '驶向日出', desc: '看着小船从日出的太阳前方驶过。', hint: '在早晨的海上，等小船遇见太阳。' },
+      'leafing-through': { name: '翻开相册', desc: '打开了其中一本相册。', hint: '相册不只有封面。' },
+      'night-owl': { name: '夜猫子', desc: '在凌晨 0 点到 4 点之间来到个人世界。', hint: '有些风景，要在深夜才看得到。' },
+      'regular': { name: '常客', desc: '在三个不同的日子来访。', hint: '改天再来逛逛吧。' },
       'lonely-whale': { name: '52Hz 的鲸鱼', desc: '获得了其他所有成就徽章。你和我在同一个频率上。', hint: '获得其他所有成就徽章。' },
     },
   },
@@ -347,7 +380,7 @@ const zhCn: PersonalUI = {
 
 const ja: PersonalUI = {
   meta: {
-    title: '52Hz Fan · コードの向こう側',
+    title: '52Hz Fan · 仕事の向こう側',
     description: '范植貿（Jonathan）の仕事以外の一面。写真、旅、茶トラ猫のアジエ、そして探すと見つかるいくつかのもの。',
   },
   nav: {
@@ -371,7 +404,7 @@ const ja: PersonalUI = {
   hero: {
     eyebrow: 'パーソナルワールド',
     title: '52Hz Fan',
-    subtitle: 'コードの向こう側',
+    subtitle: '仕事の向こう側',
     tagline: 'アルゴリズムの向こうに、もうひとつの世界があります。',
     explore: '星をひとつ選んで探検しよう',
     scroll: '潜る',
@@ -443,6 +476,7 @@ const ja: PersonalUI = {
     resetConfirm: 'もう一度押すとすべてのバッジが消えます',
     unavailable: 'このブラウザではローカルストレージが使えないため、バッジを保存できません。ほかの機能はそのまま使えます。',
     detail: { collected: '獲得済み', locked: '未獲得', how: '入手方法', progress: '進み具合', close: '閉じる' },
+    scopes: { pro: 'プロフェッショナルのページで', personal: 'パーソナルのページで', any: 'サイトのどこでも' },
     items: {
       'deep-diver': { name: 'ディープダイバー', desc: '仕事側のサイトから、ここまで潜ってきた。', hint: '水面には、深みへ続く扉がある。' },
       'whale-watcher': { name: 'ホエールウォッチャー', desc: 'ザトウクジラのジャンプを見た。', hint: '海から目を離さないで。' },
@@ -451,6 +485,16 @@ const ja: PersonalUI = {
       polyglot: { name: 'ポリグロット', desc: '4つの言語すべてでサイトを読んだ。', hint: 'このサイトは一つの言語だけではない。' },
       'tide-turner': { name: '昼と夜', desc: '海の日の出も、月夜も見た。', hint: '昼にも夜にも、それぞれの景色がある。' },
       researcher: { name: 'リサーチャー', desc: '仕事側のページで論文の概要を3本読んだ。', hint: '水面にも読書リストがある。' },
+      'inventor': { name: '発明家', desc: '特許をひとつ開いた。', hint: 'ここには正式に登録されたアイデアもある。' },
+      'source-diver': { name: 'ソースダイバー', desc: 'GitHub でプロジェクトのコードを開いた。', hint: 'どのプロジェクトも、コードはすぐそばにある。' },
+      'restorer': { name: '修復師', desc: '論文の画像復元デモのスライダーを動かした。', hint: '水面のどこかで、ノイズだらけの写真が待っている。' },
+      'inference-loop': { name: '推論ループ', desc: 'トップページのモデルを5回動かした。', hint: '上に戻ると、トップのモデルはもう一度動く。' },
+      'whale-whisperer': { name: 'クジラと話す人', desc: 'ジャンプ中のクジラに触れた。', hint: 'クジラが跳んだら、手を伸ばしてみて。' },
+      'sailor': { name: '同じ舟', desc: '小舟と、乗っている猫にあいさつした。', hint: '海の上に誰かいる。' },
+      'sunrise-sail': { name: '朝日へ漕ぐ', desc: '小舟が朝日の前を横切るのを見届けた。', hint: '朝の海で、小舟が太陽に重なるのを待ってみて。' },
+      'leafing-through': { name: 'アルバムをめくる', desc: 'アルバムをひとつ開いた。', hint: 'ギャラリーは表紙だけではない。' },
+      'night-owl': { name: '夜ふかし', desc: '深夜0時から4時のあいだにパーソナルワールドを訪れた。', hint: '夜更けにしか見えない景色もある。' },
+      'regular': { name: '常連', desc: '3つの別々の日に訪れた。', hint: 'また別の日に来てみて。' },
       'lonely-whale': { name: '52Hz のクジラ', desc: 'ほかのバッジをすべて獲得した。同じ周波数だね。', hint: 'ほかのバッジをすべて獲得する。' },
     },
   },

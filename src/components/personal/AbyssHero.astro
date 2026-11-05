@@ -82,11 +82,27 @@ const figureStars: [number, number, number][] = [
 
     <nav class="sky-map" aria-label={p.hero.explore}>
       <svg class="sky-map__whale" viewBox="0 0 200 110" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-        <path class="whale__line" d={whale.body} pathLength="1" />
-        <path class="whale__line whale__line--fine" d={whale.fin} pathLength="1" />
-        <path class="whale__line whale__line--fine" d={whale.dorsal} pathLength="1" />
-        <path class="whale__line whale__line--faint" d={whale.grooves} pathLength="1" />
-        {figureStars.map(([x, y, r], i) => <circle class="whale__star" cx={x} cy={y} r={r} style={`--i:${i}`} />)}
+        <defs>
+          <!-- Puffy, uneven edges for the daytime cloud. -->
+          <filter id="whale-cloud" x="-15%" y="-25%" width="130%" height="150%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" seed="52" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="10" xChannelSelector="R" yChannelSelector="G" result="puffed" />
+            <feGaussianBlur in="puffed" stdDeviation="2.4" />
+          </filter>
+        </defs>
+        <!-- By day there are no constellations: the whale is a cloud instead. -->
+        <g class="whale__day" filter="url(#whale-cloud)">
+          <path d={whale.body} />
+          <path d={whale.fin} />
+          <path d={whale.dorsal} />
+        </g>
+        <g class="whale__night">
+          <path class="whale__line" d={whale.body} pathLength="1" />
+          <path class="whale__line whale__line--fine" d={whale.fin} pathLength="1" />
+          <path class="whale__line whale__line--fine" d={whale.dorsal} pathLength="1" />
+          <path class="whale__line whale__line--faint" d={whale.grooves} pathLength="1" />
+          {figureStars.map(([x, y, r], i) => <circle class="whale__star" cx={x} cy={y} r={r} style={`--i:${i}`} />)}
+        </g>
       </svg>
       <ol>
         {
@@ -246,6 +262,39 @@ const figureStars: [number, number, number][] = [
         }
       }
     };
+
+    // Touching the whale mid-leap (52Hz Logbook).
+    hero.addEventListener('pointerdown', (ev) => {
+      if (!fx || !breach || (ev.target as Element).closest('a, button')) return;
+      const r = fx.getBoundingClientRect();
+      if (breach.hit(ev.clientX - r.left, ev.clientY - r.top)) fx.dispatchEvent(new CustomEvent('whale-touch', { bubbles: true }));
+    });
+    // The little boat (and the cat on board) answers a click with a rock.
+    const boat = hero.querySelector<SVGElement>('.abyss__boat');
+    boat?.addEventListener('click', () => {
+      boat.classList.remove('is-rocking');
+      boat.getBoundingClientRect();
+      boat.classList.add('is-rocking');
+      boat.dispatchEvent(new CustomEvent('boat', { bubbles: true }));
+    });
+
+    // The boat sailing across the rising sun (light theme): it has to be seen approaching
+    // from the left and then reach the sun. Checked twice a second, once per page.
+    const sun = hero.querySelector<HTMLElement>('.abyss__sun');
+    if (boat && sun && !reduce) {
+      let approaching = false;
+      const watch = window.setInterval(() => {
+        if (document.hidden || !onScreen || day < 0.95) return void (approaching = false);
+        const b = boat.getBoundingClientRect();
+        const s = sun.getBoundingClientRect();
+        const x = b.left + b.width / 2;
+        if (x <= s.left) approaching = true;
+        else if (approaching && x < s.right) {
+          clearInterval(watch);
+          boat.dispatchEvent(new CustomEvent('boat-sun', { bubbles: true }));
+        }
+      }, 500);
+    }
 
     // Click (or tap) a shooting star while it is still visible to catch it.
     hero.addEventListener('pointerdown', (ev) => {
@@ -526,6 +575,27 @@ const figureStars: [number, number, number][] = [
       stroke-dashoffset: 0;
     }
   }
+  /* Night: the constellation. Day: the same whale as a drifting cloud. Cross-fade with the sky. */
+  .whale__night,
+  .whale__day {
+    transition: opacity 2.4s cubic-bezier(0.5, 0, 0.5, 1);
+  }
+  .whale__day {
+    opacity: 0;
+    fill: #fff;
+  }
+  .whale__day path {
+    /* The fin and dorsal paths are open strokes at night; by day they fill as part of the cloud. */
+    stroke: #fff;
+    stroke-width: 4;
+    stroke-linejoin: round;
+  }
+  :global([data-theme='light']) .whale__night {
+    opacity: 0;
+  }
+  :global([data-theme='light']) .whale__day {
+    opacity: 0.72;
+  }
   .whale__star {
     fill: rgb(225 240 255 / 0.85);
     filter: drop-shadow(0 0 2px rgb(150 205 255 / 0.8));
@@ -712,8 +782,8 @@ const figureStars: [number, number, number][] = [
     top: 78%;
     width: 100%;
     height: 0;
-    /* Starts on the light path, then drifts right. */
-    animation: sail 210s linear -93s infinite;
+    /* Starts just left of the light path (the sun / moon), then drifts right across it. */
+    animation: sail 210s linear -74s infinite;
   }
   @keyframes sail {
     from {
@@ -727,6 +797,8 @@ const figureStars: [number, number, number][] = [
     position: absolute;
     left: 0;
     top: 0;
+    pointer-events: auto;
+    cursor: pointer;
     width: clamp(32px, 3.1vw, 48px);
     height: auto;
     translate: -50% -66%;
@@ -737,6 +809,22 @@ const figureStars: [number, number, number][] = [
     transition:
       fill 1.6s,
       stroke 1.6s;
+  }
+  .abyss__boat.is-rocking {
+    animation:
+      rock 0.9s var(--ease-out),
+      bob 6s var(--ease-in-out) 0.9s infinite;
+  }
+  @keyframes rock {
+    20% {
+      transform: translateY(-2px) rotate(-9deg);
+    }
+    45% {
+      transform: translateY(0) rotate(7deg);
+    }
+    70% {
+      transform: rotate(-4deg);
+    }
   }
   @keyframes bob {
     0%,
