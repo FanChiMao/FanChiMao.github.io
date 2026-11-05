@@ -662,6 +662,14 @@ const bio = pick(ajieProfile.bio);
     right: -3.2rem;
   }
 
+  /* Side by side, the photo sets the dialog's height (its 4:5 frame); a longer caption
+     scrolls inside its own column instead of stretching the dialog. */
+  @media (min-width: 900px) {
+    .ajie-post__text {
+      contain: size;
+      overscroll-behavior: contain;
+    }
+  }
   @media (max-width: 899px) {
     .ajie-post[open] {
       grid-template-columns: 1fr;
