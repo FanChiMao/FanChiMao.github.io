@@ -6,4 +6,4 @@
  * Adding a post: add its ID here too (the site build fails with a reminder if a published
  * post is missing), then redeploy the Worker so it accepts likes on it.
  */
-export const AJIE_POST_IDS = ['2025-10-04-adoption', '2025-10-11-first-vet-visit'] as const;
+export const AJIE_POST_IDS = ['2025-10-04-adoption', '2025-10-11-first-vet-visit', '2025-10-26-eye-specialist'] as const;
