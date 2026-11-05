@@ -1,9 +1,6 @@
 export const site = {
-  /**
-   * Show the "Go Deeper?" entrance (professional home -> personal world). While the
-   * personal world is being built it only shows in `npm run dev`; set to true to ship it.
-   */
-  personalEntry: import.meta.env.DEV,
+  /** Show the "Go Deeper?" entrance from the professional home to the personal world. */
+  personalEntry: true,
   name: 'Chi-Mao Fan',
   nameZh: '范植貿',
   email: 'qaz5517359@gmail.com',
