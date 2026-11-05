@@ -1,0 +1,262 @@
+---
+/**
+ * Error page in the site's look: 404.html (GitHub Pages serves it for any unknown URL) and
+ * 500.html (ready for a host or CDN that can show a custom server-error page).
+ *
+ * One built file serves every locale: the page renders English, embeds the other three, and
+ * switches to the locale in the URL prefix (/zh-tw/, /zh-cn/, /ja/) before first paint.
+ * The signal line: a 52Hz wave that dies out with no echo (404) or breaks off (500).
+ */
+import '@/styles/global.css';
+import { Icon } from 'astro-icon/components';
+import { locales, localeMeta, localePath } from '@/i18n/ui';
+import { errorCopy, type ErrorCode } from '@/i18n/errors';
+
+interface Props {
+  code: ErrorCode;
+}
+const { code } = Astro.props;
+const t = errorCopy[code].en;
+
+// Build-time wave: 404 decays into a flat line; 500 is cut in two with a jagged break.
+const W = 1000;
+const H = 120;
+const mid = H / 2;
+const wavePoint = (x: number) => {
+  const k = (x / W) * Math.PI * 2 * 7;
+  if (code === 404) {
+    const amp = 40 * Math.exp(-x / 260);
+    return mid - amp * Math.sin(k);
+  }
+  return mid - 34 * Math.sin(k) * (0.75 + 0.25 * Math.sin(k * 0.37));
+};
+const trace = (from: number, to: number) => {
+  const pts: string[] = [];
+  for (let x = from; x <= to; x += 4) pts.push(`${x},${wavePoint(x).toFixed(1)}`);
+  return `M${pts.join(' L')}`;
+};
+// 500: the line runs, snaps with a jagged end, a gap, then picks up again.
+const paths =
+  code === 404
+    ? [trace(0, W)]
+    : [`${trace(0, 430)} L446,${mid - 30} L458,${mid + 22}`, `M552,${mid - 18} L566,${mid + 26} ${trace(584, W).replace(/^M/, 'L')}`];
+
+// Everything the inline script needs to switch language: copy, html lang, home paths.
+const i18n = Object.fromEntries(
+  locales.map((l) => [l, { ...errorCopy[code][l], htmlLang: localeMeta[l].htmlLang, home: localePath(l, '/'), personal: localePath(l, '/personal/') }]),
+);
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark" data-world="pro">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{`${code} · Chi-Mao Fan`}</title>
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/icon.png" type="image/png" />
+    <meta name="theme-color" content="#060a14" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)" />
+    <script is:inline>
+      (() => {
+        const d = document.documentElement;
+        d.classList.add('js');
+        let theme = null;
+        try { theme = localStorage.getItem('theme'); } catch {}
+        if (theme !== 'light' && theme !== 'dark') theme = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        d.dataset.theme = theme;
+      })();
+    </script>
+  </head>
+  <body>
+    <header class="err-top container">
+      <a class="err-brand" href="/" data-href="home">Chi-Mao Fan</a>
+    </header>
+
+    <main class="err container" id="main">
+      <p class="err__kicker" data-k="kicker">{t.kicker}</p>
+      <p class="err__code" aria-hidden="true">{code}</p>
+      <figure class:list={['err__signal', `err__signal--${code}`]} aria-hidden="true">
+        <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="err-grad" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0" stop-color="var(--accent)" stop-opacity="0.9" />
+              <stop offset="0.7" stop-color="var(--accent-2)" stop-opacity="0.55" />
+              <stop offset="1" stop-color="var(--accent-2)" stop-opacity="0.15" />
+            </linearGradient>
+          </defs>
+          {paths.map((d) => <path class="err__wave" d={d} stroke="url(#err-grad)" />)}
+          {paths.map((d) => <path class="err__pulse" d={d} pathLength="100" />)}
+        </svg>
+      </figure>
+      <h1 class="err__title" data-k="title">{t.title}</h1>
+      <p class="err__body" data-k="body">{t.body}</p>
+      <div class="err__actions">
+        {
+          code === 404 ? (
+            <>
+              <a class="btn btn--primary" href="/" data-href="home">
+                <Icon name="lucide:house" />
+                <span data-k="primary">{t.primary}</span>
+              </a>
+              <a class="btn" href="/personal/" data-href="personal">
+                <Icon name="lucide:waves" />
+                <span data-k="secondary">{t.secondary}</span>
+              </a>
+            </>
+          ) : (
+            <>
+              <button class="btn btn--primary" type="button" data-reload>
+                <Icon name="lucide:rotate-cw" />
+                <span data-k="primary">{t.primary}</span>
+              </button>
+              <a class="btn" href="/" data-href="home">
+                <Icon name="lucide:house" />
+                <span data-k="secondary">{t.secondary}</span>
+              </a>
+            </>
+          )
+        }
+      </div>
+    </main>
+
+    <script is:inline type="application/json" id="err-i18n" set:html={JSON.stringify(i18n)} />
+    <script is:inline>
+      // Pick the locale from the URL prefix, before first paint.
+      (() => {
+        const all = JSON.parse(document.getElementById('err-i18n').textContent);
+        const m = location.pathname.match(/^\/(zh-tw|zh-cn|ja)(?:\/|$)/);
+        const c = all[m ? m[1] : 'en'];
+        document.documentElement.lang = c.htmlLang;
+        document.querySelectorAll('[data-k]').forEach((el) => (el.textContent = c[el.dataset.k]));
+        document.querySelectorAll('[data-href]').forEach((a) => (a.href = c[a.dataset.href]));
+        document.querySelector('[data-reload]')?.addEventListener('click', () => location.reload());
+      })();
+    </script>
+  </body>
+</html>
+
+<style>
+  body {
+    min-height: 100svh;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    background:
+      radial-gradient(60% 45% at 50% 42%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%),
+      var(--bg);
+  }
+  .err-top {
+    display: flex;
+    align-items: center;
+    height: var(--nav-h);
+  }
+  .err-brand {
+    font-family: var(--font-display);
+    font-weight: 650;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+  }
+
+  .err {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 0.9rem;
+    padding-block: 2rem 6rem;
+    text-align: center;
+  }
+  .err__kicker {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .err__code {
+    margin: -0.25rem 0 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(5.5rem, 18vw, 10rem);
+    line-height: 0.9;
+    letter-spacing: -0.05em;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .err__signal {
+    width: min(100%, 560px);
+    margin: 0.25rem 0 0.75rem;
+  }
+  .err__signal svg {
+    display: block;
+    width: 100%;
+    height: clamp(48px, 9vw, 72px);
+    overflow: visible;
+  }
+  .err__wave {
+    fill: none;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+  /* A pulse runs along the line and fades out where the echo should have been. */
+  .err__pulse {
+    fill: none;
+    stroke: var(--text);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+    stroke-dasharray: 3 97;
+    stroke-dashoffset: 100;
+    opacity: 0;
+    animation: err-pulse 4.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  @keyframes err-pulse {
+    0% {
+      stroke-dashoffset: 100;
+      opacity: 0;
+    }
+    10% {
+      opacity: 0.9;
+    }
+    70% {
+      opacity: 0.6;
+    }
+    100% {
+      stroke-dashoffset: 0;
+      opacity: 0;
+    }
+  }
+  .err__title {
+    max-width: 22ch;
+    font-size: clamp(1.7rem, 4vw, 2.6rem);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+  .err__title:is(:lang(zh), :lang(ja)) {
+    word-break: auto-phrase;
+  }
+  /* Wide mono tracking reads as gaps between CJK characters. */
+  .err__kicker:is(:lang(zh), :lang(ja)) {
+    letter-spacing: 0.1em;
+  }
+  .err__body {
+    max-width: 34rem;
+    color: var(--text-2);
+    font-size: 1.05rem;
+  }
+  .err__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .err__pulse {
+      display: none;
+    }
+  }
+</style>

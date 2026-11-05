@@ -1,0 +1,7 @@
+---
+// Server-error page, built as 500.html. GitHub Pages cannot serve it automatically on a 5xx; it is here
+// for a CDN or host that can show a custom error page (e.g. a Cloudflare custom error rule).
+import ErrorPage from '@/views/ErrorPage.astro';
+---
+
+<ErrorPage code={500} />
