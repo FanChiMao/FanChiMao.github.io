@@ -104,7 +104,10 @@ const bio = pick(ajieProfile.bio);
                     {post.data.cover && <span class="ajie__badge ajie__badge--ai" aria-hidden="true"><Icon name="lucide:copy" /></span>}
                     {realBadge && <span class:list={['ajie__badge', 'ajie__badge--real', { 'ajie__badge--behind-ai': post.data.cover }]} aria-hidden="true"><Icon name={realBadge} /></span>}
                     <span class="ajie__hover" aria-hidden="true">
-                      <span>{day(post.data.date)}</span>
+                      <span class="ajie__tile-text">
+                        {post.data.title && <span class="ajie__tile-title">{pick(post.data.title)}</span>}
+                        <span>{day(post.data.date)}</span>
+                      </span>
                       {statsEnabled && (
                         <span class="ajie__tile-likes" data-tile-likes={post.id} data-swap-skip hidden>
                           <svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
@@ -477,18 +480,43 @@ const bio = pick(ajieProfile.bio);
     gap: 0.5rem;
     position: absolute;
     inset: auto 0 0;
-    padding: 1.6rem 0.7rem 0.55rem;
+    padding: 2.2rem 0.75rem 0.6rem;
+    /* Always shown (title, date and likes on every tile); hover just deepens the shade. */
     background: linear-gradient(transparent, rgb(0 0 0 / 0.6));
     color: #fff;
     font-family: var(--font-mono);
     font-size: 0.72rem;
     text-align: left;
-    opacity: 0;
-    transition: opacity 0.3s;
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.45);
+    transition: background-color 0.3s;
+  }
+  .ajie__tile-text {
+    display: grid;
+    gap: 0.1rem;
+    min-width: 0;
+  }
+  .ajie__tile-title {
+    overflow: hidden;
+    font-family: var(--font-display);
+    font-size: 0.92rem;
+    font-weight: 650;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* Small three-up tiles on phones: just the date, the title is in the post. */
+  @media (max-width: 599px) {
+    .ajie__tile-title {
+      display: none;
+    }
+    .ajie__hover {
+      padding: 1.4rem 0.5rem 0.4rem;
+      font-size: 0.62rem;
+    }
   }
   .ajie__tile:hover .ajie__hover,
   .ajie__tile:focus-visible .ajie__hover {
-    opacity: 1;
+    background-color: rgb(0 0 0 / 0.12);
   }
 
   /* Post dialog */
@@ -568,9 +596,10 @@ const bio = pick(ajieProfile.bio);
   }
   .ajie-post__caption {
     display: grid;
-    gap: 0.75rem;
+    gap: 0.7rem;
     color: var(--text-2);
-    line-height: 1.75;
+    font-size: 0.92rem;
+    line-height: 1.7;
     white-space: pre-line;
   }
   .ajie-post__foot {
