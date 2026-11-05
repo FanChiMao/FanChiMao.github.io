@@ -62,7 +62,7 @@ for (const p of pubs) {
                 </h3>
                 <p class="pub__venue">{data.venue[lang]}</p>
 
-                <details class="pub__abstract">
+                <details class="pub__abstract" data-pub={id}>
                   <summary>
                     <Icon name="lucide:file-text" />
                     {t.publications.abstract}

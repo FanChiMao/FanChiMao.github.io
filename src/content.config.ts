@@ -102,6 +102,9 @@ const education = defineCollection({
 });
 
 /** Gallery filter categories (labels live in i18n/personal.ts). */
+/** A string shared by all languages, or one per language. */
+const textOrT = z.union([z.string(), t]);
+
 export const albumCategories = ['astro', 'drone', 'landscape', 'city', 'everyday'] as const;
 
 const albums = defineCollection({
@@ -114,7 +117,23 @@ const albums = defineCollection({
     draft: z.boolean().optional(),
     title: t,
     cover: asset,
-    photos: z.array(z.object({ src: asset, caption: z.array(z.string()), link: z.url().optional() })),
+    photos: z.array(
+      z.object({
+        src: asset,
+        /** Legacy free-form lines: first line is the heading, the rest the body. */
+        caption: z.array(z.string()).default([]),
+        /** Optional; a plain string is used for every language. */
+        title: textOrT.optional(),
+        description: textOrT.optional(),
+        /** Below are written by `npm run photos` from EXIF; edit freely. */
+        taken: z.iso.date().optional(),
+        exif: z
+          .object({ camera: z.string(), lens: z.string(), focalLength: z.number(), aperture: z.number(), shutter: z.string(), iso: z.number() })
+          .partial()
+          .optional(),
+        link: z.url().optional(),
+      }),
+    ),
   }),
 });
 

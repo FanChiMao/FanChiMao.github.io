@@ -19,11 +19,11 @@ const used = albumCategories.filter((c) => albums.some((a) => a.data.categories.
 ---
 
 <PersonalLayout {lang} {path} title={p.chapters.gallery.name} description={t.gallery.subtitle} overlay={false}>
-  <div class="gallery-page">
-    <header class="container gallery-head">
+  <div class="gallery-page pw-page pw-sea">
+    <header class="container gallery-head pw-head">
       <p class="pw-kicker" data-reveal>{p.chapters.gallery.kind}</p>
-      <h1 class="serif" data-reveal style="--i:1">{p.chapters.gallery.name}</h1>
-      <p class="gallery-head__sub" data-reveal style="--i:2">{t.gallery.subtitle}</p>
+      <h1 class="pw-head__title serif" data-reveal style="--i:1">{p.chapters.gallery.name}</h1>
+      <p class="pw-head__lead" data-reveal style="--i:2">{t.gallery.subtitle}</p>
     </header>
 
     {
@@ -72,28 +72,14 @@ const used = albumCategories.filter((c) => albums.some((a) => a.data.categories.
 </script>
 
 <style>
-  .gallery-page {
-    padding-top: calc(var(--nav-h) + 3rem);
-    padding-bottom: 5rem;
-  }
   .gallery-head {
-    display: grid;
-    gap: 0.75rem;
-    margin-bottom: 2rem;
-  }
-  .gallery-head h1 {
-    font-size: clamp(3rem, 8vw, 5.5rem);
-    line-height: 1;
-  }
-  .gallery-head__sub {
-    color: var(--muted);
-    font-size: 1.1rem;
-    max-width: 40rem;
+    margin-bottom: 2.25rem;
   }
 
   .filters {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 0.5rem;
     margin-bottom: 1.75rem;
   }

@@ -43,8 +43,8 @@ const en = {
   chapters: {
     gallery: { name: 'The Gallery', kind: 'Photography', blurb: 'Night skies, city lights and small everyday moments, seen through a lens.' },
     journey: { name: 'The Journey', kind: 'Adventures', blurb: 'Places visited and trails walked, pinned on a globe.' },
-    companion: { name: 'The Companion', kind: 'Ajie', blurb: 'Ajie, the orange tabby who runs the house.' },
-    secrets: { name: 'The Secrets', kind: 'Explorer Passport', blurb: 'Some things on this site only show up if you go looking.' },
+    companion: { name: 'Ajie', kind: 'Orange tabby', blurb: 'Ajie, the orange tabby who runs the house.' },
+    secrets: { name: 'Achievements', kind: '52Hz Logbook', blurb: 'Badges you earn by exploring this site.' },
   },
   chaptersHeading: 'Four ways in',
   whale: {
@@ -71,6 +71,31 @@ const en = {
   stub: {
     soon: 'This chapter is still being written.',
     back: 'Back to the surface',
+  },
+  passport: {
+    kicker: '52Hz Logbook',
+    lead: 'Badges you earn by exploring this site. They are kept in this browser only.',
+    progress: (n: number | string, total: number) => `${n} of ${total} badges`,
+    locked: '???',
+    unlockedOn: 'Earned',
+    toast: 'New achievement',
+    /** Toast line; {name} is replaced with the badge name. */
+    earned: 'Earned the “{name}” badge',
+    view: 'Open logbook',
+    reset: 'Reset logbook',
+    resetConfirm: 'Tap again to erase every badge',
+    unavailable: 'This browser blocks local storage, so badges cannot be saved here. Everything else works as usual.',
+    detail: { collected: 'Earned', locked: 'Not yet', how: 'How to get it', progress: 'Progress', close: 'Close' },
+    items: {
+      'deep-diver': { name: 'Deep Diver', desc: 'Took the plunge from the professional site into this one.', hint: 'Some doors on the surface lead down.' },
+      'whale-watcher': { name: 'Whale Watcher', desc: 'Saw the humpback breach.', hint: 'Keep an eye on the sea.' },
+      stargazer: { name: 'Stargazer', desc: 'Caught a shooting star before it faded.', hint: 'On a clear night, look up and be quick.' },
+      explorer: { name: 'Explorer', desc: 'Opened every chapter of this world.', hint: 'There are four ways in.' },
+      polyglot: { name: 'Polyglot', desc: 'Read the site in all four of its languages.', hint: 'This site speaks more than one language.' },
+      'tide-turner': { name: 'Tide Turner', desc: 'Watched both the sunrise and the moonlit night over the sea.', hint: 'Night and day each have their view.' },
+      researcher: { name: 'Researcher', desc: 'Read three paper abstracts on the professional site.', hint: 'The surface has its own reading list.' },
+      'lonely-whale': { name: 'The Lonely Whale', desc: 'Earned every other badge. You are on the same frequency.', hint: 'Earn every other badge.' },
+    },
   },
 };
 
@@ -110,8 +135,8 @@ const zhTw: PersonalUI = {
   chapters: {
     gallery: { name: '相簿', kind: '攝影', blurb: '星空、城市燈火與日常裡的小片刻，透過鏡頭留下來。' },
     journey: { name: '旅程', kind: '冒險', blurb: '去過的地方、走過的路，標記在一顆地球上。' },
-    companion: { name: '夥伴', kind: '阿桔', blurb: '阿桔，家裡真正的主人，一隻橘色虎斑貓。' },
-    secrets: { name: '秘密', kind: '探索護照', blurb: '這個網站有些東西，只有主動去找才會出現。' },
+    companion: { name: '阿桔', kind: '橘貓', blurb: '阿桔，家裡真正的主人，一隻橘色虎斑貓。' },
+    secrets: { name: '成就', kind: '52Hz 航海日誌', blurb: '在網站裡四處探索，就能獲得成就徽章。' },
   },
   chaptersHeading: '四個入口',
   whale: {
@@ -138,6 +163,31 @@ const zhTw: PersonalUI = {
   stub: {
     soon: '這一章還在撰寫中。',
     back: '回到水面',
+  },
+  passport: {
+    kicker: '52Hz 航海日誌',
+    lead: '在網站裡四處探索，就能獲得成就徽章。紀錄只會存在這個瀏覽器裡。',
+    progress: (n: number | string, total: number) => `已獲得 ${n} / ${total} 個成就徽章`,
+    locked: '???',
+    unlockedOn: '獲得於',
+    toast: '獲得新成就',
+    /** Toast line; {name} is replaced with the badge name. */
+    earned: '獲得「{name}」成就徽章',
+    view: '打開航海日誌',
+    reset: '重設航海日誌',
+    resetConfirm: '再按一次就會清除所有成就徽章',
+    unavailable: '這個瀏覽器封鎖了本機儲存，無法保存成就徽章；網站其他功能不受影響。',
+    detail: { collected: '已獲得', locked: '尚未取得', how: '取得方式', progress: '進度', close: '關閉' },
+    items: {
+      'deep-diver': { name: '深潛者', desc: '從工作那一面的網站，一路潛進了這裡。', hint: '水面上有些門，是通往深處的。' },
+      'whale-watcher': { name: '賞鯨人', desc: '看到了座頭鯨躍出海面。', hint: '留意一下海面。' },
+      stargazer: { name: '觀星者', desc: '在流星消失前抓住了它。', hint: '晴朗的夜裡抬頭看，手要快。' },
+      explorer: { name: '探險家', desc: '走遍了這個世界的每個章節。', hint: '進來的路有四條。' },
+      polyglot: { name: '多語者', desc: '用四種語言都讀過這個網站。', hint: '這個網站不只說一種語言。' },
+      'tide-turner': { name: '晝夜交替', desc: '看過海上的日出，也看過月夜。', hint: '白天和夜晚，各有各的風景。' },
+      researcher: { name: '研究者', desc: '在工作頁面讀了三篇論文摘要。', hint: '水面上也有一份閱讀清單。' },
+      'lonely-whale': { name: '孤獨的鯨', desc: '獲得了其他所有成就徽章。你和我在同一個頻率上。', hint: '獲得其他所有成就徽章。' },
+    },
   },
 };
 
@@ -175,8 +225,8 @@ const zhCn: PersonalUI = {
   chapters: {
     gallery: { name: '相册', kind: '摄影', blurb: '星空、城市灯火与日常里的小片刻，通过镜头留下来。' },
     journey: { name: '旅程', kind: '冒险', blurb: '去过的地方、走过的路，标记在一颗地球上。' },
-    companion: { name: '伙伴', kind: '阿桔', blurb: '阿桔，家里真正的主人，一只橘色虎斑猫。' },
-    secrets: { name: '秘密', kind: '探索护照', blurb: '这个网站有些东西，只有主动去找才会出现。' },
+    companion: { name: '阿桔', kind: '橘猫', blurb: '阿桔，家里真正的主人，一只橘色虎斑猫。' },
+    secrets: { name: '成就', kind: '52Hz 航海日志', blurb: '在网站里四处探索，就能获得成就徽章。' },
   },
   chaptersHeading: '四个入口',
   whale: {
@@ -203,6 +253,31 @@ const zhCn: PersonalUI = {
   stub: {
     soon: '这一章还在撰写中。',
     back: '回到水面',
+  },
+  passport: {
+    kicker: '52Hz 航海日志',
+    lead: '在网站里四处探索，就能获得成就徽章。记录只会保存在这个浏览器里。',
+    progress: (n: number | string, total: number) => `已获得 ${n} / ${total} 个成就徽章`,
+    locked: '???',
+    unlockedOn: '获得于',
+    toast: '获得新成就',
+    /** Toast line; {name} is replaced with the badge name. */
+    earned: '获得「{name}」成就徽章',
+    view: '打开航海日志',
+    reset: '重置航海日志',
+    resetConfirm: '再按一次就会清除所有成就徽章',
+    unavailable: '这个浏览器屏蔽了本地存储，无法保存成就徽章；网站其他功能不受影响。',
+    detail: { collected: '已获得', locked: '尚未获得', how: '获得方式', progress: '进度', close: '关闭' },
+    items: {
+      'deep-diver': { name: '深潜者', desc: '从工作那一面的网站，一路潜进了这里。', hint: '水面上有些门，是通往深处的。' },
+      'whale-watcher': { name: '观鲸人', desc: '看到了座头鲸跃出海面。', hint: '留意一下海面。' },
+      stargazer: { name: '观星者', desc: '在流星消失前抓住了它。', hint: '晴朗的夜里抬头看，手要快。' },
+      explorer: { name: '探险家', desc: '走遍了这个世界的每个章节。', hint: '进来的路有四条。' },
+      polyglot: { name: '多语者', desc: '用四种语言都读过这个网站。', hint: '这个网站不只说一种语言。' },
+      'tide-turner': { name: '昼夜交替', desc: '看过海上的日出，也看过月夜。', hint: '白天和夜晚，各有各的风景。' },
+      researcher: { name: '研究者', desc: '在工作页面读了三篇论文摘要。', hint: '水面上也有一份阅读清单。' },
+      'lonely-whale': { name: '孤独的鲸', desc: '获得了其他所有成就徽章。你和我在同一个频率上。', hint: '获得其他所有成就徽章。' },
+    },
   },
 };
 
@@ -240,8 +315,8 @@ const ja: PersonalUI = {
   chapters: {
     gallery: { name: 'ギャラリー', kind: '写真', blurb: '星空、街の灯り、日常のささやかな瞬間をレンズ越しに。' },
     journey: { name: '旅', kind: '冒険', blurb: '訪れた場所と歩いた道を、地球儀の上に。' },
-    companion: { name: '相棒', kind: 'アジエ', blurb: '家の本当の主、茶トラ猫のアジエ。' },
-    secrets: { name: '秘密', kind: '探検パスポート', blurb: 'このサイトには、探さないと見つからないものがあります。' },
+    companion: { name: 'アジエ', kind: '茶トラ猫', blurb: '家の本当の主、茶トラ猫のアジエ。' },
+    secrets: { name: '実績', kind: '52Hz 航海日誌', blurb: 'サイトを探検して実績バッジを集めよう。' },
   },
   chaptersHeading: '4つの入口',
   whale: {
@@ -268,6 +343,31 @@ const ja: PersonalUI = {
   stub: {
     soon: 'この章はまだ執筆中です。',
     back: '水面に戻る',
+  },
+  passport: {
+    kicker: '52Hz 航海日誌',
+    lead: 'サイトを探検すると実績バッジがもらえます。記録はこのブラウザにだけ保存されます。',
+    progress: (n: number | string, total: number) => `${total} 個中 ${n} 個の実績バッジ`,
+    locked: '???',
+    unlockedOn: '獲得日',
+    toast: '新しい実績',
+    /** Toast line; {name} is replaced with the badge name. */
+    earned: '「{name}」バッジを獲得',
+    view: '航海日誌を開く',
+    reset: '航海日誌をリセット',
+    resetConfirm: 'もう一度押すとすべてのバッジが消えます',
+    unavailable: 'このブラウザではローカルストレージが使えないため、バッジを保存できません。ほかの機能はそのまま使えます。',
+    detail: { collected: '獲得済み', locked: '未獲得', how: '入手方法', progress: '進み具合', close: '閉じる' },
+    items: {
+      'deep-diver': { name: 'ディープダイバー', desc: '仕事側のサイトから、ここまで潜ってきた。', hint: '水面には、深みへ続く扉がある。' },
+      'whale-watcher': { name: 'ホエールウォッチャー', desc: 'ザトウクジラのジャンプを見た。', hint: '海から目を離さないで。' },
+      stargazer: { name: 'スターゲイザー', desc: '流れ星が消える前につかまえた。', hint: '晴れた夜は空を見上げて、すばやく。' },
+      explorer: { name: 'エクスプローラー', desc: 'この世界のすべての章を開いた。', hint: '入り口は四つある。' },
+      polyglot: { name: 'ポリグロット', desc: '4つの言語すべてでサイトを読んだ。', hint: 'このサイトは一つの言語だけではない。' },
+      'tide-turner': { name: '昼と夜', desc: '海の日の出も、月夜も見た。', hint: '昼にも夜にも、それぞれの景色がある。' },
+      researcher: { name: 'リサーチャー', desc: '仕事側のページで論文の概要を3本読んだ。', hint: '水面にも読書リストがある。' },
+      'lonely-whale': { name: '孤独なクジラ', desc: 'ほかのバッジをすべて獲得した。同じ周波数だね。', hint: 'ほかのバッジをすべて獲得する。' },
+    },
   },
 };
 

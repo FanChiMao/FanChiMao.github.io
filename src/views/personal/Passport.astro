@@ -1,0 +1,594 @@
+---
+/**
+ * /personal/achievements/: the 52Hz Logbook.
+ * The page is static (every stamp rendered as locked); the script fills in what this browser
+ * has collected. Locked stamps show "???" and a hint. Each stamp opens a detail dialog.
+ */
+import { Icon } from 'astro-icon/components';
+import PersonalLayout from '@/layouts/PersonalLayout.astro';
+import { localePath, type Locale } from '@/i18n/ui';
+import { personalUi } from '@/i18n/personal';
+import { ACHIEVEMENTS } from '@/lib/passport';
+import Medal from '@/components/personal/Medal.astro';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const p = personalUi[lang];
+const pp = p.passport;
+const c = p.chapters.secrets;
+---
+
+<PersonalLayout {lang} path="/personal/achievements/" title={c.name} description={c.blurb} overlay={false}>
+  <section class="pass pw-page pw-sea" aria-labelledby="pass-title" data-passport data-progress={pp.progress('{n}', ACHIEVEMENTS.length)} data-unlocked-on={pp.unlockedOn}>
+    <div class="container pass__inner">
+      <header class="pass__head pw-head">
+        <p class="pw-kicker" data-reveal>{pp.kicker}</p>
+        <h1 class="pass__title pw-head__title serif" id="pass-title" data-reveal style="--i:1">{c.name}</h1>
+        <p class="pass__lead pw-head__lead" data-reveal style="--i:2">{pp.lead}</p>
+        <p class="pass__progress" aria-live="polite" data-reveal style="--i:3">
+          <span class="pass__bar" aria-hidden="true"><span></span></span>
+          <span data-progress-text data-swap-skip>{pp.progress(0, ACHIEVEMENTS.length)}</span>
+        </p>
+      </header>
+
+      <p class="pass__unavailable" data-unavailable hidden>{pp.unavailable}</p>
+
+      <ol class="stamps">
+        {
+          ACHIEVEMENTS.map((a, i) => {
+            const it = pp.items[a.id];
+            return (
+              <li class="stamp" data-id={a.id} data-state="locked" style={`--i:${i}`}>
+                <button class="stamp__btn" type="button" aria-haspopup="dialog">
+                  <Medal icon={a.icon} class="stamp__seal" />
+                  <span class="stamp__text">
+                    <strong class="stamp__name">
+                      <span class="stamp__real">{it.name}</span>
+                      <span class="stamp__mask">{pp.locked}</span>
+                    </strong>
+                    <span class="stamp__desc">{it.desc}</span>
+                    <span class="stamp__hint">{it.hint}</span>
+                    <span class="stamp__date" data-swap-skip></span>
+                  </span>
+                </button>
+              </li>
+            );
+          })
+        }
+      </ol>
+
+      <footer class="pass__foot">
+        <a class="btn btn--glass" href={localePath(lang, '/personal/')}>
+          <Icon name="lucide:arrow-up" />
+          {p.stub.back}
+        </a>
+        <button class="btn btn--ghost pass__reset" type="button" data-reset data-label={pp.reset} data-confirm={pp.resetConfirm}>
+          <Icon name="lucide:rotate-ccw" />
+          <span data-reset-label>{pp.reset}</span>
+        </button>
+      </footer>
+    </div>
+
+    <!-- One dialog for every stamp; filled from the clicked stamp. -->
+    <dialog class="stamp-dlg" data-stamp-dialog aria-labelledby="stamp-dlg-name" data-collected={pp.detail.collected} data-locked={pp.detail.locked}>
+      <button class="icon-btn stamp-dlg__close" type="button" data-close aria-label={pp.detail.close}>
+        <Icon name="lucide:x" />
+      </button>
+      <div class="stamp-dlg__seal" data-dlg-seal data-swap-skip aria-hidden="true"></div>
+      <p class="stamp-dlg__status" data-dlg-status data-swap-skip></p>
+      <h2 class="stamp-dlg__name" id="stamp-dlg-name" data-dlg-name data-swap-skip></h2>
+      <p class="stamp-dlg__desc" data-dlg-desc data-swap-skip></p>
+      <div class="stamp-dlg__how" data-dlg-how>
+        <span>{pp.detail.how}</span>
+        <p data-dlg-hint data-swap-skip></p>
+      </div>
+      <div class="stamp-dlg__prog" data-dlg-prog>
+        <span>{pp.detail.progress}</span>
+        <span class="stamp-dlg__bar" aria-hidden="true"><span></span></span>
+        <b data-dlg-count data-swap-skip></b>
+      </div>
+      <p class="stamp-dlg__date" data-dlg-date data-swap-skip></p>
+    </dialog>
+  </section>
+</PersonalLayout>
+
+<script>
+  import { ACHIEVEMENTS, enabled, markSeen, progressOf, reset, unlocked, type AchievementId } from '@/lib/passport';
+
+  const found = document.querySelector<HTMLElement>('[data-passport]');
+  if (found) {
+    const root = found;
+    const stamps = Array.from(root.querySelectorAll<HTMLElement>('.stamp'));
+    const progressText = root.querySelector<HTMLElement>('[data-progress-text]')!;
+    const resetBtn = root.querySelector<HTMLButtonElement>('[data-reset]')!;
+    const resetLabel = resetBtn.querySelector<HTMLElement>('[data-reset-label]')!;
+    const dlg = root.querySelector<HTMLDialogElement>('[data-stamp-dialog]')!;
+    const $ = <T extends HTMLElement = HTMLElement>(sel: string) => dlg.querySelector<T>(sel)!;
+    const dateFmt = () => new Intl.DateTimeFormat(document.documentElement.lang, { year: 'numeric', month: 'long', day: 'numeric' });
+    let openId: AchievementId | null = null;
+
+    const render = () => {
+      const got = unlocked();
+      const n = Object.keys(got).length;
+      const fmt = dateFmt();
+      for (const el of stamps) {
+        const id = el.dataset.id as AchievementId;
+        const at = got[id];
+        el.dataset.state = at ? 'unlocked' : 'locked';
+        el.querySelector<HTMLElement>('.stamp__date')!.textContent = at ? `${root.dataset.unlockedOn} ${fmt.format(at)}` : '';
+        // Being on this page counts as having seen the stamp: no toast for it later.
+        if (at) markSeen(id);
+      }
+      root.style.setProperty('--done', String(n / ACHIEVEMENTS.length));
+      // "n of total" in the current locale's wording (data-progress is swapped with the language).
+      progressText.textContent = (root.dataset.progress ?? '').replace('{n}', String(n));
+      resetBtn.hidden = n === 0;
+      if (openId && dlg.open) fill(openId);
+    };
+
+    /** Copy the stamp's own (localized) text into the dialog, plus live progress. */
+    function fill(id: AchievementId) {
+      const el = stamps.find((s) => s.dataset.id === id)!;
+      const on = el.dataset.state === 'unlocked';
+      const at = unlocked()[id];
+      const text = (sel: string) => el.querySelector<HTMLElement>(sel)?.textContent?.trim() ?? '';
+      dlg.dataset.state = on ? 'unlocked' : 'locked';
+      dlg.dataset.id = id;
+      $('[data-dlg-seal]').replaceChildren(el.querySelector('.stamp__seal')!.cloneNode(true));
+      $('[data-dlg-status]').textContent = (on ? dlg.dataset.collected : dlg.dataset.locked) ?? '';
+      $('[data-dlg-name]').textContent = on ? text('.stamp__real') : text('.stamp__mask');
+      $('[data-dlg-desc]').textContent = on ? text('.stamp__desc') : '';
+      $('[data-dlg-desc]').hidden = !on;
+      $('[data-dlg-hint]').textContent = text('.stamp__hint');
+      const prog = progressOf(id);
+      $('[data-dlg-prog]').hidden = !prog || prog.need <= 1;
+      if (prog) {
+        const have = on ? prog.need : prog.have;
+        $('[data-dlg-count]').textContent = `${have} / ${prog.need}`;
+        $('[data-dlg-prog]').style.setProperty('--p', String(have / prog.need));
+      }
+      $('[data-dlg-date]').textContent = at ? `${root.dataset.unlockedOn} ${dateFmt().format(at)}` : '';
+    }
+
+    // ---- Card flip: the stamp turns edge-on in place, then the dialog turns out of it and
+    // grows to the centre of the screen. Closing plays the same in reverse.
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const P = 'perspective(1000px)';
+    let from: HTMLElement | null = null;
+    let busy = false;
+
+    /** Transform that puts the open dialog exactly over the card, turned edge-on. */
+    const overCard = (card: HTMLElement) => {
+      const r = card.getBoundingClientRect();
+      const d = dlg.getBoundingClientRect();
+      const dx = r.left + r.width / 2 - (d.left + d.width / 2);
+      const dy = r.top + r.height / 2 - (d.top + d.height / 2);
+      return `translate(${dx}px, ${dy}px) scale(${r.width / d.width}, ${r.height / d.height}) ${P} rotateY(-90deg)`;
+    };
+
+    async function openStamp(el: HTMLElement) {
+      if (busy || dlg.open) return;
+      const card = el.querySelector<HTMLElement>('.stamp__btn')!;
+      openId = el.dataset.id as AchievementId;
+      fill(openId);
+      if (reduce) return dlg.showModal();
+      busy = true;
+      from = card;
+      await card.animate([{ transform: `${P} rotateY(0deg)` }, { transform: `${P} rotateY(90deg)` }], { duration: 200, easing: 'cubic-bezier(0.55, 0, 1, 0.45)', fill: 'forwards' }).finished;
+      dlg.showModal();
+      await dlg.animate([{ transform: overCard(card) }, { transform: 'none' }], { duration: 460, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' }).finished;
+      busy = false;
+    }
+
+    async function closeStamp() {
+      if (busy || !dlg.open) return;
+      const card = from;
+      if (reduce || !card) return dlg.close();
+      busy = true;
+      await dlg.animate([{ transform: 'none' }, { transform: overCard(card) }], { duration: 300, easing: 'cubic-bezier(0.55, 0, 1, 0.45)', fill: 'forwards' }).finished;
+      dlg.close();
+      dlg.getAnimations().forEach((a) => a.cancel());
+      card.getAnimations().forEach((a) => a.cancel());
+      await card.animate([{ transform: `${P} rotateY(90deg)` }, { transform: `${P} rotateY(0deg)` }], { duration: 260, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' }).finished;
+      card.focus({ preventScroll: true });
+      from = null;
+      busy = false;
+    }
+
+    for (const el of stamps) el.querySelector('.stamp__btn')!.addEventListener('click', () => openStamp(el));
+    dlg.addEventListener('click', (ev) => {
+      // Backdrop click or the close button.
+      if (ev.target === dlg || (ev.target as Element).closest('[data-close]')) closeStamp();
+    });
+    // Escape: animate instead of the instant native close.
+    dlg.addEventListener('cancel', (ev) => {
+      ev.preventDefault();
+      closeStamp();
+    });
+    dlg.addEventListener('close', () => (openId = null));
+
+    if (!enabled()) {
+      root.querySelector<HTMLElement>('[data-unavailable]')!.hidden = false;
+      resetBtn.hidden = true;
+    } else {
+      render();
+      addEventListener('passport:change', render);
+      // In-place language switch: labels changed, re-render dates, progress and an open dialog.
+      document.addEventListener('langswap', render);
+
+      // Two-step reset instead of a confirm() dialog.
+      let armed = 0;
+      const disarm = () => {
+        clearTimeout(armed);
+        armed = 0;
+        resetLabel.textContent = resetBtn.dataset.label ?? '';
+        resetBtn.classList.remove('is-armed');
+      };
+      resetBtn.addEventListener('click', () => {
+        if (!armed) {
+          resetLabel.textContent = resetBtn.dataset.confirm ?? '';
+          resetBtn.classList.add('is-armed');
+          armed = window.setTimeout(disarm, 4000);
+          return;
+        }
+        disarm();
+        reset();
+      });
+    }
+  }
+</script>
+
+<style>
+  /* Colours as tokens so the page follows the theme: deep sea by night, pale morning sea by day. */
+  .pass {
+    --pass-ink: #e6f1fb;
+    --pass-dim: rgb(230 241 251 / 0.72);
+    --pass-faint: rgb(230 241 251 / 0.5);
+    --pass-line: rgb(255 255 255 / 0.08);
+    --pass-card: rgb(255 255 255 / 0.03);
+    --pass-seal: rgb(255 255 255 / 0.3);
+    --pass-seal-line: rgb(255 255 255 / 0.18);
+    --pass-accent: #7fd8e6;
+    --pass-accent-2: #93a9ff;
+    /* Earned: a gold-tinted card that goes with the gold badge (52Hz: holographic). */
+    --pass-on-card: linear-gradient(160deg, rgb(244 197 90 / 0.12), rgb(244 197 90 / 0.03) 60%);
+    --pass-on-line: rgb(244 197 90 / 0.35);
+    --pass-on-date: #f4c55a;
+    --pass-hz-card: linear-gradient(160deg, rgb(120 190 255 / 0.14), rgb(200 160 255 / 0.06) 60%);
+    --pass-hz-line: rgb(150 190 255 / 0.4);
+    --pass-dlg: #071426;
+    --pass-dlg-on: linear-gradient(170deg, #1a2436, #0b1424 55%);
+    --pass-dlg-hz: linear-gradient(170deg, #142a4a, #0b1424 55%);
+    color: var(--pass-ink);
+  }
+  /* Glass buttons are made for dark backdrops; on the pale morning sea give them dark ink. */
+  :global([data-theme='light']) .pass :global(.btn--glass) {
+    --btn-bg: rgb(255 255 255 / 0.7);
+    --btn-fg: var(--text);
+    border-color: var(--border-strong);
+  }
+  :global([data-theme='light']) .pass {
+    --pass-ink: #0a1626;
+    --pass-dim: #33475f;
+    --pass-faint: #6a7d93;
+    --pass-line: rgb(10 22 38 / 0.1);
+    --pass-card: rgb(255 255 255 / 0.65);
+    --pass-seal: rgb(10 22 38 / 0.28);
+    --pass-seal-line: rgb(10 22 38 / 0.2);
+    --pass-accent: #0b6f8c;
+    --pass-accent-2: #4b5bd0;
+    /* Earned, by day: a clear sea-blue tint (deeper than the white locked cards). */
+    --pass-on-card: linear-gradient(160deg, #e2f0f8, #cde3f1 70%);
+    --pass-on-line: #93bfd8;
+    --pass-on-date: #0b6f8c;
+    --pass-hz-card: linear-gradient(160deg, #e3f1ff, #e8dcff 70%);
+    --pass-hz-line: #9bb7ec;
+    --pass-dlg: #ffffff;
+    --pass-dlg-on: linear-gradient(170deg, #eef6fb, #d6e9f4 70%);
+    --pass-dlg-hz: linear-gradient(170deg, #eef6ff, #e9e0ff 70%);
+  }
+  .pass__inner {
+    display: grid;
+    gap: 2.25rem;
+  }
+  /* Layout comes from .pw-head (personal.css); only the colours are local. */
+  .pass__head :global(.pw-kicker) {
+    color: var(--pass-accent);
+  }
+  .pass__lead {
+    color: var(--pass-dim);
+  }
+  .pass__progress {
+    display: grid;
+    justify-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--pass-dim);
+  }
+  .pass__bar {
+    width: min(18rem, 70vw);
+    height: 4px;
+    border-radius: 999px;
+    background: var(--pass-line);
+    overflow: hidden;
+  }
+  .pass__bar span {
+    display: block;
+    width: calc(var(--done, 0) * 100%);
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--pass-accent), var(--pass-accent-2));
+    transition: width 0.8s var(--ease-out);
+  }
+  .pass__unavailable {
+    justify-self: center;
+    max-width: 34rem;
+    padding: 0.9rem 1.2rem;
+    border: 1px solid var(--pass-line);
+    border-radius: var(--radius);
+    color: var(--pass-dim);
+    text-align: center;
+  }
+
+  .stamps {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5rem), 1fr));
+    gap: 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .stamp {
+    display: grid;
+  }
+  .stamp__btn {
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: 0.9rem;
+    width: 100%;
+    padding: 1.6rem 1.2rem 1.4rem;
+    border: 1px solid var(--pass-line);
+    border-radius: 18px;
+    background: var(--pass-card);
+    color: inherit;
+    font: inherit;
+    text-align: center;
+    cursor: pointer;
+    transition:
+      transform 0.3s var(--ease-out),
+      border-color 0.3s,
+      background-color 0.3s;
+  }
+  .stamp__btn:hover {
+    transform: translateY(-3px);
+    border-color: var(--pass-seal-line);
+  }
+  .stamp__btn:focus-visible {
+    outline: 2px solid var(--pass-accent);
+    outline-offset: 3px;
+  }
+  /* Badge looks live in components/personal/Medal.astro. */
+  .stamp__seal {
+    transition: transform 0.4s var(--ease-out);
+  }
+  .stamp__btn:hover .stamp__seal {
+    transform: translateY(-2px) scale(1.04);
+  }
+  .stamp__text {
+    display: grid;
+    gap: 0.35rem;
+  }
+  .stamp__name {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 650;
+  }
+  .stamp__real,
+  .stamp__desc,
+  .stamp__date {
+    display: none;
+  }
+  .stamp__mask {
+    letter-spacing: 0.2em;
+    color: var(--pass-faint);
+  }
+  .stamp__hint {
+    font-size: 0.88rem;
+    color: var(--pass-faint);
+  }
+  .stamp__desc {
+    font-size: 0.9rem;
+    color: var(--pass-dim);
+  }
+  .stamp__date {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    color: var(--pass-accent);
+  }
+
+  /* Unlocked (on the card, and its copy inside the dialog) */
+  .stamp[data-state='unlocked'] .stamp__btn {
+    border-color: var(--pass-on-line);
+    background: var(--pass-on-card);
+  }
+  .stamp[data-state='unlocked'][data-id='lonely-whale'] .stamp__btn {
+    border-color: var(--pass-hz-line);
+    background: var(--pass-hz-card);
+  }
+  .stamp[data-state='unlocked'] .stamp__date,
+  .stamp-dlg[data-state='unlocked'] .stamp-dlg__date,
+  .stamp-dlg[data-state='unlocked'] .stamp-dlg__status {
+    color: var(--pass-on-date);
+  }
+  .stamp-dlg[data-state='unlocked'] {
+    border-color: var(--pass-on-line);
+    background: var(--pass-dlg-on);
+  }
+  .stamp-dlg[data-state='unlocked'][data-id='lonely-whale'] {
+    border-color: var(--pass-hz-line);
+    background: var(--pass-dlg-hz);
+  }
+  .stamp[data-state='unlocked'] .stamp__seal {
+    animation: stamp-in 0.6s var(--ease-out) both;
+    animation-delay: calc(var(--i) * 60ms);
+  }
+  .stamp[data-state='unlocked'] .stamp__mask,
+  .stamp[data-state='unlocked'] .stamp__hint {
+    display: none;
+  }
+  .stamp[data-state='unlocked'] .stamp__real,
+  .stamp[data-state='unlocked'] .stamp__desc,
+  .stamp[data-state='unlocked'] .stamp__date {
+    display: block;
+  }
+  @keyframes stamp-in {
+    from {
+      scale: 0.6;
+      opacity: 0;
+      rotate: -25deg;
+    }
+  }
+
+  /* Detail dialog */
+  .stamp-dlg {
+    width: min(100% - 2rem, 26rem);
+    padding: 2.2rem 1.6rem 1.6rem;
+    border: 1px solid var(--pass-on-line);
+    border-radius: 22px;
+    background: var(--pass-dlg);
+    color: var(--pass-ink);
+    text-align: center;
+    box-shadow: 0 30px 80px -20px rgb(0 0 0 / 0.55);
+    /* Opening / closing is a card flip driven by the script (Web Animations). */
+    backface-visibility: hidden;
+  }
+  .stamp-dlg[open] {
+    display: grid;
+    justify-items: center;
+    gap: 0.7rem;
+  }
+  .stamp-dlg::backdrop {
+    background: rgb(2 8 20 / 0.6);
+    backdrop-filter: blur(6px);
+    animation: dlg-backdrop 0.4s ease-out;
+  }
+  @keyframes dlg-backdrop {
+    from {
+      opacity: 0;
+    }
+  }
+  .stamp__btn {
+    backface-visibility: hidden;
+  }
+  .stamp-dlg__close {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    color: var(--pass-dim);
+  }
+  .stamp-dlg__seal :global(.medal) {
+    --size: 8rem;
+    animation: none;
+    transform: none;
+  }
+  .stamp-dlg__status {
+    margin-top: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--pass-faint);
+  }
+  .stamp-dlg__name {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+  }
+  .stamp-dlg__desc {
+    color: var(--pass-dim);
+  }
+  .stamp-dlg__how,
+  .stamp-dlg__prog {
+    display: grid;
+    gap: 0.35rem;
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+    background: var(--pass-card);
+    border: 1px solid var(--pass-line);
+  }
+  .stamp-dlg__how > span,
+  .stamp-dlg__prog > span:first-child {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--pass-faint);
+  }
+  .stamp-dlg__how p {
+    color: var(--pass-ink);
+  }
+  .stamp-dlg__prog {
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .stamp-dlg__prog[hidden] {
+    display: none;
+  }
+  .stamp-dlg__bar {
+    height: 5px;
+    border-radius: 999px;
+    background: var(--pass-line);
+    overflow: hidden;
+  }
+  .stamp-dlg__bar span {
+    display: block;
+    width: calc(var(--p, 0) * 100%);
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--pass-accent), var(--pass-accent-2));
+  }
+  .stamp-dlg__prog b {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .stamp-dlg__date {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--pass-accent);
+  }
+  .stamp-dlg__date:empty {
+    display: none;
+  }
+
+  .pass__foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+  .pass__reset {
+    color: var(--pass-dim);
+  }
+  .pass__reset.is-armed {
+    color: #e05656;
+    border-color: rgb(224 86 86 / 0.45);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stamp[data-state='unlocked'] .stamp__seal {
+      animation: none;
+    }
+    .stamp-dlg::backdrop {
+      animation: none;
+    }
+  }
+</style>

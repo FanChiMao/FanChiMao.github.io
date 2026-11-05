@@ -8,15 +8,36 @@ interface Props {
 const { lang } = Astro.props;
 const p = personalUi[lang];
 
-// Star positions of the four chapters inside the constellation box (percent).
+// Star positions of the four chapters inside the constellation box (percent). They float
+// around the whale figure rather than sitting on its lines.
 const pos: Record<string, [number, number]> = {
-  gallery: [14, 16],
-  journey: [66, 30],
-  companion: [30, 62],
-  secrets: [70, 86],
+  gallery: [8, 9],
+  journey: [60, 6],
+  companion: [16, 88],
+  secrets: [64, 91],
 };
 const nodes = chapters.map((c) => ({ ...c, href: localePath(lang, c.path), at: pos[c.id], copy: p.chapters[c.id] }));
-const line = nodes.map((n) => n.at.join(',')).join(' ');
+/*
+ * Star-atlas style figure behind the chapters: a humpback seen from the side, heading left,
+ * tail fluke raised on the right. Drawn in its own 200 x 110 space (kept in proportion).
+ */
+const whale = {
+  body: 'M14 62C18 46 40 36 70 36C100 36 122 40 140 48C150 52 158 54 164 50C170 44 176 34 188 27C186 38 182 46 176 52C184 58 190 66 196 77C184 72 172 64 164 60C150 62 132 70 108 74C80 78 46 78 30 72C22 69 16 66 14 62Z',
+  fin: 'M62 74C66 86 74 96 89 103C85 92 79 82 75 75',
+  dorsal: 'M126 41C130 35 134 34 138 39',
+  grooves: 'M17 64C30 69 46 71 62 71M24 69C38 74 52 75 66 74',
+};
+/** A few faint stars on the figure, as on a star chart. */
+const figureStars: [number, number, number][] = [
+  [14, 62, 1.6],
+  [70, 36, 1.3],
+  [132, 36, 1.4],
+  [188, 27, 1.8],
+  [196, 77, 1.5],
+  [108, 74, 1.2],
+  [89, 103, 1.5],
+  [30, 59, 1.1],
+];
 ---
 
 <section class="abyss" aria-labelledby="abyss-title" data-theme-scene>
@@ -31,8 +52,13 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
 
   <!-- Far away on the horizon: someone in a small boat, drifting slowly left to right. -->
   <div class="abyss__boat-track" aria-hidden="true">
-    <!-- Heading right: raised bow on the right, rower leaning forward, paddle reaching ahead. -->
+    <!-- Heading right: raised bow on the right, rower leaning forward, paddle reaching ahead,
+         and a cat sitting at the stern looking towards them. -->
     <svg class="abyss__boat" viewBox="0 0 60 26">
+      <ellipse cx="10.8" cy="15.9" rx="2.7" ry="3" />
+      <circle cx="12.3" cy="12" r="1.85" />
+      <path d="M10.7 11.1 11 8.9 12.3 10.5Z M12.6 10.4 14 8.8 14.2 11.1Z" />
+      <path d="M8.3 17.6Q5.4 17 6 13.9" stroke-width="0.9" stroke-linecap="round" fill="none" />
       <path d="M2 18.5Q26 20 50 18L58.5 13.5Q56 20.5 51 23.5Q30 25 10 23.8Q4 22 2 18.5Z" />
       <circle cx="24.2" cy="8.4" r="2.3" />
       <path d="M21.2 18.2 22.2 12.6Q24.6 10.6 26.6 12.4L28.6 17.6Z" />
@@ -55,9 +81,12 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
     </div>
 
     <nav class="sky-map" aria-label={p.hero.explore}>
-      <p class="sky-map__hint">{p.hero.explore}</p>
-      <svg class="sky-map__lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        <polyline points={line} />
+      <svg class="sky-map__whale" viewBox="0 0 200 110" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <path class="whale__line" d={whale.body} pathLength="1" />
+        <path class="whale__line whale__line--fine" d={whale.fin} pathLength="1" />
+        <path class="whale__line whale__line--fine" d={whale.dorsal} pathLength="1" />
+        <path class="whale__line whale__line--faint" d={whale.grooves} pathLength="1" />
+        {figureStars.map(([x, y, r], i) => <circle class="whale__star" cx={x} cy={y} r={r} style={`--i:${i}`} />)}
       </svg>
       <ol>
         {
@@ -77,7 +106,7 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
     </nav>
   </div>
 
-  <a class="abyss__dive" href="#why">
+  <a class="abyss__dive" href="#chapters">
     <span>{p.hero.scroll}</span>
     <span class="abyss__dive-line" aria-hidden="true"></span>
   </a>
@@ -127,6 +156,8 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
     let stars: Star[] = [];
     let glints: Glint[] = [];
     let shoot: { x: number; y: number; vx: number; vy: number; t0: number } | null = null;
+    /** A caught shooting star bursts into a small ring of sparks (52Hz Logbook: Stargazer). */
+    let caught: { x: number; y: number; t0: number } | null = null;
     let nextShoot = performance.now() + 4000 + Math.random() * 6000;
 
     const seed = () => {
@@ -176,6 +207,26 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
         ctx.fillStyle = `rgba(170, 215, 255, ${a.toFixed(3)})`;
         ctx.fillRect(g.x - g.len / 2, g.y, g.len, 1);
       }
+      if (caught) {
+        const k = (t - caught.t0) / 700;
+        if (k >= 1) caught = null;
+        else {
+          const a = 1 - k;
+          ctx.strokeStyle = `rgba(235, 245, 255, ${(a * 0.9).toFixed(3)})`;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.arc(caught.x, caught.y, 4 + k * 26, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.fillStyle = `rgba(255, 236, 190, ${a.toFixed(3)})`;
+          for (let i = 0; i < 8; i++) {
+            const ang = (i / 8) * Math.PI * 2;
+            const d = 6 + k * 34;
+            ctx.beginPath();
+            ctx.arc(caught.x + Math.cos(ang) * d, caught.y + Math.sin(ang) * d, 1.4 * a + 0.3, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
       if (shoot) {
         const k = (t - shoot.t0) / 900;
         if (k >= 1) shoot = null;
@@ -195,6 +246,30 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
         }
       }
     };
+
+    // Click (or tap) a shooting star while it is still visible to catch it.
+    hero.addEventListener('pointerdown', (ev) => {
+      if (!shoot || (ev.target as Element).closest('a, button')) return;
+      const now = performance.now();
+      const k = (now - shoot.t0) / 900;
+      if (k < 0 || k >= 1) return;
+      const r = canvas.getBoundingClientRect();
+      const px = ev.clientX - r.left;
+      const py = ev.clientY - r.top;
+      const hx = shoot.x + shoot.vx * k;
+      const hy = shoot.y + shoot.vy * k;
+      const tx = hx - shoot.vx * 0.25;
+      const ty = hy - shoot.vy * 0.25;
+      // Distance from the pointer to the visible streak (head -> tail segment).
+      const dx = tx - hx;
+      const dy = ty - hy;
+      const u = Math.max(0, Math.min(1, ((px - hx) * dx + (py - hy) * dy) / (dx * dx + dy * dy || 1)));
+      const dist = Math.hypot(px - (hx + u * dx), py - (hy + u * dy));
+      if (dist > (ev.pointerType === 'touch' ? 56 : 40)) return;
+      caught = { x: hx, y: hy, t0: now };
+      shoot = null;
+      canvas.dispatchEvent(new CustomEvent('meteor', { bubbles: true }));
+    });
 
     const resize = () => {
       const dpr = Math.min(devicePixelRatio || 1, 1.5);
@@ -412,24 +487,50 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
     color: rgb(150 214 255 / 0.5);
     animation: rise 1s 0.9s var(--ease-out) both;
   }
-  .sky-map__lines {
+  .sky-map__whale {
     position: absolute;
-    inset: 0;
+    inset: 10% -2% 10% 2%;
     width: 100%;
-    height: 100%;
+    height: 80%;
     overflow: visible;
+    pointer-events: none;
   }
-  .sky-map__lines polyline {
+  .whale__line {
     fill: none;
-    stroke: rgb(160 210 245 / 0.28);
-    stroke-width: 1;
-    vector-effect: non-scaling-stroke;
-    animation: appear-line 1.6s 1.4s var(--ease-out) both;
+    stroke: rgb(170 215 250 / 0.32);
+    /* In viewBox units (the figure scales uniformly). No non-scaling-stroke here: with it,
+       Chromium measures the dash in screen pixels instead of pathLength and the tail stays hidden. */
+    stroke-width: 0.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    /* Drawn in, like a pen tracing the chart. */
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: draw-whale 2.8s 1.1s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+    transition: stroke 2.4s;
   }
-  @keyframes appear-line {
-    from {
-      opacity: 0;
+  .whale__line--fine {
+    stroke-width: 0.42;
+    animation-delay: 2.2s;
+    animation-duration: 1.6s;
+  }
+  .whale__line--faint {
+    stroke: rgb(170 215 250 / 0.16);
+    stroke-width: 0.38;
+    stroke-dasharray: 1;
+    animation-delay: 2.6s;
+    animation-duration: 1.4s;
+  }
+  @keyframes draw-whale {
+    to {
+      stroke-dashoffset: 0;
     }
+  }
+  .whale__star {
+    fill: rgb(225 240 255 / 0.85);
+    filter: drop-shadow(0 0 2px rgb(150 205 255 / 0.8));
+    animation: appear 0.8s calc(1.4s + var(--i) * 0.12s) var(--ease-out) both;
+    transition: fill 2.4s;
   }
   .sky-map ol {
     list-style: none;
@@ -512,8 +613,7 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
   .sky-node__kind {
     font-family: var(--font-mono);
     font-size: 0.68rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
+    letter-spacing: 0.14em;
     color: rgb(150 214 255 / 0.6);
     transition: color 0.3s;
   }
@@ -718,8 +818,15 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
   :global([data-theme='light']) .abyss__dive-line {
     background: linear-gradient(to bottom, rgb(16 33 58 / 0.6), transparent);
   }
-  :global([data-theme='light']) .sky-map__lines polyline {
-    stroke: rgb(16 33 58 / 0.24);
+  :global([data-theme='light']) .whale__line {
+    stroke: rgb(16 33 58 / 0.26);
+  }
+  :global([data-theme='light']) .whale__line--faint {
+    stroke: rgb(16 33 58 / 0.14);
+  }
+  :global([data-theme='light']) .whale__star {
+    fill: rgb(16 33 58 / 0.5);
+    filter: drop-shadow(0 0 2px rgb(255 180 100 / 0.6));
   }
   :global([data-theme='light']) .sky-node__name {
     color: #10213a;
@@ -763,7 +870,7 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
       position: static;
       margin-bottom: 0.75rem;
     }
-    .sky-map__lines {
+    .sky-map__whale {
       display: none;
     }
     .sky-map ol {
@@ -782,6 +889,10 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .whale__line {
+      animation: none;
+      stroke-dashoffset: 0;
+    }
     .abyss__dive-line,
     .abyss__boat {
       animation: none;
@@ -795,7 +906,7 @@ const line = nodes.map((n) => n.at.join(',')).join(' ');
     .abyss__day {
       transition: none !important;
     }
-    .sky-map__lines polyline,
+    .whale__star,
     .sky-map li,
     .abyss__copy > * {
       animation: none;

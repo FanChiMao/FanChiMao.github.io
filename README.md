@@ -57,13 +57,23 @@ Lower `order` shows first. The first 4 cards are shown; the rest sit behind "Loa
 
 ### Add photos to an album
 
-Drop the file into `src/assets/gallery/<album>/` and append an entry to `photos` in `src/content/albums/<album>.json`:
+1. Drop the photos into `src/assets/gallery/<album>/` (a new folder makes a new album).
+2. Run `npm run photos`. It
+   - removes GPS location from each photo **losslessly** (only the metadata is rewritten, the image data is untouched),
+   - appends new photos to `src/content/albums/<album>.json` with the date taken and camera settings (shown in the lightbox),
+   - creates a draft album JSON for a new folder (fill in `title`, `emoji`, `categories`, then remove `draft`).
+3. Add a caption, `title` or `description` by hand if you like; the script never overwrites them.
+   `npm run photos -- --refresh` re-reads date and EXIF for photos already listed.
 
 ```json
 { "src": "gallery/ramen/00026.jpg", "caption": ["Shop name", "2025.01.01"], "link": "https://maps.app.goo.gl/…" }
 ```
 
-Albums with `"draft": true` (snapshot, nature, animals) are hidden until they have real content.
+Every build runs `npm run photos:check` first and fails if any image under `src/assets` or `public` still carries GPS, so a location can never be deployed by accident. The repo is public: run `npm run photos` **before committing** new photos.
+
+### Explorer Passport (achievements)
+
+Rules live in `src/lib/passport.ts` (`ACHIEVEMENTS`); texts in `src/i18n/personal.ts` (`passport.items`). Components only report events with `track('event', 'detail')`. Progress is stored in the visitor's localStorage; the page is `/personal/achievements/`.
 
 ## URLs
 

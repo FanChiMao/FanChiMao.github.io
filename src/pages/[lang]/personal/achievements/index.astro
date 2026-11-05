@@ -1,0 +1,11 @@
+---
+import Passport from '@/views/personal/Passport.astro';
+import { locales, defaultLocale, type Locale } from '@/i18n/ui';
+
+export function getStaticPaths() {
+  return locales.filter((l) => l !== defaultLocale).map((lang) => ({ params: { lang } }));
+}
+const lang = Astro.params.lang as Locale;
+---
+
+<Passport {lang} />
