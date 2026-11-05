@@ -1,5 +1,11 @@
 {
   "date": "2025-10-27",
+  "title": {
+    "en": "The hardest decision",
+    "zh-tw": "最難的決定",
+    "zh-cn": "最难的决定",
+    "ja": "いちばんつらい決断"
+  },
   "cover": {
     "src": "ajie/2025-10-27-the-decision/cover.jpg",
     "alt": {

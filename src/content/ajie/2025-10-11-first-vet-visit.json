@@ -1,5 +1,11 @@
 {
   "date": "2025-10-11",
+  "title": {
+    "en": "First trip to the vet",
+    "zh-tw": "第一次看醫生",
+    "zh-cn": "第一次看医生",
+    "ja": "はじめての動物病院"
+  },
   "cover": {
     "src": "ajie/2025-10-11-first-vet-visit/cover.jpg",
     "alt": {
@@ -10,6 +16,16 @@
     }
   },
   "media": [
+    {
+      "type": "image",
+      "src": "ajie/2025-10-11-first-vet-visit/04-litter-box.jpg",
+      "alt": {
+        "en": "Ajie sitting in the litter box with a squinty right eye",
+        "zh-tw": "阿桔坐在貓砂盆裡，右眼微微瞇著",
+        "zh-cn": "阿桔坐在猫砂盆里，右眼微微眯着",
+        "ja": "右目を少し細めて猫砂トイレに座るアジエ"
+      }
+    },
     {
       "type": "image",
       "src": "ajie/2025-10-11-first-vet-visit/01-lap-rest.jpg",
@@ -38,16 +54,6 @@
         "zh-tw": "阿桔在木櫃裡安心午睡",
         "zh-cn": "阿桔在木柜里安心午睡",
         "ja": "木の棚で安心して昼寝するアジエ"
-      }
-    },
-    {
-      "type": "image",
-      "src": "ajie/2025-10-11-first-vet-visit/04-litter-box.jpg",
-      "alt": {
-        "en": "Ajie sitting in the litter box with a squinty right eye",
-        "zh-tw": "阿桔坐在貓砂盆裡，右眼微微瞇著",
-        "zh-cn": "阿桔坐在猫砂盆里，右眼微微眯着",
-        "ja": "右目を少し細めて猫砂トイレに座るアジエ"
       }
     },
     {

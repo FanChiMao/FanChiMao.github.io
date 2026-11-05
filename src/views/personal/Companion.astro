@@ -98,7 +98,7 @@ const bio = pick(ajieProfile.bio);
               const caption = pick(post.data.caption) ?? '';
               return (
                 <li data-reveal style={`--i:${i % 3}`}>
-                  <button class="ajie__tile" type="button" data-open={i} aria-label={`${p.ajie.open}: ${day(post.data.date)}, ${caption.slice(0, 60)}`}>
+                  <button class="ajie__tile" type="button" data-open={i} aria-label={`${p.ajie.open}: ${pick(post.data.title) ?? caption.slice(0, 60)}, ${day(post.data.date)}`}>
                     {post.data.cover && <Image class="ajie__thumb ajie__thumb--ai" src={asset(post.data.cover.src)} alt="" widths={[320, 480, 720]} sizes="(min-width: 900px) 33vw, 50vw" quality={74} loading={i < 6 ? 'eager' : 'lazy'} />}
                     <Image class:list={['ajie__thumb', 'ajie__thumb--real', { 'ajie__thumb--behind-ai': post.data.cover }]} src={asset(thumbOf(first)!)} alt="" widths={[320, 480, 720]} sizes="(min-width: 900px) 33vw, 50vw" quality={74} loading={i < 6 ? 'eager' : 'lazy'} />
                     {post.data.cover && <span class="ajie__badge ajie__badge--ai" aria-hidden="true"><Icon name="lucide:copy" /></span>}
@@ -126,38 +126,40 @@ const bio = pick(ajieProfile.bio);
         const caption = pick(post.data.caption) ?? '';
         const place = pick(post.data.location);
         return (
-          <dialog class="ajie-post" data-post={i} data-slug={post.id} aria-label={`${c.name} · ${day(post.data.date)}`}>
+          <dialog class="ajie-post" data-post={i} data-slug={post.id} aria-label={`${pick(post.data.title) ?? c.name} · ${day(post.data.date)}`}>
             <div class="ajie-post__media">
               <PostMedia {lang} media={post.data.cover ? [{ type: 'image', src: post.data.cover.src, alt: post.data.cover.alt, fit: 'contain' }, ...post.data.media] : post.data.media} firstIsAi={Boolean(post.data.cover)} label={`${c.name} · ${day(post.data.date)}`} ratio="4 / 5" sizes="(min-width: 900px) 520px, 100vw" />
             </div>
             <div class="ajie-post__text">
               <header class="ajie-post__head">
-                <span class="ajie-post__who">{c.name}</span>
-                {place && (
-                  <span class="ajie-post__place">
-                    <Icon name="lucide:map-pin" />
-                    {place}
-                  </span>
-                )}
+                <h2 class="ajie-post__who">{pick(post.data.title) ?? c.name}</h2>
+                <p class="ajie-post__meta">
+                  <time class="ajie-post__date" datetime={post.data.date}>
+                    {day(post.data.date)}
+                  </time>
+                  {place && (
+                    <span class="ajie-post__place">
+                      <Icon name="lucide:map-pin" />
+                      {place}
+                    </span>
+                  )}
+                </p>
               </header>
               <div class="ajie-post__caption">
                 {caption.split(/\n{2,}/).map((para) => (
                   <p>{para}</p>
                 ))}
               </div>
-              <footer class="ajie-post__foot">
-                {statsEnabled && (
+              {statsEnabled && (
+                <footer class="ajie-post__foot">
                   <button class="ajie-like" type="button" data-like={post.id} aria-pressed="false" aria-label={p.ajie.like} data-label-on={p.ajie.unlike} data-label-off={p.ajie.like} data-count-label={p.ajie.likes(0)} hidden>
                     <svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
                     <span class="ajie-like__count" data-like-count data-swap-skip>
                       0
                     </span>
                   </button>
-                )}
-                <time class="ajie-post__date" datetime={post.data.date}>
-                  {day(post.data.date)}
-                </time>
-              </footer>
+                </footer>
+              )}
             </div>
             <button class="icon-btn ajie-post__close" type="button" data-close aria-label={p.posts.close}>
               <Icon name="lucide:x" />
@@ -527,8 +529,18 @@ const bio = pick(ajieProfile.bio);
     border-bottom: 1px solid var(--border);
   }
   .ajie-post__who {
+    margin: 0;
     font-family: var(--font-display);
+    font-size: 1.15rem;
     font-weight: 650;
+    line-height: 1.35;
+  }
+  .ajie-post__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.9rem;
+    margin: 0.15rem 0 0;
   }
   .ajie-post__place {
     display: inline-flex;
@@ -629,6 +641,10 @@ const bio = pick(ajieProfile.bio);
     height: 0.95rem;
     fill: #fff;
     stroke: #fff;
+  }
+  /* Only the like button lives down here: no button (likes off for this browser), no footer. */
+  .ajie-post__foot:not(:has(.ajie-like:not([hidden]))) {
+    display: none;
   }
   .ajie-post__date {
     font-family: var(--font-mono);

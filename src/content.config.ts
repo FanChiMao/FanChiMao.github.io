@@ -162,6 +162,8 @@ const ajie = defineCollection({
   loader: glob({ pattern: '*.json', base: './src/content/ajie' }),
   schema: z.object({
     date: z.iso.date(),
+    /** Short headline shown at the top of the post (falls back to Ajie's name). */
+    title: textOrT.optional(),
     media: z.array(media).min(1),
     /** Illustrated cover: the grid thumbnail and the first slide of the post. */
     cover: z.object({ src: asset, alt: textOrT.optional() }).optional(),

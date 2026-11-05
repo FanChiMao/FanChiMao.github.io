@@ -1,5 +1,11 @@
 {
   "date": "2025-10-26",
+  "title": {
+    "en": "The cone and the eye drops",
+    "zh-tw": "頭套與眼藥水",
+    "zh-cn": "头套与眼药水",
+    "ja": "カラーと目薬"
+  },
   "cover": {
     "src": "ajie/2025-10-26-eye-specialist/cover.jpg",
     "alt": {
@@ -12,22 +18,22 @@
   "media": [
     {
       "type": "image",
-      "src": "ajie/2025-10-26-eye-specialist/01-cone-close-up.jpg",
-      "alt": {
-        "en": "Ajie dozing in his cone on a plaid blanket",
-        "zh-tw": "阿桔戴著頭套，在格紋被上打盹",
-        "zh-cn": "阿桔戴着头套，在格纹被子上打盹",
-        "ja": "チェックの布団の上で、エリザベスカラーをつけてうとうとするアジエ"
-      }
-    },
-    {
-      "type": "image",
       "src": "ajie/2025-10-26-eye-specialist/02-lap-blep.jpg",
       "alt": {
         "en": "Ajie asleep on my lap in his cone, the tip of his tongue poking out",
         "zh-tw": "阿桔戴著頭套在我腿上睡著，舌尖露在外面",
         "zh-cn": "阿桔戴着头套在我腿上睡着，舌尖露在外面",
         "ja": "カラーをつけたまま僕のひざで眠るアジエ。舌の先がちょこんと出ている"
+      }
+    },
+    {
+      "type": "image",
+      "src": "ajie/2025-10-26-eye-specialist/01-cone-close-up.jpg",
+      "alt": {
+        "en": "Ajie dozing in his cone on a plaid blanket",
+        "zh-tw": "阿桔戴著頭套，在格紋被上打盹",
+        "zh-cn": "阿桔戴着头套，在格纹被子上打盹",
+        "ja": "チェックの布団の上で、エリザベスカラーをつけてうとうとするアジエ"
       }
     },
     {
