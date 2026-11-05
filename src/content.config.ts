@@ -160,8 +160,12 @@ const media = z.discriminatedUnion('type', [
 /** Ajie, the orange tabby: posts shown as an IG-style profile grid. */
 const ajie = defineCollection({
   loader: glob({ pattern: '*.json', base: './src/content/ajie' }),
-  schema: z.object({
+  schema: z
+    .object({
+    /** Last day the post covers (posts are written up after a stretch of days). Sorts the grid. */
     date: z.iso.date(),
+    /** First day the post covers, when it is a period, e.g. 2025-10-05 for "5 to 11 October". */
+    from: z.iso.date().optional(),
     /** Short headline shown at the top of the post (falls back to Ajie's name). */
     title: textOrT.optional(),
     media: z.array(media).min(1),
@@ -172,7 +176,8 @@ const ajie = defineCollection({
     /** Pinned posts stay at the front of the grid. */
     pinned: z.boolean().optional(),
     draft: z.boolean().optional(),
-  }),
+    })
+    .refine((d) => !d.from || d.from <= d.date, { message: '`from` must be on or before `date`', path: ['from'] }),
 });
 
 export const journeyCategories = ['run', 'dive', 'jump', 'hike', 'ride', 'travel', 'other'] as const;

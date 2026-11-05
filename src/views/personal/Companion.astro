@@ -25,6 +25,21 @@ const c = p.chapters.companion;
 const pick = (v: string | Record<Locale, string> | null | undefined) => (v == null ? undefined : typeof v === 'string' ? v : v[lang]);
 const fmt = new Intl.DateTimeFormat(localeMeta[lang].htmlLang, { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
 const day = (iso: string) => (/^\d{4}$/.test(iso) ? iso : fmt.format(new Date(`${iso}T00:00:00Z`)));
+const utc = (iso: string) => new Date(`${iso}T00:00:00Z`);
+/**
+ * The days a post covers, e.g. "Oct 5 – 11, 2025" / "2025年10月5日 – 11日". English uses Intl's
+ * range format; Node's ICU collapses CJK ranges to "2025/10/5至2025/10/11", so those are built here.
+ */
+const when = (d: { from?: string; date: string }) => {
+  if (!d.from || d.from === d.date) return day(d.date);
+  if (lang === 'en') return fmt.formatRange(utc(d.from), utc(d.date));
+  const [y1, m1, d1] = d.from.split('-').map(Number);
+  const [y2, m2, d2] = d.date.split('-').map(Number);
+  const sep = lang === 'ja' ? '～' : ' – ';
+  if (y1 !== y2) return `${day(d.from)}${sep}${day(d.date)}`;
+  if (m1 !== m2) return `${y1}年${m1}月${d1}日${sep}${m2}月${d2}日`;
+  return `${y1}年${m1}月${d1}日${sep}${d2}日`;
+};
 
 const posts = (await getCollection('ajie', ({ data }) => !data.draft)).sort((a, b) => Number(!!b.data.pinned) - Number(!!a.data.pinned) || b.data.date.localeCompare(a.data.date));
 const hasAiCovers = posts.some((post) => Boolean(post.data.cover));
@@ -41,27 +56,44 @@ const facts = [
 ].filter(Boolean) as { label: string; value: string; sex?: 'male' | 'female' }[];
 const bio = pick(ajieProfile.bio);
 
-// Calendar view: one month grid per month with posts, newest month first. Weeks start on
-// Sunday; dates are plain calendar days (UTC, like the post dates).
+// Calendar view: one month at a time (switchable), from the first post's month to the last's.
+// Weeks start on Sunday; dates are plain calendar days (UTC, like the post dates). A post covers
+// its period (from .. date): the first day shows its thumbnail, the other days a band.
 const monthFmt = new Intl.DateTimeFormat(localeMeta[lang].htmlLang, { year: 'numeric', month: 'long', timeZone: 'UTC' });
 const weekdayFmt = new Intl.DateTimeFormat(localeMeta[lang].htmlLang, { weekday: 'narrow', timeZone: 'UTC' });
 // 2023-01-01 was a Sunday.
 const weekdays = Array.from({ length: 7 }, (_, i) => weekdayFmt.format(new Date(Date.UTC(2023, 0, 1 + i))));
-const byDay = new Map<string, number[]>();
-posts.forEach((post, i) => byDay.set(post.data.date, [...(byDay.get(post.data.date) ?? []), i]));
-const months = [...new Set(posts.map((post) => post.data.date.slice(0, 7)))]
-  .sort()
-  .reverse()
-  .map((ym) => {
-    const [y, m] = ym.split('-').map(Number);
-    const lead = new Date(Date.UTC(y, m - 1, 1)).getUTCDay();
-    const days = new Date(Date.UTC(y, m, 0)).getUTCDate();
+const iso = (t: Date) => t.toISOString().slice(0, 10);
+/** Day -> posts covering it, oldest-starting first. */
+const cover = new Map<string, number[]>();
+posts.forEach((post, i) => {
+  for (let t = utc(post.data.from ?? post.data.date); t <= utc(post.data.date); t.setUTCDate(t.getUTCDate() + 1)) {
+    const k = iso(t);
+    cover.set(k, [...(cover.get(k) ?? []), i]);
+  }
+});
+for (const list of cover.values()) list.sort((a, b) => (posts[a].data.from ?? posts[a].data.date).localeCompare(posts[b].data.from ?? posts[b].data.date));
+const starts = posts.map((post) => post.data.from ?? post.data.date);
+const span = posts.length ? [starts.reduce((a, b) => (a < b ? a : b)), posts.map((post) => post.data.date).reduce((a, b) => (a > b ? a : b))] : null;
+const months: { ym: string; label: string; lead: number; cells: { day: number; iso: string; post?: number; start: boolean; end: boolean; more: number }[] }[] = [];
+if (span) {
+  for (let t = utc(`${span[0].slice(0, 7)}-01`); iso(t).slice(0, 7) <= span[1].slice(0, 7); t.setUTCMonth(t.getUTCMonth() + 1)) {
+    const y = t.getUTCFullYear();
+    const m = t.getUTCMonth();
+    const ym = iso(t).slice(0, 7);
+    const lead = t.getUTCDay();
+    const days = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
     const cells = Array.from({ length: days }, (_, d) => {
-      const iso = `${ym}-${String(d + 1).padStart(2, '0')}`;
-      return { day: d + 1, iso, posts: byDay.get(iso) ?? [] };
+      const k = `${ym}-${String(d + 1).padStart(2, '0')}`;
+      const list = cover.get(k) ?? [];
+      const pi = list[0];
+      if (pi === undefined) return { day: d + 1, iso: k, start: false, end: false, more: 0 };
+      const post = posts[pi].data;
+      return { day: d + 1, iso: k, post: pi, start: k === (post.from ?? post.date), end: k === post.date, more: list.length - 1 };
     });
-    return { ym, label: monthFmt.format(new Date(Date.UTC(y, m - 1, 1))), lead, cells };
-  });
+    months.push({ ym, label: monthFmt.format(t), lead, cells });
+  }
+}
 ---
 
 <PersonalLayout {lang} path="/personal/companion/" title={c.name} description={c.blurb} overlay={false} noindex={posts.length === 0}>
@@ -130,7 +162,7 @@ const months = [...new Set(posts.map((post) => post.data.date.slice(0, 7)))]
               const caption = pick(post.data.caption) ?? '';
               return (
                 <li data-reveal style={`--i:${i % 3}`}>
-                  <button class="ajie__tile" type="button" data-open={i} aria-label={`${p.ajie.open}: ${pick(post.data.title) ?? caption.slice(0, 60)}, ${day(post.data.date)}`}>
+                  <button class="ajie__tile" type="button" data-open={i} aria-label={`${p.ajie.open}: ${pick(post.data.title) ?? caption.slice(0, 60)}, ${when(post.data)}`}>
                     {post.data.cover && <Image class="ajie__thumb ajie__thumb--ai" src={asset(post.data.cover.src)} alt="" widths={[320, 480, 720]} sizes="(min-width: 900px) 33vw, 50vw" quality={74} loading={i < 6 ? 'eager' : 'lazy'} />}
                     <Image class:list={['ajie__thumb', 'ajie__thumb--real', { 'ajie__thumb--behind-ai': post.data.cover }]} src={asset(thumbOf(first)!)} alt="" widths={[320, 480, 720]} sizes="(min-width: 900px) 33vw, 50vw" quality={74} loading={i < 6 ? 'eager' : 'lazy'} />
                     {post.data.cover && <span class="ajie__badge ajie__badge--ai" aria-hidden="true"><Icon name="lucide:copy" /></span>}
@@ -138,7 +170,7 @@ const months = [...new Set(posts.map((post) => post.data.date.slice(0, 7)))]
                     <span class="ajie__hover" aria-hidden="true">
                       <span class="ajie__tile-text">
                         {post.data.title && <span class="ajie__tile-title">{pick(post.data.title)}</span>}
-                        <span>{day(post.data.date)}</span>
+                        <span>{when(post.data)}</span>
                       </span>
                       {statsEnabled && (
                         <span class="ajie__tile-likes" data-tile-likes={post.id} data-swap-skip hidden>
@@ -152,10 +184,19 @@ const months = [...new Set(posts.map((post) => post.data.date.slice(0, 7)))]
               );
             })}
           </ul>
-          <div class="ajie__cal">
+          <div class="ajie__cal" data-cal>
+            <div class="ajie__cal-nav" data-cal-nav hidden>
+              <button type="button" class="ajie__cal-step" data-cal-step="-1" aria-label={p.ajie.prevMonth} title={p.ajie.prevMonth}>
+                <Icon name="lucide:chevron-left" />
+              </button>
+              <p class="ajie__month-name" data-cal-label aria-live="polite" data-swap-skip />
+              <button type="button" class="ajie__cal-step" data-cal-step="1" aria-label={p.ajie.nextMonth} title={p.ajie.nextMonth}>
+                <Icon name="lucide:chevron-right" />
+              </button>
+            </div>
             {months.map((mo) => (
-              <section class="ajie__month" aria-label={mo.label}>
-                <h2 class="ajie__month-name">{mo.label}</h2>
+              <section class="ajie__month" data-month={mo.ym} data-label={mo.label} aria-label={mo.label}>
+                <h2 class="ajie__month-name ajie__month-title">{mo.label}</h2>
                 <ol class="ajie__days">
                   {weekdays.map((w) => (
                     <li class="ajie__weekday" aria-hidden="true">
@@ -164,24 +205,26 @@ const months = [...new Set(posts.map((post) => post.data.date.slice(0, 7)))]
                   ))}
                   {mo.cells.map((cell, k) => {
                     const lead = k === 0 && mo.lead ? `grid-column-start:${mo.lead + 1}` : undefined;
-                    if (!cell.posts.length)
+                    if (cell.post === undefined)
                       return (
                         <li class="ajie__day" style={lead}>
                           <span class="ajie__day-num">{cell.day}</span>
                         </li>
                       );
-                    const i = cell.posts[0];
-                    const post = posts[i];
+                    const post = posts[cell.post];
                     const first = post.data.media[0];
+                    const wd = (mo.lead + k) % 7;
+                    // Band edges: rounded where the period starts / ends, or the week wraps.
+                    const cls = ['ajie__day', 'ajie__day--post', cell.start ? 'is-start' : 'is-mid', { 'is-from': cell.start || wd === 0, 'is-to': cell.end || wd === 6 }];
                     return (
-                      <li class="ajie__day ajie__day--post" style={lead}>
-                        <button class="ajie__day-btn" type="button" data-open={i} aria-label={`${p.ajie.open}: ${pick(post.data.title) ?? day(post.data.date)}, ${day(post.data.date)}`}>
-                          {post.data.cover && <Image class="ajie__thumb ajie__thumb--ai" src={asset(post.data.cover.src)} alt="" widths={[160, 320]} sizes="(min-width: 900px) 130px, 14vw" quality={70} loading="lazy" />}
-                          <Image class:list={['ajie__thumb', 'ajie__thumb--real', { 'ajie__thumb--behind-ai': post.data.cover }]} src={asset(thumbOf(first)!)} alt="" widths={[160, 320]} sizes="(min-width: 900px) 130px, 14vw" quality={70} loading="lazy" />
+                      <li class:list={cls} style={lead}>
+                        <button class="ajie__day-btn" type="button" data-open={cell.post} aria-label={`${p.ajie.open}: ${pick(post.data.title) ?? when(post.data)}, ${when(post.data)}`}>
+                          {cell.start && post.data.cover && <Image class="ajie__thumb ajie__thumb--ai" src={asset(post.data.cover.src)} alt="" widths={[160, 320]} sizes="(min-width: 900px) 90px, 14vw" quality={70} loading="lazy" />}
+                          {cell.start && <Image class:list={['ajie__thumb', 'ajie__thumb--real', { 'ajie__thumb--behind-ai': post.data.cover }]} src={asset(thumbOf(first)!)} alt="" widths={[160, 320]} sizes="(min-width: 900px) 90px, 14vw" quality={70} loading="lazy" />}
                           <span class="ajie__day-num" aria-hidden="true">{cell.day}</span>
-                          {cell.posts.length > 1 && (
+                          {cell.more > 0 && (
                             <span class="ajie__day-more" aria-hidden="true">
-                              +{cell.posts.length - 1}
+                              +{cell.more}
                             </span>
                           )}
                         </button>
@@ -202,9 +245,9 @@ const months = [...new Set(posts.map((post) => post.data.date.slice(0, 7)))]
         const caption = pick(post.data.caption) ?? '';
         const place = pick(post.data.location);
         return (
-          <dialog class="ajie-post" data-post={i} data-slug={post.id} aria-label={`${c.name}${post.data.title ? ` – ${pick(post.data.title)}` : ''} · ${day(post.data.date)}`}>
+          <dialog class="ajie-post" data-post={i} data-slug={post.id} aria-label={`${c.name}${post.data.title ? ` – ${pick(post.data.title)}` : ''} · ${when(post.data)}`}>
             <div class="ajie-post__media">
-              <PostMedia {lang} media={post.data.cover ? [{ type: 'image', src: post.data.cover.src, alt: post.data.cover.alt, fit: 'contain' }, ...post.data.media] : post.data.media} firstIsAi={Boolean(post.data.cover)} label={`${c.name} · ${day(post.data.date)}`} ratio="4 / 5" sizes="(min-width: 900px) 520px, 100vw" />
+              <PostMedia {lang} media={post.data.cover ? [{ type: 'image', src: post.data.cover.src, alt: post.data.cover.alt, fit: 'contain' }, ...post.data.media] : post.data.media} firstIsAi={Boolean(post.data.cover)} label={`${c.name} · ${when(post.data)}`} ratio="4 / 5" sizes="(min-width: 900px) 520px, 100vw" />
             </div>
             <div class="ajie-post__text">
               <header class="ajie-post__head">
@@ -219,8 +262,8 @@ const months = [...new Set(posts.map((post) => post.data.date.slice(0, 7)))]
                   )}
                 </h2>
                 <p class="ajie-post__meta">
-                  <time class="ajie-post__date" datetime={post.data.date}>
-                    {day(post.data.date)}
+                  <time class="ajie-post__date" datetime={post.data.from ? `${post.data.from}/${post.data.date}` : post.data.date}>
+                    {when(post.data)}
                   </time>
                   {place && (
                     <span class="ajie-post__place">
@@ -271,6 +314,28 @@ const months = [...new Set(posts.map((post) => post.data.date.slice(0, 7)))]
   import { canLike, getLikes, likedPosts, setLike, startSync, statsEnabled } from '@/lib/passport-stats';
   const root = document.querySelector<HTMLElement>('[data-ajie]');
   if (root) {
+    // ---- Calendar months: one at a time, newest first; the arrows step through them.
+    const cal = root.querySelector<HTMLElement>('[data-cal]');
+    const monthEls = Array.from(root.querySelectorAll<HTMLElement>('[data-month]'));
+    let month = monthEls.length - 1;
+    const paintMonth = () => {
+      if (!cal || !monthEls.length) return;
+      cal.classList.add('is-paged');
+      root.querySelector<HTMLElement>('[data-cal-nav]')!.hidden = false;
+      monthEls.forEach((el, k) => (el.hidden = k !== month));
+      root.querySelector('[data-cal-label]')!.textContent = monthEls[month].dataset.label ?? '';
+      root.querySelectorAll<HTMLButtonElement>('[data-cal-step]').forEach((b) => (b.disabled = month + Number(b.dataset.calStep) < 0 || month + Number(b.dataset.calStep) >= monthEls.length));
+    };
+    root.querySelectorAll<HTMLButtonElement>('[data-cal-step]').forEach((b) =>
+      b.addEventListener('click', () => {
+        month = Math.min(monthEls.length - 1, Math.max(0, month + Number(b.dataset.calStep)));
+        paintMonth();
+      }),
+    );
+    paintMonth();
+    // After a language swap the month names are new: repaint the label.
+    document.addEventListener('langswap', paintMonth);
+
     // ---- Grid / calendar view (remembered in this browser).
     const viewBtns = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-view-btn]'));
     const paintView = () => viewBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.viewBtn === root.dataset.view)));
@@ -561,10 +626,58 @@ const months = [...new Set(posts.map((post) => post.data.date.slice(0, 7)))]
     font-size: 1rem;
     font-weight: 650;
   }
+  /* Month switcher (shown once the script pages the months; without it every month stacks). */
+  .ajie__cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+  .ajie__cal-nav[hidden] {
+    display: none;
+  }
+  .ajie__cal-nav .ajie__month-name {
+    min-width: 9em;
+    margin: 0;
+    text-align: center;
+  }
+  .ajie__cal.is-paged .ajie__month-title {
+    display: none;
+  }
+  .ajie__month[hidden] {
+    display: none;
+  }
+  .ajie__cal-step {
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-2);
+    cursor: pointer;
+  }
+  .ajie__cal-step:hover:not(:disabled) {
+    background: var(--surface-2);
+  }
+  .ajie__cal-step:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+  .ajie__cal-step :global(svg) {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+  .ajie__cal-step:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
   .ajie__days {
+    --cal-gap: clamp(3px, 0.6vw, 8px);
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: clamp(3px, 0.6vw, 8px);
+    gap: var(--cal-gap);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -617,11 +730,47 @@ const months = [...new Set(posts.map((post) => post.data.date.slice(0, 7)))]
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
-  .ajie__day-btn .ajie__day-num {
+  .ajie__day--post.is-start .ajie__day-num {
     z-index: 1;
     color: #fff;
     font-weight: 700;
     text-shadow: 0 1px 3px rgb(0 0 0 / 0.7);
+  }
+  /* A period: the first day carries the thumbnail, the rest of the days are a band that
+     bridges the gaps between cells and is rounded only where it starts, ends or wraps. */
+  .ajie__day--post.is-mid {
+    background: transparent;
+  }
+  .ajie__day--post.is-mid .ajie__day-btn {
+    background: transparent;
+    overflow: visible;
+    isolation: isolate;
+  }
+  /* The band itself, reaching into the gap on its right (only one side, so the translucent
+     fill never overlaps itself) unless the period ends or the week wraps here. */
+  .ajie__day--post.is-mid .ajie__day-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0 calc(var(--cal-gap) * -1) 0 0;
+    z-index: -1;
+    background: var(--accent-soft);
+    transition: background-color 0.2s;
+  }
+  .ajie__day--post.is-mid.is-from .ajie__day-btn::before {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+  }
+  .ajie__day--post.is-mid.is-to .ajie__day-btn::before {
+    right: 0;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+  }
+  .ajie__day--post.is-mid .ajie__day-btn:hover::before {
+    background: color-mix(in srgb, var(--accent) 24%, transparent);
+  }
+  .ajie__day--post.is-mid .ajie__day-num {
+    color: var(--accent);
+    font-weight: 700;
   }
   .ajie__day-more {
     position: absolute;
@@ -963,6 +1112,8 @@ const months = [...new Set(posts.map((post) => post.data.date.slice(0, 7)))]
     .ajie-post__caption {
       flex: 1;
       min-height: 0;
+      /* Short captions stay at the top instead of spreading over the column. */
+      align-content: start;
       overflow-y: auto;
       overscroll-behavior: contain;
       /* Room for the scrollbar so it does not sit on the text. */
