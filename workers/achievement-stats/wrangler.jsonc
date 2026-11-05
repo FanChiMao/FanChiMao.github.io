@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "achievement-stats",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "observability": { "enabled": false },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "passport-stats",
+      // Filled in after creating the database (Dashboard → D1 → passport-stats → Database ID).
+      "database_id": "49a39172-bc4c-498f-ab71-b5307f9ba74f",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // Workers rate limiting: per Cloudflare location and approximate, not an exact global quota.
+  "ratelimits": [
+    { "name": "VISITOR_LIMITER", "namespace_id": "52001", "simple": { "limit": 10, "period": 60 } },
+    { "name": "IP_LIMITER", "namespace_id": "52002", "simple": { "limit": 30, "period": 60 } }
+  ],
+  "vars": {
+    // Comma-separated list of origins allowed to call the API (CORS).
+    "ALLOWED_ORIGINS": "https://52hzfan.com,http://localhost:4321,http://127.0.0.1:4321,http://localhost:4322,http://[::1]:4322"
+  }
+  // Secret (Dashboard → Settings → Variables and Secrets, or `wrangler secret put`):
+  //   RATE_SALT  random string used to hash IPs for rate limiting; never stored.
+}
