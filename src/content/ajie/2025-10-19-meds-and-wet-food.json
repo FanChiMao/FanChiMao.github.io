@@ -7,6 +7,15 @@
     "zh-cn": "佛系喂药的一周",
     "ja": "運まかせの投薬の一週間"
   },
+  "cover": {
+    "src": "ajie/2025-10-19-meds-and-wet-food/cover.jpg",
+    "alt": {
+      "en": "Illustration: Ajie happily eating from a can, an arrow pointing away from the untouched dry food in the automatic feeder, while he thinks about his runny stools, the parasite and his sore eye",
+      "zh-tw": "插畫：阿桔開心地吃著罐頭，箭頭從自動餵食器裡沒動過的乾飼料指向罐頭；牠腦中想著水便、毛滴蟲和發炎的眼睛",
+      "zh-cn": "插画：阿桔开心地吃着罐头，箭头从自动喂食器里没动过的干粮指向罐头；它脑中想着水便、毛滴虫和发炎的眼睛",
+      "ja": "イラスト：缶詰をうれしそうに食べるアジエ。自動給餌器の手つかずのドライフードから缶詰へ矢印。頭の中には水っぽいうんち、トリコモナス、炎症のある目"
+    }
+  },
   "media": [
     {
       "type": "image",
