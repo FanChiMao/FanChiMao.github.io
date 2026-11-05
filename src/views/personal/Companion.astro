@@ -126,13 +126,22 @@ const bio = pick(ajieProfile.bio);
         const caption = pick(post.data.caption) ?? '';
         const place = pick(post.data.location);
         return (
-          <dialog class="ajie-post" data-post={i} data-slug={post.id} aria-label={`${pick(post.data.title) ?? c.name} · ${day(post.data.date)}`}>
+          <dialog class="ajie-post" data-post={i} data-slug={post.id} aria-label={`${c.name}${post.data.title ? ` – ${pick(post.data.title)}` : ''} · ${day(post.data.date)}`}>
             <div class="ajie-post__media">
               <PostMedia {lang} media={post.data.cover ? [{ type: 'image', src: post.data.cover.src, alt: post.data.cover.alt, fit: 'contain' }, ...post.data.media] : post.data.media} firstIsAi={Boolean(post.data.cover)} label={`${c.name} · ${day(post.data.date)}`} ratio="4 / 5" sizes="(min-width: 900px) 520px, 100vw" />
             </div>
             <div class="ajie-post__text">
               <header class="ajie-post__head">
-                <h2 class="ajie-post__who">{pick(post.data.title) ?? c.name}</h2>
+                <h2 class="ajie-post__who">
+                  {c.name}
+                  {post.data.title && (
+                    <>
+                      <span class="ajie-post__sep" aria-hidden="true"> – </span>
+                      <span class="sr-only">: </span>
+                      {pick(post.data.title)}
+                    </>
+                  )}
+                </h2>
                 <p class="ajie-post__meta">
                   <time class="ajie-post__date" datetime={post.data.date}>
                     {day(post.data.date)}
@@ -535,6 +544,10 @@ const bio = pick(ajieProfile.bio);
     font-weight: 650;
     line-height: 1.35;
   }
+  .ajie-post__sep {
+    color: var(--muted);
+    font-weight: 400;
+  }
   .ajie-post__meta {
     display: flex;
     flex-wrap: wrap;
@@ -681,9 +694,19 @@ const bio = pick(ajieProfile.bio);
   /* Side by side, the photo sets the dialog's height (its 4:5 frame); a longer caption
      scrolls inside its own column instead of stretching the dialog. */
   @media (min-width: 900px) {
+    /* Header and like button stay put; only the caption scrolls. */
     .ajie-post__text {
       contain: size;
+      overflow: hidden;
+    }
+    .ajie-post__caption {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
       overscroll-behavior: contain;
+      /* Room for the scrollbar so it does not sit on the text. */
+      margin-right: -0.75rem;
+      padding-right: 0.75rem;
     }
   }
   @media (max-width: 899px) {
