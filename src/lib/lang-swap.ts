@@ -15,7 +15,7 @@
 /** Containers that are compared and patched. */
 const ROOTS = ['[data-nav]', '#main', 'footer.footer'];
 /** Attributes owned by scripts at runtime, never copied from the fetched page. */
-const RUNTIME_ATTRS = new Set(['class', 'style', 'open', 'aria-expanded', 'aria-pressed', 'hidden', 'width', 'height', 'data-state', 'data-id']);
+const RUNTIME_ATTRS = new Set(['class', 'style', 'open', 'aria-expanded', 'aria-pressed', 'hidden', 'width', 'height', 'data-state', 'data-id', 'data-ai-illustrations']);
 /** Localised attributes that may be present in one locale and absent in another. */
 const OPTIONAL_ATTRS = new Set(['aria-current', 'title', 'aria-label', 'lang', 'hreflang']);
 /** Subtrees not compared: their content is script-generated or locale-independent. */

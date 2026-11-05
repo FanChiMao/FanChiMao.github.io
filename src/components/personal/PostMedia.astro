@@ -25,8 +25,10 @@ interface Props {
   label: string;
   sizes?: string;
   eager?: boolean;
+  /** The first item is an optional AI illustration controlled by the Ajie page preference. */
+  firstIsAi?: boolean;
 }
-const { lang, media, ratio = '4 / 5', label, sizes = '(min-width: 900px) 560px, 100vw', eager = false } = Astro.props;
+const { lang, media, ratio = '4 / 5', label, sizes = '(min-width: 900px) 560px, 100vw', eager = false, firstIsAi = false } = Astro.props;
 const a11y = ui[lang].a11y;
 const pm = personalUi[lang].posts;
 const pick = (v: string | Record<Locale, string> | undefined) => (typeof v === 'string' ? v : v?.[lang]);
@@ -44,7 +46,7 @@ const items = await Promise.all(
   <ul class="pmedia__track" tabindex={items.length > 1 ? 0 : undefined} aria-label={label}>
     {
       items.map((m, i) => (
-        <li class="pmedia__slide" aria-label={items.length > 1 ? `${i + 1} / ${items.length}` : undefined}>
+        <li class="pmedia__slide" data-ai-cover={firstIsAi && i === 0 ? '' : undefined} aria-label={items.length > 1 ? `${i + 1} / ${items.length}` : undefined}>
           {m.type === 'image' && <Image class:list={{ 'pmedia__contain': m.fit === 'contain' }} src={m.img} alt={m.alt} widths={[480, 800, 1200]} {sizes} quality={80} loading={eager && i === 0 ? 'eager' : 'lazy'} />}
           {m.type === 'video' &&
             (m.loop ? (
@@ -73,15 +75,15 @@ const items = await Promise.all(
   {
     items.length > 1 && (
       <>
-        <button class="pmedia__btn pmedia__btn--prev" type="button" data-dir="-1" aria-label={a11y.prev}>
+        <button class="pmedia__btn pmedia__btn--prev" type="button" data-pmedia-control data-dir="-1" aria-label={a11y.prev}>
           <Icon name="lucide:chevron-left" />
         </button>
-        <button class="pmedia__btn pmedia__btn--next" type="button" data-dir="1" aria-label={a11y.next}>
+        <button class="pmedia__btn pmedia__btn--next" type="button" data-pmedia-control data-dir="1" aria-label={a11y.next}>
           <Icon name="lucide:chevron-right" />
         </button>
-        <div class="pmedia__dots">
+        <div class="pmedia__dots" data-pmedia-control>
           {items.map((_, i) => (
-            <button type="button" class:list={{ 'is-on': i === 0 }} data-go={i} aria-label={`${a11y.goTo} ${i + 1}`} aria-current={i === 0 ? 'true' : undefined} />
+            <button type="button" class:list={{ 'is-on': i === 0 }} data-ai-cover={firstIsAi && i === 0 ? '' : undefined} aria-label={`${a11y.goTo} ${i + 1}`} aria-current={i === 0 ? 'true' : undefined} />
           ))}
         </div>
       </>
@@ -107,8 +109,11 @@ const items = await Promise.all(
   document.querySelectorAll<HTMLElement>('[data-pmedia]:not([data-ready])').forEach((root) => {
     root.dataset.ready = '';
     const track = root.querySelector<HTMLElement>('.pmedia__track')!;
-    const slides = Array.from(track.children) as HTMLElement[];
-    const dots = Array.from(root.querySelectorAll<HTMLButtonElement>('.pmedia__dots button'));
+    const allSlides = Array.from(track.children) as HTMLElement[];
+    const allDots = Array.from(root.querySelectorAll<HTMLButtonElement>('.pmedia__dots button'));
+    const controls = Array.from(root.querySelectorAll<HTMLElement>('[data-pmedia-control]'));
+    const slides = () => allSlides.filter((s) => !s.hidden);
+    const dots = () => allDots.filter((d) => !d.hidden);
 
     root.querySelectorAll<HTMLVideoElement>('video[data-autoplay]').forEach((v) => {
       if (reduce) v.controls = true;
@@ -123,35 +128,48 @@ const items = await Promise.all(
       }),
     );
 
-    if (slides.length < 2) return;
-    const current = () => Math.round(track.scrollLeft / track.clientWidth);
+    const current = () => Math.min(Math.max(0, slides().length - 1), Math.round(track.scrollLeft / track.clientWidth));
+    const paint = () => {
+      const shownSlides = slides();
+      const shownDots = dots();
+      const i = current();
+      allDots.forEach((d) => {
+        d.classList.remove('is-on');
+        d.removeAttribute('aria-current');
+      });
+      const active = shownDots[i];
+      active?.classList.add('is-on');
+      active?.setAttribute('aria-current', 'true');
+      allSlides.forEach((s) => s !== shownSlides[i] && s.querySelector('video')?.pause());
+    };
     // Wraps around: past the last photo comes the first, and the other way round.
-    const n = slides.length;
     const go = (i: number) => {
+      const n = slides().length;
+      if (n < 1) return;
       const to = ((i % n) + n) % n;
       const jump = Math.abs(to - current()) > 1;
       track.scrollTo({ left: to * track.clientWidth, behavior: reduce || jump ? 'auto' : 'smooth' });
     };
     root.querySelectorAll<HTMLButtonElement>('[data-dir]').forEach((b) => b.addEventListener('click', () => go(current() + Number(b.dataset.dir))));
-    dots.forEach((d) => d.addEventListener('click', () => go(Number(d.dataset.go))));
+    allDots.forEach((d) => d.addEventListener('click', () => go(dots().indexOf(d))));
     track.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowRight') go(current() + 1);
       if (e.key === 'ArrowLeft') go(current() - 1);
     });
     track.addEventListener(
       'scroll',
-      () => {
-        const i = current();
-        dots.forEach((d, j) => {
-          d.classList.toggle('is-on', i === j);
-          if (i === j) d.setAttribute('aria-current', 'true');
-          else d.removeAttribute('aria-current');
-        });
-        // Leaving a slide pauses its clip.
-        slides.forEach((s, j) => j !== i && s.querySelector('video')?.pause());
-      },
+      paint,
       { passive: true },
     );
+    const syncAiCover = () => {
+      const hide = root.closest('[data-ai-illustrations="hide"]') !== null;
+      root.querySelectorAll<HTMLElement>('[data-ai-cover]').forEach((el) => (el.hidden = hide));
+      track.scrollLeft = 0;
+      controls.forEach((el) => (el.hidden = slides().length < 2));
+      paint();
+    };
+    syncAiCover();
+    document.addEventListener('ajie-ai-change', syncAiCover);
   });
 </script>
 

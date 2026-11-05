@@ -27,6 +27,7 @@ const fmt = new Intl.DateTimeFormat(localeMeta[lang].htmlLang, { year: 'numeric'
 const day = (iso: string) => (/^\d{4}$/.test(iso) ? iso : fmt.format(new Date(`${iso}T00:00:00Z`)));
 
 const posts = (await getCollection('ajie', ({ data }) => !data.draft)).sort((a, b) => Number(!!b.data.pinned) - Number(!!a.data.pinned) || b.data.date.localeCompare(a.data.date));
+const hasAiCovers = posts.some((post) => Boolean(post.data.cover));
 // The stats Worker only accepts likes on listed posts: fail the build if one is missing.
 const unlisted = posts.map((post) => post.id).filter((id) => !(AJIE_POST_IDS as readonly string[]).includes(id));
 if (unlisted.length) throw new Error(`Add these Ajie post IDs to src/data/ajie-posts.ts (and redeploy the stats Worker): ${unlisted.join(', ')}`);
@@ -42,7 +43,12 @@ const bio = pick(ajieProfile.bio);
 ---
 
 <PersonalLayout {lang} path="/personal/companion/" title={c.name} description={c.blurb} overlay={false} noindex={posts.length === 0}>
-  <div class="ajie pw-page pw-sea" data-ajie>
+  <div class="ajie pw-page pw-sea" data-ajie data-ai-illustrations="show">
+    <script is:inline>
+      try {
+        if (localStorage.getItem('ajie:ai-illustrations:v1') === 'hide') document.currentScript.closest('[data-ajie]').dataset.aiIllustrations = 'hide';
+      } catch {}
+    </script>
     <div class="container ajie__inner">
       <!-- Same centred header as the other chapters, plus Ajie's facts. -->
       <header class="ajie__profile pw-head">
@@ -65,6 +71,16 @@ const bio = pick(ajieProfile.bio);
               </div>
             ))
           }
+          {hasAiCovers && (
+            <div>
+              <dt>{p.ajie.aiIllustrations}</dt>
+              <dd>
+                <button class="ajie__ai-toggle" type="button" role="switch" aria-checked="true" aria-label={p.ajie.aiIllustrations} data-ai-toggle title={p.ajie.aiDisclosure}>
+                  <span class="ajie__switch" aria-hidden="true"><span /></span>
+                </button>
+              </dd>
+            </div>
+          )}
         </dl>
       </header>
 
@@ -78,18 +94,15 @@ const bio = pick(ajieProfile.bio);
           <ul class="ajie__grid">
             {posts.map((post, i) => {
               const first = post.data.media[0];
-              const multi = post.data.media.length + (post.data.cover ? 1 : 0) > 1;
-              const isVideo = !post.data.cover && first.type !== 'image';
+              const realBadge = first.type !== 'image' ? 'lucide:clapperboard' : post.data.media.length > 1 ? 'lucide:copy' : null;
               const caption = pick(post.data.caption) ?? '';
               return (
                 <li data-reveal style={`--i:${i % 3}`}>
                   <button class="ajie__tile" type="button" data-open={i} aria-label={`${p.ajie.open}: ${day(post.data.date)}, ${caption.slice(0, 60)}`}>
-                    <Image src={asset(post.data.cover?.src ?? thumbOf(first)!)} alt="" widths={[320, 480, 720]} sizes="(min-width: 900px) 33vw, 50vw" quality={74} loading={i < 6 ? 'eager' : 'lazy'} />
-                    {(multi || isVideo) && (
-                      <span class="ajie__badge" aria-hidden="true">
-                        <Icon name={isVideo ? 'lucide:clapperboard' : 'lucide:copy'} />
-                      </span>
-                    )}
+                    {post.data.cover && <Image class="ajie__thumb ajie__thumb--ai" src={asset(post.data.cover.src)} alt="" widths={[320, 480, 720]} sizes="(min-width: 900px) 33vw, 50vw" quality={74} loading={i < 6 ? 'eager' : 'lazy'} />}
+                    <Image class:list={['ajie__thumb', 'ajie__thumb--real', { 'ajie__thumb--behind-ai': post.data.cover }]} src={asset(thumbOf(first)!)} alt="" widths={[320, 480, 720]} sizes="(min-width: 900px) 33vw, 50vw" quality={74} loading={i < 6 ? 'eager' : 'lazy'} />
+                    {post.data.cover && <span class="ajie__badge ajie__badge--ai" aria-hidden="true"><Icon name="lucide:copy" /></span>}
+                    {realBadge && <span class:list={['ajie__badge', 'ajie__badge--real', { 'ajie__badge--behind-ai': post.data.cover }]} aria-hidden="true"><Icon name={realBadge} /></span>}
                     <span class="ajie__hover" aria-hidden="true">
                       <span>{day(post.data.date)}</span>
                       {statsEnabled && (
@@ -115,7 +128,7 @@ const bio = pick(ajieProfile.bio);
         return (
           <dialog class="ajie-post" data-post={i} data-slug={post.id} aria-label={`${c.name} · ${day(post.data.date)}`}>
             <div class="ajie-post__media">
-              <PostMedia {lang} media={post.data.cover ? [{ type: 'image', src: post.data.cover.src, alt: post.data.cover.alt, fit: 'contain' }, ...post.data.media] : post.data.media} label={`${c.name} · ${day(post.data.date)}`} ratio="4 / 5" sizes="(min-width: 900px) 520px, 100vw" />
+              <PostMedia {lang} media={post.data.cover ? [{ type: 'image', src: post.data.cover.src, alt: post.data.cover.alt, fit: 'contain' }, ...post.data.media] : post.data.media} firstIsAi={Boolean(post.data.cover)} label={`${c.name} · ${day(post.data.date)}`} ratio="4 / 5" sizes="(min-width: 900px) 520px, 100vw" />
             </div>
             <div class="ajie-post__text">
               <header class="ajie-post__head">
@@ -171,6 +184,20 @@ const bio = pick(ajieProfile.bio);
   import { canLike, getLikes, likedPosts, setLike, startSync, statsEnabled } from '@/lib/passport-stats';
   const root = document.querySelector<HTMLElement>('[data-ajie]');
   if (root) {
+    const aiToggle = root.querySelector<HTMLButtonElement>('[data-ai-toggle]');
+    const paintAiPreference = () => aiToggle?.setAttribute('aria-checked', String(root.dataset.aiIllustrations !== 'hide'));
+    paintAiPreference();
+    aiToggle?.addEventListener('click', () => {
+      const next = root.dataset.aiIllustrations === 'hide' ? 'show' : 'hide';
+      root.dataset.aiIllustrations = next;
+      try {
+        localStorage.setItem('ajie:ai-illustrations:v1', next);
+      } catch {}
+      paintAiPreference();
+      document.dispatchEvent(new Event('ajie-ai-change'));
+    });
+    document.addEventListener('langswap', paintAiPreference);
+
     const dialogs = Array.from(root.querySelectorAll<HTMLDialogElement>('dialog[data-post]'));
     const tiles = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-open]'));
     let opener: HTMLElement | null = null;
@@ -303,6 +330,49 @@ const bio = pick(ajieProfile.bio);
     font-size: 1.1rem;
     font-weight: 650;
   }
+  .ajie__ai-toggle {
+    display: inline-grid;
+    place-items: center;
+    padding: 0.15rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    cursor: pointer;
+  }
+  .ajie__ai-toggle:hover .ajie__switch {
+    filter: brightness(1.1);
+  }
+  .ajie__ai-toggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .ajie__switch {
+    position: relative;
+    flex: 0 0 auto;
+    width: 2rem;
+    height: 1.1rem;
+    border-radius: 999px;
+    background: var(--accent);
+    transition: background-color 0.25s;
+  }
+  .ajie__switch span {
+    position: absolute;
+    top: 0.14rem;
+    left: 0.14rem;
+    width: 0.82rem;
+    height: 0.82rem;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.32);
+    translate: 0.9rem 0;
+    transition: translate 0.25s var(--ease-out);
+  }
+  [data-ai-illustrations='hide'] .ajie__switch {
+    background: var(--border-strong);
+  }
+  [data-ai-illustrations='hide'] .ajie__switch span {
+    translate: 0;
+  }
   .ajie__empty {
     display: grid;
     justify-items: center;
@@ -341,10 +411,23 @@ const bio = pick(ajieProfile.bio);
     cursor: pointer;
   }
   .ajie__tile :global(img) {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.6s var(--ease-out);
+    transition:
+      opacity 0.3s,
+      transform 0.6s var(--ease-out);
+  }
+  .ajie__thumb--behind-ai {
+    opacity: 0;
+  }
+  [data-ai-illustrations='hide'] .ajie__thumb--ai {
+    opacity: 0;
+  }
+  [data-ai-illustrations='hide'] .ajie__thumb--behind-ai {
+    opacity: 1;
   }
   .ajie__tile:hover :global(img) {
     transform: scale(1.04);
@@ -359,6 +442,18 @@ const bio = pick(ajieProfile.bio);
     right: 0.5rem;
     color: #fff;
     filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.6));
+  }
+  .ajie__badge--behind-ai {
+    display: none;
+  }
+  [data-ai-illustrations='hide'] .ajie__badge--ai {
+    display: none;
+  }
+  [data-ai-illustrations='hide'] .ajie__badge--behind-ai {
+    display: block;
+  }
+  [data-ai-illustrations='hide'] :global([data-ai-cover]) {
+    display: none;
   }
   .ajie__badge :global(svg) {
     width: 1.15rem;
