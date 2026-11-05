@@ -1,5 +1,14 @@
 {
   "date": "2025-10-11",
+  "cover": {
+    "src": "ajie/2025-10-11-first-vet-visit/cover.jpg",
+    "alt": {
+      "en": "Illustration: Ajie loafing on the vet's exam table with a sore, squinting right eye and a parasite on his mind, while I fret beside the carrier",
+      "zh-tw": "插畫：阿桔趴在診療台上，右眼發炎瞇著，腦中想著毛滴蟲；我在外出籠旁緊張冒汗",
+      "zh-cn": "插画：阿桔趴在诊疗台上，右眼发炎眯着，脑中想着毛滴虫；我在航空箱旁紧张冒汗",
+      "ja": "イラスト：診察台で香箱座りをするアジエ。右目は炎症で細めたまま、頭の中にはトリコモナス。キャリーのそばで僕はあたふた"
+    }
+  },
   "media": [
     {
       "type": "image",
