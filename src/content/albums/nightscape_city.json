@@ -1,7 +1,9 @@
 {
   "order": 1,
   "emoji": "🌃",
-  "categories": ["city"],
+  "categories": [
+    "city"
+  ],
   "title": {
     "en": "Nightscape City",
     "zh-tw": "夜景",
@@ -57,6 +59,34 @@
       "caption": [
         "台北北投 社子大橋"
       ]
+    },
+    {
+      "src": "gallery/nightscape_city/00008.jpg",
+      "caption": []
+    },
+    {
+      "src": "gallery/nightscape_city/00009.jpg",
+      "caption": []
+    },
+    {
+      "src": "gallery/nightscape_city/00010.jpg",
+      "caption": []
+    },
+    {
+      "src": "gallery/nightscape_city/00011.jpg",
+      "caption": []
+    },
+    {
+      "src": "gallery/nightscape_city/00012.jpg",
+      "caption": []
+    },
+    {
+      "src": "gallery/nightscape_city/00013.jpg",
+      "caption": []
+    },
+    {
+      "src": "gallery/nightscape_city/00014.jpg",
+      "caption": []
     }
   ]
 }
