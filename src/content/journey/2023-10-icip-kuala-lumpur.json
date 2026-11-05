@@ -1,0 +1,184 @@
+{
+  "date": "2023-10-06",
+  "category": "travel",
+  "title": {
+    "en": "First solo trip abroad: ICIP 2023 in Kuala Lumpur",
+    "zh-tw": "第一次出國獨旅：吉隆坡 ICIP 2023",
+    "zh-cn": "第一次出国独旅：吉隆坡 ICIP 2023",
+    "ja": "はじめての海外ひとり旅：クアラルンプールの ICIP 2023"
+  },
+  "place": {
+    "en": "Kuala Lumpur, Malaysia",
+    "zh-tw": "馬來西亞・吉隆坡",
+    "zh-cn": "马来西亚・吉隆坡",
+    "ja": "マレーシア・クアラルンプール"
+  },
+  "media": [
+    {
+      "type": "image",
+      "src": "journey/2023-icip-kuala-lumpur/01.jpg",
+      "alt": {
+        "en": "At the ICIP 2023 venue",
+        "zh-tw": "ICIP 2023 會場",
+        "zh-cn": "ICIP 2023 会场",
+        "ja": "ICIP 2023 の会場"
+      }
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-icip-kuala-lumpur/02.jpg",
+      "alt": {
+        "en": "Holding the conference certificate at ICIP 2023",
+        "zh-tw": "在 ICIP 2023 拿著會議證書",
+        "zh-cn": "在 ICIP 2023 拿着会议证书",
+        "ja": "ICIP 2023 で修了証を手に"
+      }
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-icip-kuala-lumpur/03.jpg",
+      "alt": {
+        "en": "Petronas Twin Towers",
+        "zh-tw": "雙子星塔",
+        "zh-cn": "双子塔",
+        "ja": "ペトロナスツインタワー"
+      }
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-icip-kuala-lumpur/04.jpg",
+      "alt": {
+        "en": "Batu Caves, the rainbow stairs",
+        "zh-tw": "黑風洞的彩虹階梯",
+        "zh-cn": "黑风洞的彩虹阶梯",
+        "ja": "バトゥ洞窟の虹色の階段"
+      }
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-icip-kuala-lumpur/05.jpg",
+      "alt": {
+        "en": "Inside Batu Caves",
+        "zh-tw": "黑風洞內部",
+        "zh-cn": "黑风洞内部",
+        "ja": "バトゥ洞窟の中"
+      }
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-icip-kuala-lumpur/06.jpg",
+      "alt": {
+        "en": "National Mosque of Malaysia",
+        "zh-tw": "馬來西亞國家清真寺",
+        "zh-cn": "马来西亚国家清真寺",
+        "ja": "マレーシア国立モスク"
+      }
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-icip-kuala-lumpur/07.jpg",
+      "alt": {
+        "en": "The National Mosque minaret",
+        "zh-tw": "國家清真寺的宣禮塔",
+        "zh-cn": "国家清真寺的宣礼塔",
+        "ja": "国立モスクのミナレット"
+      }
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-icip-kuala-lumpur/08.jpg",
+      "alt": {
+        "en": "National Mosque entrance",
+        "zh-tw": "國家清真寺入口",
+        "zh-cn": "国家清真寺入口",
+        "ja": "国立モスクの入口"
+      }
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-icip-kuala-lumpur/09.jpg",
+      "alt": {
+        "en": "Masjid Jamek",
+        "zh-tw": "占美清真寺",
+        "zh-cn": "占美清真寺",
+        "ja": "マスジッド・ジャメ"
+      }
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-icip-kuala-lumpur/10.jpg",
+      "alt": {
+        "en": "Sultan Abdul Samad Building",
+        "zh-tw": "蘇丹阿都沙末大廈",
+        "zh-cn": "苏丹阿都沙末大厦",
+        "ja": "スルタン・アブドゥル・サマド・ビル"
+      }
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-icip-kuala-lumpur/11.jpg",
+      "alt": {
+        "en": "A painted mosque dome",
+        "zh-tw": "清真寺的圓頂",
+        "zh-cn": "清真寺的圆顶",
+        "ja": "モスクのドーム天井"
+      }
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-icip-kuala-lumpur/12.jpg",
+      "alt": {
+        "en": "Asam laksa",
+        "zh-tw": "亞參叻沙",
+        "zh-cn": "亚参叻沙",
+        "ja": "アッサムラクサ"
+      }
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-icip-kuala-lumpur/13.jpg",
+      "alt": {
+        "en": "A bowl of noodles",
+        "zh-tw": "一碗麵",
+        "zh-cn": "一碗面",
+        "ja": "麺料理"
+      }
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-icip-kuala-lumpur/14.jpg",
+      "alt": {
+        "en": "Petaling Street",
+        "zh-tw": "茨廠街",
+        "zh-cn": "茨厂街",
+        "ja": "プタリン・ストリート"
+      }
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-icip-kuala-lumpur/15.jpg",
+      "alt": {
+        "en": "Above the clouds on the flight",
+        "zh-tw": "飛機上的雲海",
+        "zh-cn": "飞机上的云海",
+        "ja": "機内から見た雲"
+      }
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-icip-kuala-lumpur/16.jpg",
+      "alt": {
+        "en": "The wing over the sea of clouds",
+        "zh-tw": "機翼與雲海",
+        "zh-cn": "机翼与云海",
+        "ja": "雲海と主翼"
+      }
+    }
+  ],
+  "story": {
+    "en": "October 6–11, 2023: my first time travelling abroad on my own. Part of the reason was work: I was in Kuala Lumpur to present a paper at the IEEE International Conference on Image Processing (ICIP 2023), held at the Kuala Lumpur Convention Centre.\n\nBetween sessions I went to see the Petronas Twin Towers, climbed the rainbow stairs of Batu Caves, walked past the National Mosque, Masjid Jamek and the Sultan Abdul Samad Building, and ate my way through Petaling Street.\n\nWhile I was flying my drone, I got talking with a girl from India, and she asked me to guess her age. Being the straight-talking guy I am, I guessed ten years too old. Lesson learned: from now on, whenever a woman asks me to guess her age, my answer is “you look like a newborn”.",
+    "zh-tw": "2023 年 10 月 6 日到 11 日，人生第一次出國獨旅。雖然有一部分是因為工作：到吉隆坡會展中心參加 IEEE 國際影像處理研討會（ICIP 2023）發表論文。\n\n議程之間去看了雙子星塔、爬了黑風洞的彩虹階梯，走過國家清真寺、占美清真寺和蘇丹阿都沙末大廈，也在茨廠街吃了一輪。\n\n飛空拍機的時候認識了一位印度妹子，她叫我猜她幾歲，我這個大直男直接幫她多猜了十歲。從此學乖了：以後有女生問我她幾歲，我一律回「妳看起來像胎盤」。",
+    "zh-cn": "2023 年 10 月 6 日到 11 日，人生第一次出国独旅。虽然有一部分是因为工作：到吉隆坡会展中心参加 IEEE 国际图像处理会议（ICIP 2023）发表论文。\n\n议程之间去看了双子塔、爬了黑风洞的彩虹阶梯，走过国家清真寺、占美清真寺和苏丹阿都沙末大厦，也在茨厂街吃了一轮。\n\n飞无人机的时候认识了一位印度妹子，她让我猜她几岁，我这个大直男直接帮她多猜了十岁。从此学乖了：以后有女生问我她几岁，我一律回「你看起来像胎盘」。",
+    "ja": "2023年10月6日〜11日、人生ではじめての海外ひとり旅。半分は仕事で、クアラルンプール・コンベンションセンターで開かれた IEEE 国際画像処理会議（ICIP 2023）で論文を発表するためでした。\n\nセッションの合間に、ペトロナスツインタワーを見て、バトゥ洞窟の虹色の階段を登り、国立モスク、マスジッド・ジャメ、スルタン・アブドゥル・サマド・ビルを巡り、プタリン・ストリートで食べ歩きもしました。\n\nドローンを飛ばしていたときに知り合ったインドの女の子に「何歳に見える？」と聞かれ、正直者の僕は10歳も上に答えてしまいました。それ以来、女性に年齢を聞かれたら「赤ちゃんみたい」と答えると決めています。"
+  }
+}

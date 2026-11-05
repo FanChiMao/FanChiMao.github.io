@@ -180,8 +180,6 @@ const journey = defineCollection({
     date: z.iso.date(),
     category: z.enum(journeyCategories),
     title: textOrT,
-    /** Marks a "first time" milestone. */
-    first: z.boolean().default(true),
     place: textOrT.optional(),
     /** A result worth showing, e.g. "4:28:10" or "18 m". */
     stat: z.string().optional(),

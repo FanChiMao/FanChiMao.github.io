@@ -90,7 +90,6 @@ const en = {
     open: 'Open post',
   },
   journey: {
-    first: 'First time',
     empty: 'The first milestone is on its way.',
     categories: { run: 'Running', dive: 'Diving', jump: 'Jumping', hike: 'Hiking', ride: 'Riding', travel: 'Travel', other: 'Milestone' },
   },
@@ -214,7 +213,6 @@ const zhTw: PersonalUI = {
     open: '打開貼文',
   },
   journey: {
-    first: '第一次',
     empty: '第一個里程碑準備中。',
     categories: { run: '跑步', dive: '潛水', jump: '極限挑戰', hike: '登山健行', ride: '騎行', travel: '旅行', other: '里程碑' },
   },
@@ -336,7 +334,6 @@ const zhCn: PersonalUI = {
     open: '打开帖子',
   },
   journey: {
-    first: '第一次',
     empty: '第一个里程碑准备中。',
     categories: { run: '跑步', dive: '潜水', jump: '极限挑战', hike: '登山徒步', ride: '骑行', travel: '旅行', other: '里程碑' },
   },
@@ -458,7 +455,6 @@ const ja: PersonalUI = {
     open: '投稿を開く',
   },
   journey: {
-    first: 'はじめて',
     empty: '最初のマイルストーンを準備中です。',
     categories: { run: 'ランニング', dive: 'ダイビング', jump: 'チャレンジ', hike: '登山・ハイキング', ride: 'ライド', travel: '旅', other: 'マイルストーン' },
   },

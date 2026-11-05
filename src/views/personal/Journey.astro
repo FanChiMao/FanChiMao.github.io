@@ -18,6 +18,9 @@ const p = personalUi[lang];
 const c = p.chapters.journey;
 const pick = (v: string | Record<Locale, string> | undefined) => (v === undefined ? undefined : typeof v === 'string' ? v : v[lang]);
 const fmt = new Intl.DateTimeFormat(localeMeta[lang].htmlLang, { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+// Collapsed cards lead with the date: a big day-and-month, the year under it.
+const dayMonth = new Intl.DateTimeFormat(localeMeta[lang].htmlLang, { month: 'short', day: 'numeric', timeZone: 'UTC' });
+const asDate = (iso: string) => new Date(`${iso}T00:00:00Z`);
 
 const ICON = { run: 'footprints', dive: 'waves', jump: 'mountain-snow', hike: 'mountain', ride: 'bike', travel: 'plane', other: 'flag' } as const;
 const items = (await getCollection('journey', ({ data }) => !data.draft)).sort((a, b) => b.data.date.localeCompare(a.data.date));
@@ -57,31 +60,43 @@ const years = [...new Set(items.map((x) => x.data.date.slice(0, 4)))].map((y) =>
                         <span class="milestone__dot" aria-hidden="true">
                           <Icon name={`lucide:${ICON[m.data.category]}`} />
                         </span>
-                        <article class="milestone__card">
-                          <header class="milestone__head">
-                            <p class="milestone__tags">
-                              <span class="badge">{p.journey.categories[m.data.category]}</span>
-                              {m.data.first && <span class="badge milestone__first">{p.journey.first}</span>}
-                            </p>
-                            <h3 class="milestone__title">{title}</h3>
-                            <p class="milestone__meta">
-                              <time datetime={m.data.date}>{fmt.format(new Date(`${m.data.date}T00:00:00Z`))}</time>
-                              {place && (
-                                <span>
-                                  <Icon name="lucide:map-pin" />
-                                  {place}
-                                </span>
-                              )}
-                            </p>
+                        {/* Collapsible: the summary is one bar (date, category, title, place); all start collapsed. */}
+                        <details class="milestone__card">
+                          <summary class="milestone__head">
+                            <time class="milestone__when" datetime={m.data.date}>
+                              <span class="milestone__day">{dayMonth.format(asDate(m.data.date))}</span>
+                              <span class="milestone__yr">{m.data.date.slice(0, 4)}</span>
+                            </time>
+                            <span class="milestone__main">
+                              <span class="milestone__tags">
+                                <span class="badge">{p.journey.categories[m.data.category]}</span>
+                                {m.data.stat && <span class="badge milestone__stat-chip">{m.data.stat}</span>}
+                              </span>
+                              <h3 class="milestone__title">{title}</h3>
+                              <span class="milestone__meta">
+                                <span class="milestone__full-date">{fmt.format(asDate(m.data.date))}</span>
+                                {place && (
+                                  <span>
+                                    <Icon name="lucide:map-pin" />
+                                    {place}
+                                  </span>
+                                )}
+                              </span>
+                            </span>
+                            <span class="milestone__chev" aria-hidden="true">
+                              <Icon name="lucide:chevron-down" />
+                            </span>
+                          </summary>
+                          <div class="milestone__body">
                             {m.data.stat && <p class="milestone__stat">{m.data.stat}</p>}
-                          </header>
-                          {m.data.media.length > 0 && <PostMedia {lang} media={m.data.media} label={title} ratio="16 / 10" sizes="(min-width: 900px) 720px, 100vw" />}
-                          <div class="milestone__story">
-                            {story.split(/\n{2,}/).map((para) => (
-                              <p>{para}</p>
-                            ))}
+                            {m.data.media.length > 0 && <PostMedia {lang} media={m.data.media} label={title} ratio="16 / 10" sizes="(min-width: 900px) 720px, 100vw" />}
+                            <div class="milestone__story">
+                              {story.split(/\n{2,}/).map((para) => (
+                                <p>{para}</p>
+                              ))}
+                            </div>
                           </div>
-                        </article>
+                        </details>
                       </li>
                     );
                   })}
@@ -158,7 +173,7 @@ const years = [...new Set(items.map((x) => x.data.date.slice(0, 4)))].map((y) =>
   .milestone__dot {
     position: absolute;
     left: -3.25rem;
-    top: 1.2rem;
+    top: 1.05rem;
     display: grid;
     place-items: center;
     width: 40px;
@@ -173,33 +188,113 @@ const years = [...new Set(items.map((x) => x.data.date.slice(0, 4)))].map((y) =>
     height: 18px;
   }
   .milestone__card {
-    display: grid;
-    gap: 1rem;
-    padding: clamp(1.1rem, 3vw, 1.5rem);
     border: 1px solid var(--border);
     border-radius: 18px;
     background: color-mix(in srgb, var(--bg-elev) 80%, transparent);
     backdrop-filter: blur(6px);
+    transition: border-color 0.3s;
   }
+  .milestone__card:hover,
+  .milestone__card[open] {
+    border-color: var(--border-strong);
+  }
+  .milestone__card::details-content {
+    block-size: 0;
+    overflow: hidden;
+    transition:
+      block-size 0.5s var(--ease-out),
+      content-visibility 0.5s allow-discrete;
+  }
+  .milestone__card[open]::details-content {
+    block-size: auto;
+  }
+  /* The bar: date | category, title, place | chevron */
   .milestone__head {
     display: grid;
-    gap: 0.45rem;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 1.1rem;
+    align-items: center;
+    padding: 0.9rem clamp(1rem, 3vw, 1.4rem);
+    list-style: none;
+    cursor: pointer;
+  }
+  .milestone__head::-webkit-details-marker {
+    display: none;
+  }
+  .milestone__head:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+    border-radius: 18px;
+  }
+  .milestone__when {
+    display: grid;
+    justify-items: center;
+    min-width: 4.6rem;
+    padding: 0.45rem 0.6rem;
+    border-radius: 12px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    line-height: 1.1;
+    text-align: center;
+  }
+  .milestone__day {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .milestone__yr {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+  .milestone__main {
+    display: grid;
+    gap: 0.3rem;
+    min-width: 0;
   }
   .milestone__tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.4rem;
   }
-  .milestone__first {
-    background: color-mix(in srgb, #f4c55a 18%, transparent);
-    color: #b7791f;
-  }
-  :global([data-theme='dark']) .milestone__first {
-    color: #f4c55a;
+  .milestone__stat-chip {
+    font-family: var(--font-mono);
   }
   .milestone__title {
-    font-size: clamp(1.25rem, 2.4vw, 1.55rem);
+    font-size: clamp(1.1rem, 2.2vw, 1.35rem);
     line-height: 1.3;
+  }
+  .milestone__meta .milestone__full-date {
+    display: none;
+  }
+  .milestone__chev {
+    display: grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--muted);
+    transition:
+      transform 0.4s var(--ease-out),
+      color 0.25s;
+  }
+  .milestone__chev :global(svg) {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+  .milestone__head:hover .milestone__chev {
+    color: var(--accent);
+  }
+  .milestone__card[open] .milestone__chev {
+    transform: rotate(180deg);
+  }
+  .milestone__body {
+    display: grid;
+    gap: 1rem;
+    padding: 0 clamp(1rem, 3vw, 1.4rem) clamp(1.1rem, 3vw, 1.4rem);
   }
   .milestone__meta {
     display: flex;
@@ -226,6 +321,17 @@ const years = [...new Set(items.map((x) => x.data.date.slice(0, 4)))].map((y) =>
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+  }
+  @media (max-width: 560px) {
+    .milestone__head {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+    .milestone__chev {
+      display: none;
+    }
+    .milestone__when {
+      min-width: 3.9rem;
+    }
   }
   .milestone__story {
     display: grid;

@@ -78,9 +78,9 @@ const items = await Promise.all(
         <button class="pmedia__btn pmedia__btn--next" type="button" data-dir="1" aria-label={a11y.next}>
           <Icon name="lucide:chevron-right" />
         </button>
-        <div class="pmedia__dots" aria-hidden="true">
+        <div class="pmedia__dots">
           {items.map((_, i) => (
-            <span class:list={{ 'is-on': i === 0 }} />
+            <button type="button" class:list={{ 'is-on': i === 0 }} data-go={i} aria-label={`${a11y.goTo} ${i + 1}`} aria-current={i === 0 ? 'true' : undefined} />
           ))}
         </div>
       </>
@@ -107,7 +107,7 @@ const items = await Promise.all(
     root.dataset.ready = '';
     const track = root.querySelector<HTMLElement>('.pmedia__track')!;
     const slides = Array.from(track.children) as HTMLElement[];
-    const dots = Array.from(root.querySelectorAll<HTMLElement>('.pmedia__dots span'));
+    const dots = Array.from(root.querySelectorAll<HTMLButtonElement>('.pmedia__dots button'));
 
     root.querySelectorAll<HTMLVideoElement>('video[data-autoplay]').forEach((v) => {
       if (reduce) v.controls = true;
@@ -124,8 +124,15 @@ const items = await Promise.all(
 
     if (slides.length < 2) return;
     const current = () => Math.round(track.scrollLeft / track.clientWidth);
-    const go = (i: number) => track.scrollTo({ left: Math.max(0, Math.min(slides.length - 1, i)) * track.clientWidth, behavior: reduce ? 'auto' : 'smooth' });
+    // Wraps around: past the last photo comes the first, and the other way round.
+    const n = slides.length;
+    const go = (i: number) => {
+      const to = ((i % n) + n) % n;
+      const jump = Math.abs(to - current()) > 1;
+      track.scrollTo({ left: to * track.clientWidth, behavior: reduce || jump ? 'auto' : 'smooth' });
+    };
     root.querySelectorAll<HTMLButtonElement>('[data-dir]').forEach((b) => b.addEventListener('click', () => go(current() + Number(b.dataset.dir))));
+    dots.forEach((d) => d.addEventListener('click', () => go(Number(d.dataset.go))));
     track.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowRight') go(current() + 1);
       if (e.key === 'ArrowLeft') go(current() - 1);
@@ -134,15 +141,16 @@ const items = await Promise.all(
       'scroll',
       () => {
         const i = current();
-        dots.forEach((d, j) => d.classList.toggle('is-on', i === j));
-        root.querySelector<HTMLElement>('.pmedia__btn--prev')!.hidden = i === 0;
-        root.querySelector<HTMLElement>('.pmedia__btn--next')!.hidden = i === slides.length - 1;
+        dots.forEach((d, j) => {
+          d.classList.toggle('is-on', i === j);
+          if (i === j) d.setAttribute('aria-current', 'true');
+          else d.removeAttribute('aria-current');
+        });
         // Leaving a slide pauses its clip.
         slides.forEach((s, j) => j !== i && s.querySelector('video')?.pause());
       },
       { passive: true },
     );
-    root.querySelector<HTMLElement>('.pmedia__btn--prev')!.hidden = true;
   });
 </script>
 
@@ -257,19 +265,48 @@ const items = await Promise.all(
   .pmedia__dots {
     position: absolute;
     left: 50%;
-    bottom: 0.7rem;
+    bottom: 0.4rem;
     translate: -50% 0;
     display: flex;
-    gap: 0.3rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: calc(100% - 6rem);
+    padding: 0.15rem 0.3rem;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 0.25);
   }
-  .pmedia__dots span {
+  /* Each dot is a button with a comfortable hit area around the visible 6px dot. */
+  .pmedia__dots button {
+    display: grid;
+    place-items: center;
+    width: 16px;
+    height: 18px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+  .pmedia__dots button::before {
+    content: '';
     width: 6px;
     height: 6px;
     border-radius: 50%;
     background: rgb(255 255 255 / 0.5);
-    transition: background-color 0.25s;
+    transition:
+      background-color 0.25s,
+      transform 0.25s;
   }
-  .pmedia__dots span.is-on {
+  .pmedia__dots button:hover::before {
+    background: rgb(255 255 255 / 0.85);
+    transform: scale(1.3);
+  }
+  .pmedia__dots button.is-on::before {
     background: #fff;
+    transform: scale(1.3);
+  }
+  .pmedia__dots button:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: -2px;
+    border-radius: 4px;
   }
 </style>
