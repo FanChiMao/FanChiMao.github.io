@@ -480,9 +480,10 @@ const bio = pick(ajieProfile.bio);
     gap: 0.5rem;
     position: absolute;
     inset: auto 0 0;
-    padding: 2.2rem 0.75rem 0.6rem;
-    /* Always shown (title, date and likes on every tile); hover just deepens the shade. */
-    background: linear-gradient(transparent, rgb(0 0 0 / 0.6));
+    padding: 1rem 0.75rem 0.6rem;
+    /* Always shown (title, date and likes on every tile); hover just deepens the shade.
+       The shade hugs the text instead of reaching far up the picture. */
+    background: linear-gradient(transparent, rgb(0 0 0 / 0.38) 40%, rgb(0 0 0 / 0.62));
     color: #fff;
     font-family: var(--font-mono);
     font-size: 0.72rem;
