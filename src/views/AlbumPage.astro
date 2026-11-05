@@ -3,7 +3,7 @@ import { Image, getImage } from 'astro:assets';
 import { Icon } from 'astro-icon/components';
 import { getCollection, type CollectionEntry } from 'astro:content';
 import PersonalLayout from '@/layouts/PersonalLayout.astro';
-import { localePath, ui, type Locale } from '@/i18n/ui';
+import { localeMeta, localePath, ui, type Locale } from '@/i18n/ui';
 import { personalUi } from '@/i18n/personal';
 import { asset } from '@/lib/assets';
 
@@ -18,11 +18,24 @@ const { id, data } = album;
 const path = `/personal/gallery/${id}/`;
 const title = data.title[lang];
 
+const pick = (v: string | Record<Locale, string> | undefined) => (typeof v === 'string' ? v : v?.[lang]);
+const dateFmt = new Intl.DateTimeFormat(localeMeta[lang].htmlLang, { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+/** "SONY ILCE-7M4 · FE 24-70mm F2.8 GM II · 35mm · f/2.8 · 1/250s · ISO 400" */
+const exifLine = (e: (typeof data.photos)[number]['exif']) =>
+  e
+    ? [e.camera, e.lens, e.focalLength && `${e.focalLength}mm`, e.aperture && `f/${e.aperture}`, e.shutter, e.iso && `ISO ${e.iso}`].filter(Boolean).join(' · ')
+    : '';
+
 const photos = await Promise.all(
   data.photos.map(async (p) => {
     const src = asset(p.src);
     const full = await getImage({ src, width: Math.min(src.width, 2400), format: 'webp', quality: 82 });
-    return { ...p, src, full: full.src, w: Number(full.attributes.width), h: Number(full.attributes.height) };
+    // Explicit title/description win; otherwise the legacy caption's first line is the heading.
+    const title = pick(p.title);
+    const heading = title ?? p.caption[0];
+    const body = p.description !== undefined ? pick(p.description)!.split('\n') : title ? p.caption : p.caption.slice(1);
+    const date = p.taken ? dateFmt.format(new Date(`${p.taken}T00:00:00Z`)) : '';
+    return { ...p, src, heading, body, date, shot: exifLine(p.exif), full: full.src, w: Number(full.attributes.width), h: Number(full.attributes.height) };
   }),
 );
 const others = (await getCollection('albums', ({ data: d, id: other }) => !d.draft && other !== id)).sort((a, b) => a.data.order - b.data.order);
@@ -54,18 +67,23 @@ const vt = `album-${id.replace(/_/g, '-')}`;
                 href={p.full}
                 data-pswp-width={p.w}
                 data-pswp-height={p.h}
-                data-caption={p.caption.join('\n')}
+                data-cropped="true"
+                data-heading={p.heading}
+                data-body={p.body.join('\n')}
+                data-date={p.date || undefined}
+                data-shot={p.shot || undefined}
                 data-link={p.link}
                 data-link-label={t.gallery.map}
-                aria-label={p.caption[0] ?? `${title} ${i + 1}`}
+                aria-label={p.heading ?? `${title} ${i + 1}`}
               >
-                <Image src={p.src} alt={p.caption[0] ?? ''} widths={[400, 700, 1000]} sizes="(min-width: 1100px) 360px, (min-width: 700px) 45vw, 100vw" quality={72} loading={i < 4 ? 'eager' : 'lazy'} />
-                {p.caption.length > 0 && (
+                <Image src={p.src} alt={p.heading ?? ''} widths={[400, 700, 1000]} sizes="(min-width: 1100px) 360px, (min-width: 700px) 45vw, 100vw" quality={72} loading={i < 4 ? 'eager' : 'lazy'} />
+                {(p.heading || p.date) && (
                   <span class="masonry__cap">
-                    <strong>{p.caption[0]}</strong>
-                    {p.caption.slice(1).map((l) => (
+                    {p.heading && <strong>{p.heading}</strong>}
+                    {p.body.map((l) => (
                       <span>{l}</span>
                     ))}
+                    {p.date && <span class="masonry__date">{p.date}</span>}
                   </span>
                 )}
               </a>
@@ -117,12 +135,17 @@ const vt = `album-${id.replace(/_/g, '-')}`;
         const render = () => {
           const a = pswp.currSlide?.data.element as HTMLAnchorElement | undefined;
           el.replaceChildren();
-          const lines = (a?.dataset.caption ?? '').split('\n').filter(Boolean);
-          lines.forEach((line, i) => {
-            const node = document.createElement(i === 0 ? 'strong' : 'span');
-            node.textContent = line;
+          const add = (tag: string, text: string, cls?: string) => {
+            const node = document.createElement(tag);
+            node.textContent = text;
+            if (cls) node.className = cls;
             el.append(node);
-          });
+          };
+          if (a?.dataset.heading) add('strong', a.dataset.heading);
+          (a?.dataset.body ?? '').split('\n').filter(Boolean).forEach((line) => add('span', line));
+          // Date and camera settings (from EXIF) on one quiet line.
+          const meta = [a?.dataset.date, a?.dataset.shot].filter(Boolean).join('  ·  ');
+          if (meta) add('small', meta, 'pswp__meta');
           if (a?.dataset.link) {
             const link = document.createElement('a');
             link.href = a.dataset.link;
@@ -198,20 +221,20 @@ const vt = `album-${id.replace(/_/g, '-')}`;
     text-underline-offset: 3px;
   }
 
+  /* Even grid: every tile is the same square, photos are centre-cropped to fill it
+     (the lightbox still opens the whole, uncropped photo). */
   .masonry {
-    columns: 3 300px;
-    column-gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+    gap: 1rem;
     margin: 0;
     padding: 0;
     list-style: none;
   }
-  .masonry li {
-    break-inside: avoid;
-    margin-bottom: 1rem;
-  }
   .masonry a {
     position: relative;
     display: block;
+    aspect-ratio: 1;
     border-radius: var(--radius);
     overflow: hidden;
     background: var(--surface-2);
@@ -220,6 +243,8 @@ const vt = `album-${id.replace(/_/g, '-')}`;
   }
   .masonry :global(img) {
     width: 100%;
+    height: 100%;
+    object-fit: cover;
     transition:
       transform 0.9s var(--ease-out),
       filter 0.5s;
@@ -242,6 +267,11 @@ const vt = `album-${id.replace(/_/g, '-')}`;
     transition:
       opacity 0.35s,
       transform 0.45s var(--ease-out);
+  }
+  .masonry__date {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    opacity: 0.75;
   }
   .masonry__cap strong {
     font-size: 0.92rem;
@@ -320,6 +350,13 @@ const vt = `album-${id.replace(/_/g, '-')}`;
     color: #7dd3fc;
     text-decoration: underline;
     text-underline-offset: 3px;
+  }
+  :global(.pswp__caption .pswp__meta) {
+    margin-top: 0.3rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    color: rgb(255 255 255 / 0.62);
   }
   :global(.pswp__caption[hidden]) {
     display: none;

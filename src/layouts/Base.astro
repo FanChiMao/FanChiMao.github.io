@@ -16,9 +16,11 @@ interface Props {
   ogAlt?: string;
   /** Which side of the site this page belongs to; restyles tokens via html[data-world]. */
   world?: 'pro' | 'personal';
+  /** Keep the page reachable but out of search results (e.g. unfinished chapters). */
+  noindex?: boolean;
 }
 
-const { lang, path, title, fullTitle, description, ogImage, world = 'pro' } = Astro.props;
+const { lang, path, title, fullTitle, description, ogImage, world = 'pro', noindex = false } = Astro.props;
 const t = ui[lang];
 const pageTitle = fullTitle ?? (title ? `${title} · ${t.meta.title}` : t.meta.title);
 const desc = description ?? t.meta.description;
@@ -36,6 +38,7 @@ const ogAlt = Astro.props.ogAlt ?? `${t.hero.name} · ${t.hero.position}`;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     <meta name="description" content={desc} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
     <meta name="author" content="Chi-Mao Fan" />
     <meta name="keywords" content="Chi-Mao Fan, Jonathan Fan, FanChiMao, 52hzfan, 范植貿, AI R&amp;D engineer, computer vision, deep learning, object detection, image restoration, ASUS" />
     <link rel="canonical" href={canonical} />
@@ -276,6 +279,49 @@ const ogAlt = Astro.props.ogAlt ?? `${t.hero.name} · ${t.hero.position}`;
         if (ev.target === dialog || (ev.target as Element).closest('[data-dialog-close]')) dialog.close();
       });
       dialog.addEventListener('close', () => body.replaceChildren());
+    </script>
+
+    <script>
+      // 52Hz Logbook event sources that exist on every page (lib/passport.ts decides what unlocks).
+      import { LOCALE_OF, track } from '@/lib/passport';
+
+      const reportLang = () => track('lang', LOCALE_OF[document.documentElement.lang] ?? document.documentElement.lang);
+      reportLang();
+      document.addEventListener('langswap', reportLang);
+      // One entry per local calendar day, for the "regular" badge.
+      const today = new Date();
+      track('day', `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`);
+      // Paper abstracts on the professional home (toggle does not bubble: listen in the capture phase).
+      document.addEventListener(
+        'toggle',
+        (e) => {
+          const d = e.target as HTMLDetailsElement;
+          if (d.open && d.matches?.('.pub__abstract')) track('abstract', d.dataset.pub ?? '');
+        },
+        true,
+      );
+      // Outbound links: a patent record, or any project's code on GitHub (mouse, keyboard or middle click).
+      const onLink = (e: Event) => {
+        const a = (e.target as Element).closest?.<HTMLAnchorElement>('a[href]');
+        if (!a) return;
+        const url = new URL(a.href, location.href);
+        if (url.hostname === 'patents.google.com') track('patent', url.pathname);
+        if (url.hostname === 'github.com' && url.pathname.split('/').filter(Boolean).length >= 2) track('github', url.pathname);
+      };
+      document.addEventListener('click', onLink, true);
+      document.addEventListener('auxclick', onLink, true);
+      // Dragging the thesis restoration before/after slider.
+      document.addEventListener('input', (e) => {
+        if ((e.target as Element).matches?.('.ba__range')) track('restore');
+      });
+      // Theme changes on a page with its own sunrise / moonlit scene (the personal hero).
+      document.querySelectorAll('[data-theme-toggle]').forEach((btn) =>
+        btn.addEventListener('click', () => {
+          if (!document.querySelector('[data-theme-scene]')) return;
+          // The main toggle handler has already flipped data-theme by now.
+          requestAnimationFrame(() => track('scene-theme', document.documentElement.dataset.theme ?? ''));
+        }),
+      );
     </script>
 
     <style is:global>

@@ -13,6 +13,8 @@
  * - Back/forward cache: the overlay is removed when the page is shown again.
  */
 
+import { track } from './passport';
+
 const SEEN_KEY = 'dive-seen';
 const FULL_MS = 1500;
 const SHORT_MS = 480;
@@ -59,6 +61,7 @@ function cleanup() {
 
 function dive(a: HTMLAnchorElement, template: HTMLTemplateElement, origin: { x: number; y: number }) {
   if (active) return;
+  track('dive');
   const href = a.href;
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
     markSeen();

@@ -16,12 +16,13 @@ const c = p.chapters[chapter];
 const path = chapters.find((x) => x.id === chapter)!.path;
 ---
 
-<PersonalLayout {lang} {path} title={c.name} description={c.blurb}>
+<!-- Reachable by URL, but kept out of search results until the chapter is written. -->
+<PersonalLayout {lang} {path} title={c.name} description={c.blurb} noindex>
   <section class="stub" aria-labelledby="stub-title">
-    <div class="container stub__inner">
-      <p class="stub__kind">{c.kind}</p>
-      <h1 class="stub__title serif" id="stub-title">{c.name}</h1>
-      <p class="stub__blurb">{c.blurb}</p>
+    <div class="container stub__inner pw-head">
+      <p class="stub__kind pw-kicker" data-reveal>{c.kind}</p>
+      <h1 class="stub__title pw-head__title serif" id="stub-title" data-reveal style="--i:1">{c.name}</h1>
+      <p class="stub__blurb pw-head__lead" data-reveal style="--i:2">{c.blurb}</p>
       <Whale class="stub__whale" />
       <p class="stub__soon">{p.stub.soon}</p>
       <a class="btn btn--glass" href={localePath(lang, '/personal/')}>
@@ -49,19 +50,11 @@ const path = chapters.find((x) => x.id === chapter)!.path;
     gap: 1rem;
     text-align: center;
   }
+  /* Typography from .pw-head (personal.css); the placeholder is always on deep water. */
   .stub__kind {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
     color: rgb(150 214 255 / 0.75);
   }
-  .stub__title {
-    font-size: clamp(3rem, 9vw, 6rem);
-    line-height: 1;
-  }
   .stub__blurb {
-    max-width: 30rem;
     color: rgb(200 220 240 / 0.75);
   }
   .stub :global(.stub__whale) {

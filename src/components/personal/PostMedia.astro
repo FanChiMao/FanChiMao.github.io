@@ -1,0 +1,275 @@
+---
+/**
+ * Photos and videos of one post (Ajie, Journey), as a swipeable strip.
+ * - image: responsive <Image>
+ * - video: a file under /public/media; muted loop like an IG clip (plays only while in view,
+ *   never with reduced motion), or with controls and sound when `loop: false`
+ * - youtube: poster with a play button; opens in the shared media dialog (Base.astro)
+ */
+import type { CollectionEntry } from 'astro:content';
+import { Image, getImage } from 'astro:assets';
+import { Icon } from 'astro-icon/components';
+import { ui, type Locale } from '@/i18n/ui';
+import { personalUi } from '@/i18n/personal';
+import { asset } from '@/lib/assets';
+
+type Media = CollectionEntry<'ajie'>['data']['media'][number];
+
+interface Props {
+  lang: Locale;
+  media: Media[];
+  /** CSS aspect-ratio of the frame. */
+  ratio?: string;
+  /** Text used for alt when an item has none. */
+  label: string;
+  sizes?: string;
+  eager?: boolean;
+}
+const { lang, media, ratio = '4 / 5', label, sizes = '(min-width: 900px) 560px, 100vw', eager = false } = Astro.props;
+const a11y = ui[lang].a11y;
+const pm = personalUi[lang].posts;
+const pick = (v: string | Record<Locale, string> | undefined) => (typeof v === 'string' ? v : v?.[lang]);
+const items = await Promise.all(
+  media.map(async (m, i) => {
+    const alt = pick(m.alt) ?? (media.length > 1 ? `${label} (${i + 1}/${media.length})` : label);
+    if (m.type === 'image') return { ...m, alt, img: asset(m.src) };
+    const poster = m.poster ? await getImage({ src: asset(m.poster), width: 1080, format: 'webp', quality: 78 }) : null;
+    return { ...m, alt, posterSrc: poster?.src };
+  }),
+);
+---
+
+<div class="pmedia" data-pmedia style={`--ratio: ${ratio}`}>
+  <ul class="pmedia__track" tabindex={items.length > 1 ? 0 : undefined} aria-label={label}>
+    {
+      items.map((m, i) => (
+        <li class="pmedia__slide" aria-label={items.length > 1 ? `${i + 1} / ${items.length}` : undefined}>
+          {m.type === 'image' && <Image src={m.img} alt={m.alt} widths={[480, 800, 1200]} {sizes} quality={80} loading={eager && i === 0 ? 'eager' : 'lazy'} />}
+          {m.type === 'video' &&
+            (m.loop ? (
+              <>
+                <video src={m.src} poster={m.posterSrc} muted loop playsinline preload="none" data-autoplay aria-label={m.alt} />
+                <button class="pmedia__sound" type="button" data-sound aria-pressed="false" aria-label={pm.sound}>
+                  <Icon name="lucide:volume-x" class="pmedia__muted" />
+                  <Icon name="lucide:volume-2" class="pmedia__unmuted" />
+                </button>
+              </>
+            ) : (
+              <video src={m.src} poster={m.posterSrc} controls playsinline preload="metadata" aria-label={m.alt} />
+            ))}
+          {m.type === 'youtube' && (
+            <a class="pmedia__yt" href={`https://www.youtube.com/watch?v=${m.id}`} data-video={m.id} data-title={m.alt} aria-label={`${pm.play}: ${m.alt}`}>
+              {m.posterSrc ? <img src={m.posterSrc} alt="" loading="lazy" decoding="async" /> : <img src={`https://i.ytimg.com/vi/${m.id}/hqdefault.jpg`} alt="" loading="lazy" decoding="async" />}
+              <span class="pmedia__play" aria-hidden="true">
+                <Icon name="lucide:play" />
+              </span>
+            </a>
+          )}
+        </li>
+      ))
+    }
+  </ul>
+  {
+    items.length > 1 && (
+      <>
+        <button class="pmedia__btn pmedia__btn--prev" type="button" data-dir="-1" aria-label={a11y.prev}>
+          <Icon name="lucide:chevron-left" />
+        </button>
+        <button class="pmedia__btn pmedia__btn--next" type="button" data-dir="1" aria-label={a11y.next}>
+          <Icon name="lucide:chevron-right" />
+        </button>
+        <div class="pmedia__dots" aria-hidden="true">
+          {items.map((_, i) => (
+            <span class:list={{ 'is-on': i === 0 }} />
+          ))}
+        </div>
+      </>
+    )
+  }
+</div>
+
+<script>
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Looping clips play only while visible (and never with reduced motion).
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        const v = e.target as HTMLVideoElement;
+        if (e.isIntersecting && !reduce) v.play().catch(() => {});
+        else v.pause();
+      }
+    },
+    { threshold: 0.6 },
+  );
+
+  document.querySelectorAll<HTMLElement>('[data-pmedia]:not([data-ready])').forEach((root) => {
+    root.dataset.ready = '';
+    const track = root.querySelector<HTMLElement>('.pmedia__track')!;
+    const slides = Array.from(track.children) as HTMLElement[];
+    const dots = Array.from(root.querySelectorAll<HTMLElement>('.pmedia__dots span'));
+
+    root.querySelectorAll<HTMLVideoElement>('video[data-autoplay]').forEach((v) => {
+      if (reduce) v.controls = true;
+      else io.observe(v);
+    });
+    root.querySelectorAll<HTMLButtonElement>('[data-sound]').forEach((b) =>
+      b.addEventListener('click', () => {
+        const v = b.parentElement!.querySelector('video')!;
+        v.muted = !v.muted;
+        b.setAttribute('aria-pressed', String(!v.muted));
+        if (!v.muted) v.play().catch(() => {});
+      }),
+    );
+
+    if (slides.length < 2) return;
+    const current = () => Math.round(track.scrollLeft / track.clientWidth);
+    const go = (i: number) => track.scrollTo({ left: Math.max(0, Math.min(slides.length - 1, i)) * track.clientWidth, behavior: reduce ? 'auto' : 'smooth' });
+    root.querySelectorAll<HTMLButtonElement>('[data-dir]').forEach((b) => b.addEventListener('click', () => go(current() + Number(b.dataset.dir))));
+    track.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') go(current() + 1);
+      if (e.key === 'ArrowLeft') go(current() - 1);
+    });
+    track.addEventListener(
+      'scroll',
+      () => {
+        const i = current();
+        dots.forEach((d, j) => d.classList.toggle('is-on', i === j));
+        root.querySelector<HTMLElement>('.pmedia__btn--prev')!.hidden = i === 0;
+        root.querySelector<HTMLElement>('.pmedia__btn--next')!.hidden = i === slides.length - 1;
+        // Leaving a slide pauses its clip.
+        slides.forEach((s, j) => j !== i && s.querySelector('video')?.pause());
+      },
+      { passive: true },
+    );
+    root.querySelector<HTMLElement>('.pmedia__btn--prev')!.hidden = true;
+  });
+</script>
+
+<style is:global>
+  .pmedia {
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px;
+    background: #050a14;
+  }
+  .pmedia__track {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .pmedia__track::-webkit-scrollbar {
+    display: none;
+  }
+  .pmedia__slide {
+    position: relative;
+    flex: 0 0 100%;
+    aspect-ratio: var(--ratio, 4 / 5);
+    scroll-snap-align: start;
+  }
+  .pmedia__slide > img,
+  .pmedia__slide > video,
+  .pmedia__yt img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .pmedia__yt {
+    position: absolute;
+    inset: 0;
+    display: block;
+  }
+  .pmedia__play {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: #fff;
+  }
+  .pmedia__play svg {
+    width: 3.4rem;
+    height: 3.4rem;
+    padding: 0.9rem;
+    border-radius: 50%;
+    background: rgb(0 0 0 / 0.45);
+    backdrop-filter: blur(6px);
+    transition: transform 0.25s var(--ease-out);
+  }
+  .pmedia__yt:hover .pmedia__play svg {
+    transform: scale(1.08);
+  }
+  .pmedia__sound {
+    position: absolute;
+    right: 0.6rem;
+    bottom: 0.6rem;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(0 0 0 / 0.5);
+    color: #fff;
+    cursor: pointer;
+  }
+  .pmedia__sound svg {
+    width: 1rem;
+    height: 1rem;
+  }
+  .pmedia__sound[aria-pressed='true'] .pmedia__muted,
+  .pmedia__sound[aria-pressed='false'] .pmedia__unmuted {
+    display: none;
+  }
+  .pmedia__btn {
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.85);
+    color: #0a1626;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.3);
+  }
+  .pmedia__btn[hidden] {
+    display: none;
+  }
+  .pmedia__btn svg {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+  .pmedia__btn--prev {
+    left: 0.6rem;
+  }
+  .pmedia__btn--next {
+    right: 0.6rem;
+  }
+  .pmedia__dots {
+    position: absolute;
+    left: 50%;
+    bottom: 0.7rem;
+    translate: -50% 0;
+    display: flex;
+    gap: 0.3rem;
+  }
+  .pmedia__dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.5);
+    transition: background-color 0.25s;
+  }
+  .pmedia__dots span.is-on {
+    background: #fff;
+  }
+</style>

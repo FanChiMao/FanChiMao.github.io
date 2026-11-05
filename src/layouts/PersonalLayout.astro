@@ -2,9 +2,12 @@
 import Base from './Base.astro';
 import Nav from '@/components/Nav.astro';
 import Footer from '@/components/Footer.astro';
+import PassportToast from '@/components/personal/PassportToast.astro';
 import '@/styles/personal.css';
 import type { Locale } from '@/i18n/ui';
 import { personalUi } from '@/i18n/personal';
+import { localePath } from '@/i18n/ui';
+import { ACHIEVEMENTS } from '@/lib/passport';
 
 interface Props {
   lang: Locale;
@@ -15,16 +18,29 @@ interface Props {
   description?: string;
   /** Nav floats over a dark full-bleed hero. */
   overlay?: boolean;
+  noindex?: boolean;
 }
-const { lang, path, title, description, overlay = true } = Astro.props;
+const { lang, path, title, description, overlay = true, noindex = false } = Astro.props;
 const p = personalUi[lang];
+// Which part of the personal world this is, for the Explorer stamp ("home", "gallery", "journey"...).
+const chapter = path.replace(/^\/personal\/?/, '').split('/')[0] || 'home';
+// Toast strings live inside <main> so the in-place language switch updates them.
+const passportStrings = JSON.stringify({
+  toast: p.passport.toast,
+  earned: p.passport.earned,
+  view: p.passport.view,
+  href: localePath(lang, '/personal/achievements/'),
+  names: Object.fromEntries(ACHIEVEMENTS.map((a) => [a.id, p.passport.items[a.id].name])),
+});
 ---
 
-<Base {lang} {path} world="personal" fullTitle={title ? `${title} · 52Hz Fan` : p.meta.title} description={description ?? p.meta.description} ogAlt={p.meta.title}>
+<Base {lang} {path} world="personal" fullTitle={title ? `${title} · 52Hz Fan` : p.meta.title} description={description ?? p.meta.description} ogAlt={p.meta.title} {noindex}>
   <slot name="head" slot="head" />
   <Nav {lang} {path} world="personal" {overlay} />
-  <main id="main" class="pw">
+  <main id="main" class="pw" data-chapter={chapter}>
     <slot />
+    <div hidden data-passport-strings={passportStrings}></div>
   </main>
   <Footer {lang} {path} />
+  <PassportToast />
 </Base>

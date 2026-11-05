@@ -42,6 +42,8 @@ export function createBreach(canvas: HTMLCanvasElement, opts: { look: () => Brea
   let raf = 0;
   let w = 0;
   let h = 0;
+  /** Where the whale is while it is out of the water, for hit tests (52Hz Logbook). */
+  let live: { x: number; y: number; r: number } | null = null;
 
   const resize = () => {
     const dpr = Math.min(devicePixelRatio || 1, 1.5);
@@ -99,6 +101,7 @@ export function createBreach(canvas: HTMLCanvasElement, opts: { look: () => Brea
       // Whale state.
       const cy = water + 0.62 * L - (v0 * t - 0.5 * g * t * t);
       const cx = x0 + vx * t;
+      live = cy < water + 0.25 * L ? { x: cx, y: cy, r: 0.6 * L } : null;
       const vy = -(v0 - g * t);
       const ang = pitch(t);
       const s = L / LEN;
@@ -275,6 +278,7 @@ export function createBreach(canvas: HTMLCanvasElement, opts: { look: () => Brea
 
       const done = t > tEnd + 0.5 && parts.length === 0 && foam.every((f) => f.t >= f.max) && rings.every((r) => r.t >= r.max);
       if (done || !running) {
+        live = null;
         ctx.clearRect(0, 0, w, h);
         if (running) schedule();
         return;
@@ -300,10 +304,15 @@ export function createBreach(canvas: HTMLCanvasElement, opts: { look: () => Brea
     },
     stop() {
       running = false;
+      live = null;
       clearTimeout(timer);
       cancelAnimationFrame(raf);
       ctx.clearRect(0, 0, w, h);
     },
     resize,
+    /** Is the point (canvas coordinates) on the whale while it is in the air? */
+    hit(x: number, y: number) {
+      return !!live && Math.hypot(x - live.x, y - live.y) < live.r;
+    },
   };
 }

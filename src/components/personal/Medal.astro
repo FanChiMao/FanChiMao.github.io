@@ -1,0 +1,166 @@
+---
+/**
+ * Achievement badge: a struck-metal medal with an engraved rim, a recessed enamel face and an
+ * embossed icon. Locked by default (matte grey, lock glyph); any ancestor with
+ * [data-state='unlocked'] turns it into polished metal. The 52Hz badge is holographic.
+ * Styles are global because the badge is also cloned into the detail dialog and the toast.
+ */
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  icon: string;
+  class?: string;
+  [attr: `data-${string}`]: string | undefined;
+}
+const { icon, class: cls, ...rest } = Astro.props;
+---
+
+<span class:list={['medal', cls, { 'medal--hz': icon === '52hz' }]} aria-hidden="true" {...rest}>
+  <span class="medal__rim"></span>
+  <span class="medal__face">
+    {icon === '52hz' ? <span class="medal__hz medal__icon">52Hz</span> : <Icon name={`lucide:${icon}`} class="medal__icon" />}
+    <Icon name="lucide:lock" class="medal__lock" />
+  </span>
+  <span class="medal__shine"></span>
+</span>
+
+<style is:global>
+  .medal {
+    /* Locked: brushed steel, dark face. */
+    --m1: #b9c2cf;
+    --m2: #5b6576;
+    --m3: #d9dfe8;
+    --m4: #3a4352;
+    --f1: #222c3a;
+    --f2: #0c121b;
+    --ink: rgb(214 224 238 / 0.42);
+    --size: 5.5rem;
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: var(--size);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    isolation: isolate;
+    filter: drop-shadow(0 10px 18px rgb(0 0 0 / 0.32));
+  }
+  [data-state='unlocked'] .medal {
+    /* Polished gold. */
+    --m1: #fff3cc;
+    --m2: #c48f33;
+    --m3: #ffe7a6;
+    --m4: #7d5718;
+    --f1: #27507a;
+    --f2: #0a1a2e;
+    --ink: #f7dd94;
+  }
+  [data-state='unlocked'] .medal--hz {
+    /* Holographic for the 52Hz badge. */
+    --m1: #d8fbff;
+    --m2: #5aa6ff;
+    --m3: #f0d6ff;
+    --m4: #2f5fd0;
+    --f1: #1c3f70;
+    --f2: #071328;
+    --ink: #c9f3ff;
+  }
+  .medal__rim {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(from 210deg, var(--m1), var(--m2) 18%, var(--m3) 36%, var(--m4) 55%, var(--m3) 72%, var(--m2) 86%, var(--m1));
+    box-shadow:
+      inset 0 1px 1px rgb(255 255 255 / 0.65),
+      inset 0 -2px 3px rgb(0 0 0 / 0.4);
+  }
+  /* Engraved ticks around the rim. */
+  .medal__rim::after {
+    content: '';
+    position: absolute;
+    inset: 5%;
+    border-radius: 50%;
+    background: repeating-conic-gradient(rgb(0 0 0 / 0.22) 0 1.6deg, transparent 1.6deg 7.5deg);
+    -webkit-mask: radial-gradient(circle, transparent 78%, #000 79%, #000 92%, transparent 93%);
+    mask: radial-gradient(circle, transparent 78%, #000 79%, #000 92%, transparent 93%);
+  }
+  .medal__face {
+    position: absolute;
+    inset: 15%;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: radial-gradient(circle at 34% 26%, var(--f1), var(--f2) 72%);
+    box-shadow:
+      inset 0 4px 9px rgb(0 0 0 / 0.6),
+      inset 0 -1px 2px rgb(255 255 255 / 0.16),
+      0 0 0 1px rgb(0 0 0 / 0.3),
+      0 1px 0 1px rgb(255 255 255 / 0.25);
+    color: var(--ink);
+  }
+  .medal__icon,
+  .medal__lock {
+    grid-area: 1 / 1;
+  }
+  .medal :is(svg.medal__icon, svg.medal__lock) {
+    width: 44%;
+    height: 44%;
+    stroke-width: 2.2;
+    /* Embossed: light from above-left, shadow below. */
+    filter: drop-shadow(0 -0.5px 0 rgb(255 255 255 / 0.35)) drop-shadow(0 1.5px 1px rgb(0 0 0 / 0.65));
+  }
+  .medal__hz {
+    font-family: var(--font-display);
+    font-size: calc(var(--size) * 0.23);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    background: linear-gradient(170deg, var(--m1), var(--m3) 45%, var(--m2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 1.5px 1px rgb(0 0 0 / 0.6));
+  }
+  .medal__icon {
+    display: none;
+  }
+  [data-state='unlocked'] .medal .medal__icon {
+    display: block;
+  }
+  [data-state='unlocked'] .medal .medal__lock {
+    display: none;
+  }
+  /* A light sweep across polished badges on hover. */
+  .medal__shine {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .medal__shine::before {
+    content: '';
+    position: absolute;
+    inset: -20%;
+    background: linear-gradient(115deg, transparent 38%, rgb(255 255 255 / 0.55) 50%, transparent 62%);
+    translate: -70% 0;
+    opacity: 0;
+  }
+  [data-state='unlocked'] :is(:hover, :focus-visible) > .medal .medal__shine::before,
+  [data-state='unlocked'] .medal.is-shining .medal__shine::before {
+    animation: medal-shine 0.9s var(--ease-out);
+  }
+  @keyframes medal-shine {
+    from {
+      translate: -70% 0;
+      opacity: 1;
+    }
+    to {
+      translate: 70% 0;
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .medal__shine::before {
+      animation: none !important;
+    }
+  }
+</style>

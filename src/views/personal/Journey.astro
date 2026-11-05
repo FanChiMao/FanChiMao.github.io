@@ -1,0 +1,237 @@
+---
+/**
+ * /personal/journey/: first times and journeys worth remembering, newest first on a timeline.
+ * Milestones come from src/content/journey/*.json; nothing here is invented.
+ */
+import { Icon } from 'astro-icon/components';
+import { getCollection } from 'astro:content';
+import PersonalLayout from '@/layouts/PersonalLayout.astro';
+import PostMedia from '@/components/personal/PostMedia.astro';
+import { localeMeta, type Locale } from '@/i18n/ui';
+import { personalUi } from '@/i18n/personal';
+
+interface Props {
+  lang: Locale;
+}
+const { lang } = Astro.props;
+const p = personalUi[lang];
+const c = p.chapters.journey;
+const pick = (v: string | Record<Locale, string> | undefined) => (v === undefined ? undefined : typeof v === 'string' ? v : v[lang]);
+const fmt = new Intl.DateTimeFormat(localeMeta[lang].htmlLang, { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+
+const ICON = { run: 'footprints', dive: 'waves', jump: 'mountain-snow', hike: 'mountain', ride: 'bike', travel: 'plane', other: 'flag' } as const;
+const items = (await getCollection('journey', ({ data }) => !data.draft)).sort((a, b) => b.data.date.localeCompare(a.data.date));
+// Group by year, keeping the newest-first order.
+const years = [...new Set(items.map((x) => x.data.date.slice(0, 4)))].map((y) => ({ year: y, items: items.filter((x) => x.data.date.startsWith(y)) }));
+---
+
+<PersonalLayout {lang} path="/personal/journey/" title={c.name} description={c.blurb} overlay={false} noindex={items.length === 0}>
+  <div class="journey pw-page pw-sea">
+    <div class="container journey__inner">
+      <header class="pw-head">
+        <p class="pw-kicker" data-reveal>{c.kind}</p>
+        <h1 class="pw-head__title serif" data-reveal style="--i:1">{c.name}</h1>
+        <p class="pw-head__lead" data-reveal style="--i:2">{c.blurb}</p>
+      </header>
+
+      {
+        items.length === 0 ? (
+          <p class="journey__empty" data-reveal>
+            <Icon name="lucide:flag" />
+            {p.journey.empty}
+          </p>
+        ) : (
+          <ol class="milestones">
+            {years.map(({ year, items: list }) => (
+              <li class="milestones__year">
+                <h2 class="milestones__label" data-reveal>
+                  {year}
+                </h2>
+                <ol class="milestones__list">
+                  {list.map((m, i) => {
+                    const title = pick(m.data.title) ?? '';
+                    const place = pick(m.data.place);
+                    const story = pick(m.data.story) ?? '';
+                    return (
+                      <li class="milestone" data-reveal="right" style={`--i:${i}`}>
+                        <span class="milestone__dot" aria-hidden="true">
+                          <Icon name={`lucide:${ICON[m.data.category]}`} />
+                        </span>
+                        <article class="milestone__card">
+                          <header class="milestone__head">
+                            <p class="milestone__tags">
+                              <span class="badge">{p.journey.categories[m.data.category]}</span>
+                              {m.data.first && <span class="badge milestone__first">{p.journey.first}</span>}
+                            </p>
+                            <h3 class="milestone__title">{title}</h3>
+                            <p class="milestone__meta">
+                              <time datetime={m.data.date}>{fmt.format(new Date(`${m.data.date}T00:00:00Z`))}</time>
+                              {place && (
+                                <span>
+                                  <Icon name="lucide:map-pin" />
+                                  {place}
+                                </span>
+                              )}
+                            </p>
+                            {m.data.stat && <p class="milestone__stat">{m.data.stat}</p>}
+                          </header>
+                          {m.data.media.length > 0 && <PostMedia {lang} media={m.data.media} label={title} ratio="16 / 10" sizes="(min-width: 900px) 720px, 100vw" />}
+                          <div class="milestone__story">
+                            {story.split(/\n{2,}/).map((para) => (
+                              <p>{para}</p>
+                            ))}
+                          </div>
+                        </article>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </li>
+            ))}
+          </ol>
+        )
+      }
+    </div>
+  </div>
+</PersonalLayout>
+
+<style>
+  .journey__inner {
+    display: grid;
+    gap: 2.75rem;
+    max-width: 860px;
+  }
+  .journey__empty {
+    display: grid;
+    justify-items: center;
+    gap: 0.8rem;
+    padding: 4rem 1rem;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+    color: var(--muted);
+    text-align: center;
+  }
+  .journey__empty :global(svg) {
+    width: 2rem;
+    height: 2rem;
+    color: var(--accent);
+  }
+
+  .milestones,
+  .milestones__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .milestones {
+    display: grid;
+    gap: 2.5rem;
+  }
+  .milestones__label {
+    margin-bottom: 1.1rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    color: var(--accent);
+  }
+  .milestones__list {
+    position: relative;
+    display: grid;
+    gap: 1.75rem;
+    padding-left: 3.25rem;
+  }
+  /* The trail */
+  .milestones__list::before {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 2px;
+    border-radius: 2px;
+    background: linear-gradient(var(--accent), var(--accent-2));
+    opacity: 0.45;
+  }
+  .milestone {
+    position: relative;
+    z-index: 1;
+  }
+  .milestone__dot {
+    position: absolute;
+    left: -3.25rem;
+    top: 1.2rem;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-elev);
+    color: var(--accent);
+  }
+  .milestone__dot :global(svg) {
+    width: 18px;
+    height: 18px;
+  }
+  .milestone__card {
+    display: grid;
+    gap: 1rem;
+    padding: clamp(1.1rem, 3vw, 1.5rem);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--bg-elev) 80%, transparent);
+    backdrop-filter: blur(6px);
+  }
+  .milestone__head {
+    display: grid;
+    gap: 0.45rem;
+  }
+  .milestone__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .milestone__first {
+    background: color-mix(in srgb, #f4c55a 18%, transparent);
+    color: #b7791f;
+  }
+  :global([data-theme='dark']) .milestone__first {
+    color: #f4c55a;
+  }
+  .milestone__title {
+    font-size: clamp(1.25rem, 2.4vw, 1.55rem);
+    line-height: 1.3;
+  }
+  .milestone__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 1rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .milestone__meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .milestone__meta :global(svg) {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+  .milestone__stat {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .milestone__story {
+    display: grid;
+    gap: 0.75rem;
+    color: var(--text-2);
+    line-height: 1.8;
+    white-space: pre-line;
+  }
+</style>

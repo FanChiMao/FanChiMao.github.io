@@ -90,3 +90,46 @@
     background-color 0.2s,
     transform 0.2s;
 }
+
+/* Full-page sea backdrop for chapter pages (gallery, achievements): deep water by night,
+   a pale morning sea by day. */
+[data-world='personal'] .pw-sea {
+  background:
+    radial-gradient(60% 40% at 50% 0%, rgb(40 110 170 / 0.28), transparent 70%),
+    linear-gradient(to bottom, var(--abyss), #051530 55%, var(--abyss));
+}
+[data-world='personal'][data-theme='light'] .pw-sea {
+  background:
+    radial-gradient(60% 40% at 50% 0%, rgb(120 190 230 / 0.35), transparent 70%),
+    linear-gradient(to bottom, #e9f2f8, #f6f9fb 55%, #eaf1f6);
+}
+
+/* Page header shared by the personal chapter pages (gallery, achievements, placeholders):
+   kicker, serif title and lead, all centred. */
+[data-world='personal'] .pw-head {
+  display: grid;
+  justify-items: center;
+  gap: 0.8rem;
+  text-align: center;
+}
+[data-world='personal'] .pw-head .pw-kicker {
+  /* Keep the authored case: uppercasing would turn "52Hz" into "52HZ". */
+  text-transform: none;
+  letter-spacing: 0.22em;
+}
+[data-world='personal'] .pw-head__title {
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  line-height: 1;
+}
+[data-world='personal'] .pw-head__lead {
+  max-width: 38rem;
+  font-size: 1.05rem;
+  color: var(--muted);
+}
+
+/* Page shell for the personal chapter pages, so headers line up from page to page. */
+[data-world='personal'] .pw-page {
+  min-height: 100svh;
+  padding: calc(var(--nav-h) + 3rem) 0 5rem;
+}
+

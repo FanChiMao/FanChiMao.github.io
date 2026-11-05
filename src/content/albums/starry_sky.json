@@ -1,7 +1,9 @@
 {
   "order": 0,
   "emoji": "🌌",
-  "categories": ["astro"],
+  "categories": [
+    "astro"
+  ],
   "title": {
     "en": "Starry Sky",
     "zh-tw": "星空",
@@ -65,6 +67,21 @@
         "陽明山擎天崗 雙子座流星雨",
         "2023.12.14"
       ]
+    },
+    {
+      "src": "gallery/starry_sky/00008.jpg",
+      "caption": [],
+      "exif": {
+        "camera": "Apple iPhone 15 Pro Max",
+        "focalLength": 24,
+        "aperture": 1.78,
+        "shutter": "30s",
+        "iso": 2500
+      }
+    },
+    {
+      "src": "gallery/starry_sky/00009.jpg",
+      "caption": []
     }
   ]
 }
