@@ -1,4 +1,5 @@
-import { env, SELF } from 'cloudflare:test';
+import { createExecutionContext, env, SELF, waitOnExecutionContext } from 'cloudflare:test';
+import worker from '../src/index';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ACHIEVEMENT_IDS } from '../../../src/lib/achievements';
 
@@ -156,6 +157,35 @@ describe('Ajie likes', () => {
     expect((await like(secret(), 'Bad_ID!')).status).toBe(400);
     const res = await SELF.fetch(`${API}/v1/ajie/likes/2025-10-04-adoption`, { method: 'PUT' });
     expect(res.status).toBe(401);
+  });
+
+  it('only accepts likes on real posts, so the public counts cannot be padded', async () => {
+    const res = await like(secret(), 'this-post-does-not-exist');
+    expect(res.status).toBe(404);
+    expect((await res.json<{ error: { code: string } }>()).error.code).toBe('NOT_FOUND');
+    const stored = await env.DB.prepare('SELECT COUNT(*) AS c FROM ajie_likes').first<{ c: number }>();
+    expect(stored!.c).toBe(0);
+  });
+
+  it('answers 400, not 503, to broken percent-encoding', async () => {
+    const res = await like(secret(), '%E0%A4%A');
+    expect(res.status).toBe(400);
+    expect((await res.json<{ error: { code: string } }>()).error.code).toBe('BAD_REQUEST');
+  });
+});
+
+describe('configuration', () => {
+  it('refuses writes when RATE_SALT is missing instead of hashing IPs with a guessable salt', async () => {
+    const ctx = createExecutionContext();
+    const req = new Request(`${API}/v1/passport/sync`, {
+      method: 'POST',
+      headers: { Origin: ORIGIN, 'Content-Type': 'application/json', Authorization: `Bearer ${secret()}` },
+      body: JSON.stringify({ achievementIds: [] }),
+    });
+    const res = await worker.fetch(req, { ...env, RATE_SALT: undefined } as typeof env, ctx);
+    await waitOnExecutionContext(ctx);
+    expect(res.status).toBe(503);
+    expect((await snapshot()).n).toBe(0); // nothing written
   });
 });
 

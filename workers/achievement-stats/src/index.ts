@@ -8,10 +8,14 @@
  *   DELETE /v1/ajie/likes/:postId      take the like back (Bearer secret)
  *   GET    /health
  *
+ * Writes need the RATE_SALT secret; without it they answer 503 instead of rate limiting on a
+ * guessable key. Likes are accepted only for the posts in src/data/ajie-posts.ts.
+ *
  * The browser keeps a random installation secret; only its SHA-256 digest is stored. No IP,
  * user agent, name or location is ever written to D1 or logged.
  */
 import { ACHIEVEMENT_IDS } from '../../../src/lib/achievements';
+import { AJIE_POST_IDS } from '../../../src/data/ajie-posts';
 
 export interface Env {
   DB: D1Database;
@@ -27,6 +31,8 @@ const MAX_IDS = 64;
 const STATS_TTL = 300; // seconds, Worker cache
 const LIKES_TTL = 60;
 const VALID_IDS = new Set<string>(ACHIEVEMENT_IDS);
+/** Only real posts can be liked, so the table and the public counts cannot be padded with junk IDs. */
+const VALID_POSTS = new Set<string>(AJIE_POST_IDS);
 const POST_ID = /^[a-z0-9][a-z0-9-]{0,79}$/;
 const SECRET = /^[A-Za-z0-9_-]{43}$/; // 32 random bytes, base64url without padding
 
@@ -76,9 +82,14 @@ async function visitorHash(req: Request): Promise<string> {
 
 /** Per-visitor and per-IP write limits. The IP key is a salted, hourly-rotating hash: never stored. */
 async function limit(req: Request, env: Env, visitor: string) {
+  // Without the secret salt the IP key would be guessable: refuse writes rather than weaken it.
+  if (!env.RATE_SALT) {
+    console.error('stats-api misconfigured: RATE_SALT is not set');
+    throw new HttpError('UNAVAILABLE', 'Service unavailable.');
+  }
   const ip = req.headers.get('CF-Connecting-IP') ?? 'unknown';
   const hour = Math.floor(Date.now() / 3_600_000);
-  const ipKey = await sha256Hex(`${env.RATE_SALT ?? 'dev'}:${hour}:${ip}`);
+  const ipKey = await sha256Hex(`${env.RATE_SALT}:${hour}:${ip}`);
   const checks = await Promise.all([env.VISITOR_LIMITER?.limit({ key: visitor }), env.IP_LIMITER?.limit({ key: ipKey })]);
   if (checks.some((c) => c && !c.success)) throw new HttpError('RATE_LIMITED', 'Too many requests.', { 'Retry-After': '60' });
 }
@@ -170,6 +181,7 @@ async function likeCounts(env: Env) {
 
 async function like(req: Request, env: Env, ctx: ExecutionContext, postId: string, on: boolean) {
   if (!POST_ID.test(postId)) throw new HttpError('BAD_REQUEST', 'Malformed post id.');
+  if (!VALID_POSTS.has(postId)) throw new HttpError('NOT_FOUND', 'Unknown post.');
   const visitor = await visitorHash(req);
   await limit(req, env, visitor);
   const now = Date.now();
@@ -207,8 +219,14 @@ async function route(req: Request, env: Env, ctx: ExecutionContext): Promise<Res
   }
   const lm = /^\/v1\/ajie\/likes\/([^/]+)$/.exec(pathname);
   if (lm) {
-    if (m === 'PUT') return like(req, env, ctx, decodeURIComponent(lm[1]), true);
-    if (m === 'DELETE') return like(req, env, ctx, decodeURIComponent(lm[1]), false);
+    let postId: string;
+    try {
+      postId = decodeURIComponent(lm[1]);
+    } catch {
+      throw new HttpError('BAD_REQUEST', 'Malformed post id.'); // broken %-encoding
+    }
+    if (m === 'PUT') return like(req, env, ctx, postId, true);
+    if (m === 'DELETE') return like(req, env, ctx, postId, false);
     throw new HttpError('METHOD_NOT_ALLOWED', 'Use PUT or DELETE.');
   }
   throw new HttpError('NOT_FOUND', 'Not found.');

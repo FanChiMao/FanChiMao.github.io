@@ -1,4 +1,5 @@
 ---
+import { AJIE_POST_IDS } from '@/data/ajie-posts';
 /**
  * /personal/companion/: Ajie, as an IG-style profile. A header with Ajie's facts, a grid of
  * square thumbnails, and one dialog per post (photos / clips, caption, date, place).
@@ -26,6 +27,9 @@ const fmt = new Intl.DateTimeFormat(localeMeta[lang].htmlLang, { year: 'numeric'
 const day = (iso: string) => (/^\d{4}$/.test(iso) ? iso : fmt.format(new Date(`${iso}T00:00:00Z`)));
 
 const posts = (await getCollection('ajie', ({ data }) => !data.draft)).sort((a, b) => Number(!!b.data.pinned) - Number(!!a.data.pinned) || b.data.date.localeCompare(a.data.date));
+// The stats Worker only accepts likes on listed posts: fail the build if one is missing.
+const unlisted = posts.map((post) => post.id).filter((id) => !(AJIE_POST_IDS as readonly string[]).includes(id));
+if (unlisted.length) throw new Error(`Add these Ajie post IDs to src/data/ajie-posts.ts (and redeploy the stats Worker): ${unlisted.join(', ')}`);
 /** Thumbnail: the first photo, or the poster of the first clip. */
 const thumbOf = (m: (typeof posts)[number]['data']['media'][number]) => (m.type === 'image' ? m.src : m.poster);
 const facts = [
