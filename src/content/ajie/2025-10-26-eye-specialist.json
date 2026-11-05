@@ -59,6 +59,17 @@
         "zh-cn": "阿桔戴着头套躺在床上，旁边是绿色毯子",
         "ja": "緑の毛布のそばで、カラーをつけてベッドに横たわるアジエ"
       }
+    },
+    {
+      "type": "video",
+      "src": "/media/ajie/2025-10-26-cone-nap.mp4",
+      "poster": "ajie/2025-10-26-eye-specialist/cone-nap-poster.jpg",
+      "alt": {
+        "en": "Ajie dozing in his cone, eyes closed",
+        "zh-tw": "阿桔戴著頭套閉眼打盹",
+        "zh-cn": "阿桔戴着头套闭眼打盹",
+        "ja": "エリザベスカラーをつけて目を閉じ、うとうとするアジエ"
+      }
     }
   ],
   "caption": {
