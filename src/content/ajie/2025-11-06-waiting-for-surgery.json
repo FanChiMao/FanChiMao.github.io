@@ -7,6 +7,12 @@
     "zh-cn": "持续照护等待手术",
     "ja": "手術を待ちながら続くケア"
   },
+  "location": {
+    "en": "Dong Xian Animal Hospital",
+    "zh-tw": "東憲動物醫院",
+    "zh-cn": "东宪动物医院",
+    "ja": "東憲動物病院"
+  },
   "cover": {
     "src": "ajie/2025-11-06-waiting-for-surgery/1b335f15-47b0-466f-88bf-011dcff2b7d0.jpg"
   },

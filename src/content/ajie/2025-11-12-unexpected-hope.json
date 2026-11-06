@@ -1,10 +1,17 @@
 {
   "date": "2025-11-12",
+  "from": "2025-11-07",
   "title": {
     "en": "An Unexpected Turn on Surgery Day",
     "zh-tw": "手術當天的意外轉機",
     "zh-cn": "手术当天的意外转机",
     "ja": "手術当日の思いがけない転機"
+  },
+  "location": {
+    "en": "Dong Xian Animal Hospital",
+    "zh-tw": "東憲動物醫院",
+    "zh-cn": "东宪动物医院",
+    "ja": "東憲動物病院"
   },
   "cover": {
     "src": "ajie/2025-11-12-unexpected-hope/4b63edb8-d758-49f8-85b6-5ad6b822b53f.jpg",

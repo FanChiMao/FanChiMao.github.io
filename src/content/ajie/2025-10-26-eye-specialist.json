@@ -7,6 +7,12 @@
     "zh-cn": "头套与眼药水",
     "ja": "カラーと目薬"
   },
+  "location": {
+    "en": "Dong Xian Animal Hospital",
+    "zh-tw": "東憲動物醫院",
+    "zh-cn": "东宪动物医院",
+    "ja": "東憲動物病院"
+  },
   "cover": {
     "src": "ajie/2025-10-26-eye-specialist/cover.jpg",
     "alt": {

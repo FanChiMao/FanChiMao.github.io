@@ -7,6 +7,12 @@
     "zh-cn": "佛系喂药的一周",
     "ja": "運まかせの投薬の一週間"
   },
+  "location": {
+    "en": "Mao Hai Zi Animal Hospital",
+    "zh-tw": "毛孩子動物醫院",
+    "zh-cn": "毛孩子动物医院",
+    "ja": "毛孩子動物病院"
+  },
   "cover": {
     "src": "ajie/2025-10-19-meds-and-wet-food/cover.jpg",
     "alt": {

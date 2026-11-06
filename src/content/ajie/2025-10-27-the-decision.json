@@ -6,6 +6,12 @@
     "zh-cn": "最难的决定",
     "ja": "いちばんつらい決断"
   },
+  "location": {
+    "en": "Dong Xian Animal Hospital",
+    "zh-tw": "東憲動物醫院",
+    "zh-cn": "东宪动物医院",
+    "ja": "東憲動物病院"
+  },
   "cover": {
     "src": "ajie/2025-10-27-the-decision/cover.jpg",
     "alt": {
