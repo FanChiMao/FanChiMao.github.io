@@ -333,6 +333,8 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     );
 
     globeEl.querySelector('[data-globe-reset]')!.addEventListener('click', () => globe?.reset());
+    // Long-press on a phone: no context menu (save image / select) over the globe.
+    stage.addEventListener('contextmenu', (e) => e.preventDefault());
     globeEl.querySelector('[data-globe-close]')!.addEventListener('click', closePanel);
     globeEl.querySelector('[data-globe-read]')!.addEventListener('click', () => {
       const m = current ? byId(current) : null;
@@ -705,6 +707,16 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     --globe-dot: rgba(130, 226, 245, 0.9);
     --globe-grid: rgba(120, 200, 255, 0.09);
     --globe-glow: #4fb6ff;
+  }
+  /* Long-pressing to turn the globe on a phone must not select text or pop up the callout menu
+     (the panel's text stays selectable). */
+  .jglobe__stage,
+  .jglobe__tools,
+  .jglobe__stage :global(*) {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
   }
   .jglobe__stage {
     position: relative;
