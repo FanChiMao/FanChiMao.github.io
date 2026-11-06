@@ -56,7 +56,7 @@ export const posterName = (video: string) => video.replace(/\.mp4$/, '-poster.jp
 
 const KEYS: Record<Kind, string[]> = {
   ajie: ['date', 'from', 'title', 'location', 'cover', 'media', 'caption', 'pinned', 'draft'],
-  journey: ['date', 'category', 'title', 'place', 'stat', 'media', 'story', 'draft'],
+  journey: ['date', 'category', 'title', 'place', 'coords', 'stat', 'media', 'story', 'draft'],
   album: ['order', 'emoji', 'categories', 'title', 'cover', 'photos', 'draft'],
 };
 const PHOTO_KEYS = ['src', 'caption', 'title', 'description', 'taken', 'exif', 'link'];
@@ -174,6 +174,11 @@ export function checkPost(kind: Kind, id: string, input: unknown, uploaded: Read
     text('place', post.place, false);
     if (!(JOURNEY_CATEGORIES as readonly unknown[]).includes(post.category)) err(`「category」要是其中一個：${JOURNEY_CATEGORIES.join(', ')}`);
     if (post.stat !== undefined && (typeof post.stat !== 'string' || post.stat.length > 40)) err('「stat」要是 40 字以內的文字');
+    if (post.coords !== undefined) {
+      const c = post.coords as { lat?: unknown; lng?: unknown };
+      const ok = isObj(c) && Object.keys(c).every((k) => k === 'lat' || k === 'lng') && typeof c.lat === 'number' && typeof c.lng === 'number' && Math.abs(c.lat) <= 90 && Math.abs(c.lng) <= 180;
+      if (!ok) err('「coords」要是 { "lat": 緯度, "lng": 經度 }（十進位數字，例如 { "lat": 3.1532, "lng": 101.7135 }）');
+    }
   }
 
   const media = post.media ?? (kind === 'journey' ? [] : undefined);
@@ -302,6 +307,7 @@ ${common}
 - category：${JOURNEY_CATEGORIES.join(' / ')}（跑步 / 潛水 / 跳傘 / 登山 / 騎車 / 旅行 / 其他）
 - title：標題
 - place?：地點
+- coords?：地點座標，給地球檢視用 { "lat": 緯度, "lng": 經度 }（十進位，越精確越好，例如 Google 地圖右鍵複製的數字）
 - stat?：成績，例如 "2:05:30"、"18 m"
 - media?：照片 / 影片，照「已上傳的檔案」的順序（格式同下），可省略
   - { "type": "image", "src": "檔名.jpg", "alt"?: 說明 }
@@ -317,6 +323,7 @@ ${common}
   "category": "run",
   "title": ${t},
   "place": "台北",
+  "coords": { "lat": 25.0408, "lng": 121.5598 },
   "stat": "2:05:30",
   "media": [{ "type": "image", "src": "finish-line.jpg" }],
   "story": ${t}

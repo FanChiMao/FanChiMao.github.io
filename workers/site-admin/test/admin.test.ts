@@ -222,6 +222,9 @@ describe('content building', () => {
     expect(() => buildPost({ ...base, post: { ...(base.post as object), category: 'swim' } })).toThrow(/category/);
     expect(() => buildPost({ ...base, post: { date: '2026-01-11', category: 'run', story: 'x' } })).toThrow(/title/);
     expect(() => buildPost({ ...base, post: { ...(base.post as object), caption: 'x' } })).toThrow(/caption/);
+    expect(buildPost({ ...base, post: { ...(base.post as object), coords: { lat: 3.1532, lng: 101.7135 } } }).post.coords).toEqual({ lat: 3.1532, lng: 101.7135 });
+    expect(() => buildPost({ ...base, post: { ...(base.post as object), coords: { lat: '3.15', lng: 101.7 } } })).toThrow(/coords/);
+    expect(() => buildPost({ ...base, post: { ...(base.post as object), coords: { lat: 95, lng: 0 } } })).toThrow(/coords/);
   });
 
   it('album: photos in the gallery folder, cover defaults to the first photo', () => {

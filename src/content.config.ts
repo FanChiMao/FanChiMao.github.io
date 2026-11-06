@@ -192,6 +192,8 @@ const journey = defineCollection({
     category: z.enum(journeyCategories),
     title: textOrT,
     place: textOrT.optional(),
+    /** Where it happened, for the globe view: one point, as precise as you like (decimal degrees). */
+    coords: z.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) }).optional(),
     /** A result worth showing, e.g. "4:28:10" or "18 m". */
     stat: z.string().optional(),
     media: z.array(media).default([]),
