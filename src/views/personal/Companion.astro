@@ -68,7 +68,8 @@ const bio = pick(ajieProfile.bio);
 
 // Calendar view: one month at a time (switchable), from the first post's month to the last's.
 // Weeks start on Sunday; dates are plain calendar days (UTC, like the post dates). A post covers
-// its period (from .. date): the first day shows its thumbnail, the other days a band.
+// its period (from .. date): the last day (the post's date) shows its thumbnail, the days
+// before it a band leading up to it.
 const monthFmt = new Intl.DateTimeFormat(localeMeta[lang].htmlLang, { year: 'numeric', month: 'long', timeZone: 'UTC' });
 const weekdayFmt = new Intl.DateTimeFormat(localeMeta[lang].htmlLang, { weekday: 'narrow', timeZone: 'UTC' });
 // 2023-01-01 was a Sunday.
@@ -96,7 +97,8 @@ if (span) {
     const cells = Array.from({ length: days }, (_, d) => {
       const k = `${ym}-${String(d + 1).padStart(2, '0')}`;
       const list = cover.get(k) ?? [];
-      const pi = list[0];
+      // Where periods overlap, the post that ends here wins the cell (its thumbnail belongs here).
+      const pi = list.find((i) => posts[i].data.date === k) ?? list[0];
       if (pi === undefined) return { day: d + 1, iso: k, start: false, end: false, more: 0 };
       const post = posts[pi].data;
       return { day: d + 1, iso: k, post: pi, start: k === (post.from ?? post.date), end: k === post.date, more: list.length - 1 };
@@ -232,13 +234,13 @@ if (span) {
                     const post = posts[cell.post];
                     const first = post.data.media[0];
                     const wd = (mo.lead + k) % 7;
-                    // Band edges: rounded where the period starts / ends, or the week wraps.
-                    const cls = ['ajie__day', 'ajie__day--post', cell.start ? 'is-start' : 'is-mid', { 'is-from': cell.start || wd === 0, 'is-to': cell.end || wd === 6 }];
+                    // Band edges: rounded where the period starts, or the week wraps; it runs into the thumbnail.
+                    const cls = ['ajie__day', 'ajie__day--post', cell.end ? 'is-thumb' : 'is-mid', { 'is-from': cell.start || wd === 0, 'is-to': cell.end || wd === 6 }];
                     return (
                       <li class:list={cls} style={lead}>
                         <button class="ajie__day-btn" type="button" data-open={cell.post} aria-label={`${p.ajie.open}: ${pick(post.data.title) ?? when(post.data)}, ${when(post.data)}`}>
-                          {cell.start && post.data.cover && <Image class="ajie__thumb ajie__thumb--ai" src={asset(post.data.cover.src)} alt="" widths={[160, 320]} sizes="(min-width: 900px) 90px, 14vw" quality={70} loading="lazy" />}
-                          {cell.start && <Image class:list={['ajie__thumb', 'ajie__thumb--real', { 'ajie__thumb--behind-ai': post.data.cover }]} src={asset(thumbOf(first)!)} alt="" widths={[160, 320]} sizes="(min-width: 900px) 90px, 14vw" quality={70} loading="lazy" />}
+                          {cell.end && post.data.cover && <Image class="ajie__thumb ajie__thumb--ai" src={asset(post.data.cover.src)} alt="" widths={[160, 320]} sizes="(min-width: 900px) 90px, 14vw" quality={70} loading="lazy" />}
+                          {cell.end && <Image class:list={['ajie__thumb', 'ajie__thumb--real', { 'ajie__thumb--behind-ai': post.data.cover }]} src={asset(thumbOf(first)!)} alt="" widths={[160, 320]} sizes="(min-width: 900px) 90px, 14vw" quality={70} loading="lazy" />}
                           <span class="ajie__day-num" aria-hidden="true">{cell.day}</span>
                           {cell.more > 0 && (
                             <span class="ajie__day-more" aria-hidden="true">
@@ -263,7 +265,7 @@ if (span) {
         const caption = pick(post.data.caption) ?? '';
         const place = pick(post.data.location);
         return (
-          <dialog class="ajie-post" data-post={i} data-slug={post.id} aria-label={`${c.name}${post.data.title ? ` – ${pick(post.data.title)}` : ''} · ${when(post.data)}`}>
+          <dialog class="ajie-post" data-post={i} data-slug={post.id} data-date={post.data.date} aria-label={`${c.name}${post.data.title ? ` – ${pick(post.data.title)}` : ''} · ${when(post.data)}`}>
             <div class="ajie-post__media">
               <PostMedia {lang} media={post.data.cover ? [{ type: 'image', src: post.data.cover.src, alt: post.data.cover.alt, fit: 'contain' }, ...post.data.media] : post.data.media} firstIsAi={Boolean(post.data.cover)} label={`${c.name} · ${when(post.data)}`} ratio="4 / 5" sizes="(min-width: 900px) 520px, 100vw" />
             </div>
@@ -310,15 +312,15 @@ if (span) {
             <button class="icon-btn ajie-post__close" type="button" data-close aria-label={p.posts.close}>
               <Icon name="lucide:x" />
             </button>
-            {i > 0 && (
-              <button class="ajie-post__nav ajie-post__nav--prev" type="button" data-step="-1" aria-label={p.posts.prev}>
-                <Icon name="lucide:chevron-left" />
-              </button>
-            )}
-            {i < posts.length - 1 && (
-              <button class="ajie-post__nav ajie-post__nav--next" type="button" data-step="1" aria-label={p.posts.next}>
-                <Icon name="lucide:chevron-right" />
-              </button>
+            {posts.length > 1 && (
+              <>
+                <button class="ajie-post__nav ajie-post__nav--prev" type="button" data-step="-1" aria-label={p.posts.prev}>
+                  <Icon name="lucide:chevron-left" />
+                </button>
+                <button class="ajie-post__nav ajie-post__nav--next" type="button" data-step="1" aria-label={p.posts.next}>
+                  <Icon name="lucide:chevron-right" />
+                </button>
+              </>
             )}
           </dialog>
         );
@@ -390,10 +392,27 @@ if (span) {
     const dialogs = Array.from(root.querySelectorAll<HTMLDialogElement>('dialog[data-post]'));
     const tiles = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-open]'));
     let opener: HTMLElement | null = null;
+    /**
+     * The order the arrows walk, matching what the reader sees: the grid runs newest first (left
+     * to right, top to bottom), the calendar runs by date (older on the left, newer on the right).
+     */
+    const sequence = () =>
+      root.dataset.view === 'calendar'
+        ? dialogs.map((_, i) => i).sort((a, b) => (dialogs[a].dataset.date ?? '').localeCompare(dialogs[b].dataset.date ?? '') || b - a)
+        : dialogs.map((_, i) => i);
     const open = (i: number) => {
-      dialogs.forEach((d) => d.open && d.close());
-      dialogs[i]?.showModal();
-      if (dialogs[i]) track('ajie-post', dialogs[i].dataset.slug ?? String(i));
+      const d = dialogs[i];
+      if (!d) return;
+      dialogs.forEach((x) => x !== d && x.open && x.close());
+      const seq = sequence();
+      const at = seq.indexOf(i);
+      d.querySelectorAll<HTMLElement>('[data-step]').forEach((b) => {
+        const to = seq[at + Number(b.dataset.step)];
+        b.hidden = to === undefined;
+        b.dataset.to = to === undefined ? '' : String(to);
+      });
+      if (!d.open) d.showModal();
+      track('ajie-post', d.dataset.slug ?? String(i));
     };
     tiles.forEach((t) =>
       t.addEventListener('click', () => {
@@ -455,11 +474,11 @@ if (span) {
         const target = ev.target as Element;
         if (ev.target === d || target.closest('[data-close]')) return d.close();
         const step = target.closest<HTMLElement>('[data-step]');
-        if (step) open(Number(d.dataset.post) + Number(step.dataset.step));
+        if (step?.dataset.to) open(Number(step.dataset.to));
       });
       d.addEventListener('keydown', (ev) => {
-        if (ev.key === 'ArrowRight' && !(ev.target as Element).closest('.pmedia__track')) d.querySelector<HTMLElement>('[data-step="1"]')?.click();
-        if (ev.key === 'ArrowLeft' && !(ev.target as Element).closest('.pmedia__track')) d.querySelector<HTMLElement>('[data-step="-1"]')?.click();
+        if (ev.key === 'ArrowRight' && !(ev.target as Element).closest('.pmedia__track')) d.querySelector<HTMLElement>('[data-step="1"]:not([hidden])')?.click();
+        if (ev.key === 'ArrowLeft' && !(ev.target as Element).closest('.pmedia__track')) d.querySelector<HTMLElement>('[data-step="-1"]:not([hidden])')?.click();
       });
       d.addEventListener('close', () => {
         d.querySelectorAll('video').forEach((v) => v.pause());
@@ -786,14 +805,14 @@ if (span) {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
-  .ajie__day--post.is-start .ajie__day-num {
+  .ajie__day--post.is-thumb .ajie__day-num {
     z-index: 1;
     color: #fff;
     font-weight: 700;
     text-shadow: 0 1px 3px rgb(0 0 0 / 0.7);
   }
-  /* A period: the first day carries the thumbnail, the rest of the days are a band that
-     bridges the gaps between cells and is rounded only where it starts, ends or wraps. */
+  /* A period: the last day carries the thumbnail, the days before it are a band that bridges
+     the gaps between cells (into the thumbnail) and is rounded only where it starts or wraps. */
   .ajie__day--post.is-mid {
     background: transparent;
   }
@@ -1160,6 +1179,9 @@ if (span) {
     color: #0a1626;
     cursor: pointer;
     box-shadow: 0 6px 18px rgb(0 0 0 / 0.35);
+  }
+  .ajie-post__nav[hidden] {
+    display: none;
   }
   .ajie-post__nav--prev {
     left: -3.2rem;
