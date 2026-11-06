@@ -129,6 +129,23 @@ Rules live in `src/lib/passport.ts` (`ACHIEVEMENTS`); texts in `src/i18n/persona
 
 **Turn it off**: clear the `PUBLIC_PASSPORT_STATS_API_URL` variable and redeploy the site. Badges keep working; do not delete the D1 data to roll back.
 
+## Admin page (stats, add posts)
+
+`https://52hzfan.com/admin/` (page: `src/pages/admin/`, logic: `src/admin/`) shows the stats from the database above and adds Ajie posts and Journey milestones without a local checkout. Its API is a second Worker, `workers/site-admin/`, on `52hzfan.com/api/admin/*`.
+
+- **Who gets in**: Cloudflare Access blocks both paths for everyone but `ADMIN_EMAIL`. The Worker checks the Access token itself as well (signature, audience, issuer, expiry, email), and refuses writes from other origins.
+- **What a post does**: the browser shrinks photos (long side 2400 px) and re-encodes clips (720p H.264 MP4, retried at lower quality, at most 40 MB). Both drop EXIF, GPS and video location tags. Each file is uploaded as a GitHub blob, then one commit on `main` adds the files, `src/content/<kind>/<date>-<slug>.json` and (Ajie) the ID in `src/data/ajie-posts.ts`. That push deploys the site and the stats Worker. v1 only adds: edit or delete posts in the repo as before.
+- **Text**: fill all four languages, or only one (that one is used everywhere).
+- **Rebuild** runs the deploy workflow without a commit.
+
+**Setup (Cloudflare / GitHub)**
+
+1. Zero Trust → Access → Applications → Add → Self-hosted. Add two public hostnames on `52hzfan.com`: path `admin` and path `api/admin`. Policy: Allow, Include → Emails → your address. Copy the team domain (`<team>.cloudflareaccess.com`) and the application's AUD tag into `ACCESS_TEAM_DOMAIN` / `ACCESS_AUD` in `workers/site-admin/wrangler.jsonc`.
+2. GitHub → Settings → Developer settings → Fine-grained tokens: only this repository; permissions Contents (read and write) and Actions (read and write).
+3. Workers & Pages → Create → Import a repository → this repo; name `site-admin`, root directory `workers/site-admin`, deploy command `npx wrangler deploy`. Then Settings → Variables and Secrets → Secret `GITHUB_TOKEN` = the token. The route `52hzfan.com/api/admin/*` comes from `wrangler.jsonc`.
+
+**Develop / test**: `npm run dev`, then open `/admin/?mock` for a fake API (dev only, nothing is uploaded). Worker tests: `npm test` and `npm run check` in `workers/site-admin` (fake GitHub, throwaway D1).
+
 ## URLs
 
 | Page | English | 繁中 | 简中 | 日本語 |

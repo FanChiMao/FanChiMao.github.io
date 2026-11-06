@@ -22,10 +22,10 @@ export default defineConfig({
   integrations: [
     icon({ include: { lucide: ['*'], mdi: ['github', 'linkedin', 'facebook', 'instagram', 'youtube', 'skateboarding'] } }),
     sitemap({
-      // Skip standalone apps, the old gallery URLs (now redirects) and placeholder chapters.
+      // Skip standalone apps, the private admin page, the old gallery URLs (now redirects) and placeholder chapters.
       filter: (page) => {
         const path = new URL(page).pathname;
-        return !path.startsWith('/playground/') && !/^\/(?:(?:zh-tw|zh-cn|ja)\/)?gallery\//.test(path) && !stubPath.test(path);
+        return !path.startsWith('/playground/') && !path.startsWith('/admin/') && !/^\/(?:(?:zh-tw|zh-cn|ja)\/)?gallery\//.test(path) && !stubPath.test(path);
       },
       i18n: {
         defaultLocale: 'en',

@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "site-admin",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  // Only reachable on the site's own domain, behind Cloudflare Access (no workers.dev URL).
+  "workers_dev": false,
+  "routes": [{ "pattern": "52hzfan.com/api/admin/*", "zone_name": "52hzfan.com" }],
+  "observability": { "enabled": false },
+  // Read-only use: the dashboard reads the stats Worker's database.
+  "d1_databases": [{ "binding": "DB", "database_name": "passport-stats", "database_id": "49a39172-bc4c-498f-ab71-b5307f9ba74f" }],
+  "vars": {
+    "GITHUB_REPO": "FanChiMao/FanChiMao.github.io",
+    "GITHUB_BRANCH": "main",
+    // Cloudflare Access (Zero Trust → Access → Applications → the admin app):
+    // team domain, e.g. "52hzfan.cloudflareaccess.com", and the application's "Application Audience (AUD) Tag".
+    "ACCESS_TEAM_DOMAIN": "ancient-frost-0f65.cloudflareaccess.com",
+    "ACCESS_AUD": "a39bd7f69a884591ac8f940178f97d22f8f5e0cf0453ecf85f039e666c5ed4d3",
+    // The only identity allowed in (checked again here, on top of the Access policy).
+    "ADMIN_EMAIL": "qaz5517359@gmail.com"
+  }
+  // Secret (Dashboard → Settings → Variables and Secrets):
+  //   GITHUB_TOKEN  fine-grained token for this repo only: Contents read/write, Actions read/write
+  //                 (write only for the "rebuild" button).
+}

@@ -1,0 +1,943 @@
+---
+/**
+ * Private admin page (52hzfan.com/admin/), behind Cloudflare Access: site stats and adding
+ * Ajie posts / Journey milestones, which the site-admin Worker commits to main. The page
+ * itself holds no secrets; every action goes through /api/admin/* (see workers/site-admin).
+ */
+import '@/styles/global.css';
+import { getCollection } from 'astro:content';
+import { personalUi } from '@/i18n/personal';
+import { journeyCategories } from '@/content.config';
+
+const ui = personalUi['zh-tw'];
+const pick = (v: string | Record<string, string> | undefined) => (v == null ? undefined : typeof v === 'string' ? v : v['zh-tw']);
+const posts = await getCollection('ajie');
+const names = {
+  badges: Object.fromEntries(Object.entries(ui.passport.items).map(([id, it]) => [id, (it as { name: string }).name])),
+  posts: Object.fromEntries(posts.map((p) => [p.id, `${p.id.slice(5, 10).replace('-', '/')} ${pick(p.data.title) ?? ''}`.trim()])),
+};
+const categoryNames: Record<(typeof journeyCategories)[number], string> = { run: '跑步', dive: '潛水', jump: '跳傘', hike: '登山', ride: '騎車', travel: '旅行', other: '其他' };
+const LANGS = [
+  ['zh-tw', '繁中'],
+  ['en', 'English'],
+  ['zh-cn', '简中'],
+  ['ja', '日本語'],
+] as const;
+---
+
+<!doctype html>
+<html lang="zh-Hant-TW" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>管理 · 52Hz</title>
+    <link rel="icon" href="/icon.png" />
+  </head>
+  <body class="admin">
+    <script type="application/json" id="admin-data" set:html={JSON.stringify(names)} />
+
+    <header class="top">
+      <div class="top__brand"><strong>52Hz 管理</strong><span id="who" class="muted">確認登入中…</span></div>
+      <a class="top__site muted small" href="/zh-tw/" target="_blank" rel="noopener">開啟網站 ↗</a>
+    </header>
+
+    <div id="gate" class="gate" hidden>
+      <h1>無法進入後台</h1>
+      <p id="gate-msg"></p>
+      <p class="muted">這個頁面只開放給網站管理者，透過 Cloudflare Access 登入。</p>
+    </div>
+
+    <div class="shell">
+      <!-- Desktop: Cloudflare-style sidebar in groups. Phones: one row of tabs under the header. -->
+      <nav class="side" aria-label="管理選單">
+        <div class="side__group">
+          <span class="side__label">網頁</span>
+          <button type="button" data-tab="stats"><span aria-hidden="true">▦</span>統計資料</button>
+          <button type="button" data-tab="deploys"><span aria-hidden="true">⟳</span>網站部署<span class="side__status" id="deploy-latest"></span></button>
+        </div>
+        <div class="side__group">
+          <span class="side__label">新增資料</span>
+          <button type="button" data-tab="ajie"><span aria-hidden="true">✚</span>新增阿桔貼文</button>
+          <button type="button" data-tab="journey"><span aria-hidden="true">✚</span>新增旅程</button>
+        </div>
+      </nav>
+
+    <main class="wrap">
+      <section data-panel="deploys" class="panel" hidden>
+        <div class="panel__head">
+          <h1>網站部署</h1>
+          <button type="button" id="deploys-refresh" class="ghost">重新整理</button>
+          <button type="button" id="redeploy" class="ghost">重新部署</button>
+        </div>
+        <div class="card">
+          <ul id="deploys" class="deploys__list"><li class="muted">載入中…</li></ul>
+        </div>
+        <p class="muted small">新增內容會直接 commit 到 main，GitHub Actions 自動重建網站（約 2–4 分鐘）。「重新部署」不需要新的 commit，用在部署失敗修好之後，或想重新抓 GitHub 資料時。</p>
+      </section>
+
+      <section data-panel="stats" id="stats" class="panel">
+        <div class="panel__head">
+          <h1>網站統計</h1>
+          <span id="stats-asof" class="muted small"></span>
+          <button type="button" id="stats-refresh" class="ghost">重新整理</button>
+        </div>
+        <p id="stats-error" class="error" hidden></p>
+        <div id="kpis" class="kpis"></div>
+        <div class="viz card">
+          <h2>近 30 天新探索者 <span class="muted small">每天（台灣時間）</span></h2>
+          <div id="chart-explorers"></div>
+        </div>
+        <div class="grid2">
+          <div class="viz card">
+            <h2>徽章解鎖人數 <span class="muted small">括號為佔全部探索者的比例</span></h2>
+            <div id="chart-badges"></div>
+          </div>
+          <div class="viz card">
+            <h2>阿桔貼文愛心</h2>
+            <div id="chart-likes"></div>
+          </div>
+        </div>
+        <p class="muted small">「探索者」是進入過個人世界、開了匿名統計的瀏覽器（不是人數，也不是頁面瀏覽量）。訪客地圖與流量請看 Cloudflare Web Analytics / Search Console。</p>
+      </section>
+
+      {
+        (['ajie', 'journey'] as const).map((kind) => (
+          <section data-panel={kind} class="panel" hidden>
+            <form class="post card" data-kind={kind} novalidate={false}>
+              <h1>{kind === 'ajie' ? '新增阿桔貼文' : '新增旅程里程碑'}</h1>
+              <p class="muted small">
+                文字欄位：四種語言都填就各自顯示；只填一種（例如繁中），所有語言都用那一種。
+              </p>
+
+              <div class="fields">
+                <label>
+                  {kind === 'ajie' ? '日期（這篇涵蓋的最後一天）' : '日期'}
+                  <input type="date" name="date" required />
+                </label>
+                {kind === 'ajie' && (
+                  <label>
+                    起始日（選填，期間型貼文）
+                    <input type="date" name="from" />
+                  </label>
+                )}
+                <label>
+                  網址代稱（英文小寫與 -）
+                  <input type="text" name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" maxlength="60" placeholder={kind === 'ajie' ? 'new-toy' : 'first-half-marathon'} autocomplete="off" />
+                </label>
+                {kind === 'journey' && (
+                  <label>
+                    類別
+                    <select name="category" required>
+                      {journeyCategories.map((c) => (
+                        <option value={c}>{categoryNames[c]}</option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+                {kind === 'journey' && (
+                  <label>
+                    成績（選填）
+                    <input type="text" name="stat" maxlength="40" placeholder="2:05:30、18 m" />
+                  </label>
+                )}
+              </div>
+              <p class="small">檔名 ID：<code data-id></code></p>
+
+              {[
+                ['title', kind === 'ajie' ? '標題（選填）' : '標題', false, kind === 'journey'],
+                ['place', kind === 'ajie' ? '地點（選填）' : '地點（選填）', false, false],
+                ['text', kind === 'ajie' ? '內文' : '故事', true, true],
+              ].map(([group, label, multiline, required]) => (
+                <fieldset class="langs" data-lang={group}>
+                  <legend>{label}</legend>
+                  {LANGS.map(([l, name], i) => (
+                    <label class="langs__one">
+                      <span>{name}</span>
+                      {multiline ? (
+                        <textarea data-l={l} rows={l === 'zh-tw' ? 6 : 3} required={required && i === 0} />
+                      ) : (
+                        <input type="text" data-l={l} required={required && i === 0} />
+                      )}
+                    </label>
+                  ))}
+                </fieldset>
+              ))}
+
+              {kind === 'ajie' && (
+                <fieldset class="block">
+                  <legend>AI 插畫封面（選填）</legend>
+                  <input type="file" accept="image/*" data-cover />
+                  <div class="cover-preview" />
+                  <div class="langs" data-lang="cover-alt">
+                    {LANGS.map(([l, name]) => (
+                      <label class="langs__one">
+                        <span>封面說明 · {name}</span>
+                        <input type="text" data-l={l} placeholder={l === 'zh-tw' ? '插畫：阿桔…' : ''} />
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              )}
+
+              <fieldset class="block">
+                <legend>照片與影片{kind === 'journey' && '（選填）'}</legend>
+                <p class="muted small">
+                  照片會縮到長邊 2400 px 並去除 EXIF / GPS；影片會重新壓縮成 720p MP4（同時去除位置資訊），壓完仍超過 40 MB 會請你剪短。順序就是貼文裡的順序。
+                </p>
+                <ol class="media-list" />
+                <div class="row">
+                  <label class="button">
+                    加入照片／影片
+                    <input type="file" accept="image/*,video/*" multiple data-add-media hidden />
+                  </label>
+                  <input type="text" data-youtube placeholder="YouTube 網址" class="yt" />
+                  <button type="button" class="ghost" data-add-youtube>加入 YouTube</button>
+                </div>
+              </fieldset>
+
+              <div class="submit">
+                <button type="submit" class="primary">發布（commit 到 main）</button>
+                <span class="muted small" data-hint />
+              </div>
+              <ol class="log" aria-live="polite" />
+            </form>
+          </section>
+        ))
+      }
+    </main>
+    </div>
+    <div id="toast" class="toast" role="status" hidden></div>
+
+    <script>
+      import '@/admin/app';
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  .admin {
+    --viz-1: #2a78d6;
+    --viz-surface: var(--bg-elev);
+    --good: #1f9d55;
+    --bad: #e5484d;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+  }
+  :root[data-theme='dark'] .admin {
+    --viz-1: #3987e5;
+    --good: #3ecf7a;
+    --bad: #ff6b6b;
+  }
+  .admin h1 {
+    font-size: 1.35rem;
+    margin: 0;
+  }
+  .admin h2 {
+    font-size: 1rem;
+    margin: 0 0 0.9rem;
+  }
+  .admin .muted {
+    color: var(--muted);
+  }
+  .admin .small {
+    font-size: 0.82rem;
+  }
+  .admin .error,
+  .admin .bad {
+    color: var(--bad);
+  }
+  .admin .good {
+    color: var(--good);
+  }
+  .admin a {
+    color: var(--accent);
+  }
+  .admin button,
+  .admin .button {
+    font: inherit;
+    font-size: 0.9rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-strong);
+    background: var(--surface-2);
+    color: var(--text);
+    padding: 0.45rem 0.85rem;
+    cursor: pointer;
+  }
+  .admin button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .admin button.ghost {
+    background: transparent;
+  }
+  .admin button.primary {
+    background: var(--accent);
+    border-color: transparent;
+    color: var(--accent-contrast);
+    font-weight: 600;
+    padding: 0.6rem 1.2rem;
+  }
+  .admin button.link {
+    border: 0;
+    background: none;
+    color: var(--accent);
+    padding: 0;
+  }
+  .admin input:not([type='checkbox']):not([type='file']),
+  .admin textarea,
+  .admin select {
+    font: inherit;
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.65rem;
+  }
+  .admin textarea {
+    resize: vertical;
+    line-height: 1.6;
+  }
+  .admin :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .admin .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .top {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem var(--gutter);
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .top__brand {
+    display: flex;
+    gap: 0.75rem;
+    align-items: baseline;
+    font-size: 0.9rem;
+  }
+  .top__site {
+    color: var(--muted) !important;
+    text-decoration: none;
+  }
+  .top__site:hover {
+    color: var(--text) !important;
+  }
+  .gate {
+    max-width: 36rem;
+    margin: 4rem auto;
+    padding: 0 var(--gutter);
+  }
+  .gate:not([hidden]) ~ .shell {
+    display: none;
+  }
+
+  /* ---- layout: sidebar + content (desktop), tab row + content (phones) */
+  .shell {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    min-height: calc(100vh - 3.2rem);
+  }
+  .side {
+    position: sticky;
+    top: 3.2rem;
+    align-self: start;
+    height: calc(100vh - 3.2rem);
+    box-sizing: border-box;
+    overflow-y: auto;
+    padding: 1.25rem 0.75rem;
+    border-right: 1px solid var(--border);
+    background: var(--bg-elev);
+    display: grid;
+    align-content: start;
+    gap: 1.25rem;
+  }
+  .side__group {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .side__label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    padding: 0 0.6rem 0.35rem;
+  }
+  .admin .side button {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    text-align: left;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-2);
+    padding: 0.5rem 0.6rem;
+    position: relative;
+  }
+  .admin .side button > span[aria-hidden] {
+    width: 1rem;
+    text-align: center;
+    color: var(--muted);
+  }
+  .admin .side button:hover {
+    background: var(--surface-2);
+    color: var(--text);
+  }
+  .admin .side button[aria-current='page'] {
+    background: var(--accent-soft);
+    color: var(--text);
+    font-weight: 600;
+  }
+  .admin .side button[aria-current='page']::before {
+    content: '';
+    position: absolute;
+    left: -0.75rem;
+    top: 0.35rem;
+    bottom: 0.35rem;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--accent);
+  }
+  .admin .side button[aria-current='page'] > span[aria-hidden] {
+    color: var(--accent);
+  }
+  .side__status {
+    margin-left: auto;
+  }
+  .side__status .pill {
+    font-size: 0.66rem;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 1000px;
+    box-sizing: border-box;
+    padding: 1.5rem var(--gutter) 4rem;
+  }
+  .wrap > .panel {
+    min-width: 0;
+    display: grid;
+    gap: 1rem;
+  }
+  .wrap > .panel[hidden] {
+    display: none;
+  }
+  @media (max-width: 899px) {
+    .top {
+      position: static;
+    }
+    .shell {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    /* Phones: the groups collapse into one scrollable row of tabs. */
+    .side {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      height: auto;
+      display: flex;
+      gap: 0.25rem;
+      overflow-x: auto;
+      padding: 0.6rem var(--gutter);
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+    }
+    .side__group {
+      display: contents;
+    }
+    .side__label,
+    .side__status,
+    .admin .side button > span[aria-hidden] {
+      display: none;
+    }
+    .admin .side button {
+      width: auto;
+      flex: none;
+      white-space: nowrap;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-2);
+      padding: 0.45rem 0.85rem;
+    }
+    .admin .side button[aria-current='page'] {
+      border-color: var(--accent);
+      font-weight: 400;
+    }
+    .admin .side button[aria-current='page']::before {
+      display: none;
+    }
+  }
+  .card {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem;
+  }
+  .card__head,
+  .panel__head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+  .card__head h2 {
+    margin: 0;
+  }
+  .panel__head {
+    justify-content: flex-start;
+    margin: 0;
+  }
+  .panel__head > button:first-of-type {
+    margin-left: auto;
+  }
+  .deploys__list {
+    list-style: none;
+    margin: 0 0 0.75rem;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+  }
+  .deploys__list li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.1rem 0.5rem;
+    align-items: center;
+  }
+  .deploys__list a {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-2);
+  }
+  .deploys__list time {
+    grid-column: 2;
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+  .pill {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+  .pill--good::before {
+    content: '✓ ';
+  }
+  .pill--good {
+    color: var(--good);
+  }
+  .pill--bad::before {
+    content: '✕ ';
+  }
+  .pill--bad {
+    color: var(--bad);
+  }
+  .pill--running::before {
+    content: '◌ ';
+  }
+  .pill--running {
+    color: var(--accent);
+  }
+  .pill--muted {
+    color: var(--muted);
+  }
+
+  /* ---- dashboard */
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+  }
+  .kpi {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.9rem 1rem;
+    display: grid;
+    gap: 0.15rem;
+  }
+  .kpi__label {
+    font-size: 0.82rem;
+    color: var(--text-2);
+  }
+  .kpi__value {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.15;
+  }
+  .kpi__note {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .grid2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+  #stats[aria-busy='true'] .viz,
+  #stats[aria-busy='true'] .kpis {
+    opacity: 0.55;
+  }
+
+  .cols {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.2rem 1fr;
+    grid-template-rows: 180px auto;
+  }
+  .cols__grid {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    pointer-events: none;
+  }
+  .cols__grid span {
+    border-top: 1px solid var(--border);
+    height: 0;
+    position: relative;
+  }
+  .cols__grid span:last-child {
+    border-top-color: var(--border-strong);
+  }
+  .cols__grid span::before {
+    content: attr(data-v);
+    position: absolute;
+    left: 0;
+    top: -0.55rem;
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .cols__plot {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+  }
+  .admin .cols__col {
+    all: unset;
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    cursor: default;
+  }
+  .cols__col span {
+    width: min(100%, 24px);
+    background: var(--viz-1);
+    border-radius: 4px 4px 0 0;
+    min-height: 0;
+  }
+  .cols__col.is-active span,
+  .cols__col:focus-visible span {
+    filter: brightness(1.2);
+  }
+  .admin .cols__col:focus-visible {
+    outline: 2px solid var(--accent);
+  }
+  .cols__x {
+    grid-column: 2;
+    display: flex;
+    gap: 2px;
+    font-size: 0.72rem;
+    color: var(--muted);
+    padding-top: 0.35rem;
+  }
+  .cols__x span {
+    flex: 1;
+    white-space: nowrap;
+    overflow: visible;
+    width: 0;
+  }
+  .viz__tip {
+    position: absolute;
+    top: -0.5rem;
+    transform: translate(-50%, -100%);
+    background: var(--bg);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md);
+    padding: 0.35rem 0.6rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    pointer-events: none;
+    display: grid;
+  }
+  .viz__tip[hidden] {
+    display: none;
+  }
+  .viz__tip span {
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+  .bars {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.55rem;
+  }
+  .bars li {
+    display: grid;
+    grid-template-columns: minmax(6rem, 40%) 1fr;
+    gap: 0.75rem;
+    align-items: center;
+    font-size: 0.85rem;
+  }
+  .bars__label {
+    color: var(--text-2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .bars__track {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+  .bars__bar {
+    height: 14px;
+    background: var(--viz-1);
+    border-radius: 0 4px 4px 0;
+    flex: none;
+    width: calc((100% - 4.5rem) * var(--r));
+  }
+  .bars__value {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .bars__value small {
+    color: var(--muted);
+    margin-left: 0.3rem;
+  }
+  .viz__empty {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin: 0;
+  }
+  .viz__table {
+    margin-top: 0.9rem;
+    font-size: 0.82rem;
+  }
+  .viz__table summary {
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .viz__table table {
+    margin-top: 0.5rem;
+    border-collapse: collapse;
+    width: 100%;
+  }
+  .viz__table th,
+  .viz__table td {
+    text-align: left;
+    padding: 0.25rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ---- forms */
+  .post {
+    display: grid;
+    gap: 1.1rem;
+  }
+  .post p {
+    margin: 0;
+  }
+  .fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+  }
+  .fields label,
+  .langs__one {
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    color: var(--text-2);
+  }
+  .admin fieldset {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.8rem 0.9rem 0.9rem;
+    margin: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+  .admin legend {
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0 0.3rem;
+  }
+  .langs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  div.langs {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .langs__one:first-of-type {
+    grid-column: 1 / -1;
+  }
+  @media (max-width: 599px) {
+    .langs {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  .cover-preview {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .cover-preview img {
+    width: 96px;
+    height: 96px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+  }
+  .media-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+  .media-list:empty {
+    display: none;
+  }
+  .media {
+    display: grid;
+    grid-template-columns: 1.5rem 72px minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+  }
+  .media--error {
+    border-color: var(--bad);
+  }
+  .media__n {
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+  .media__thumb {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    color: var(--muted);
+  }
+  .media__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .media__badge {
+    position: absolute;
+    left: 4px;
+    bottom: 4px;
+    font-size: 0.68rem;
+    background: rgb(0 0 0 / 0.65);
+    color: #fff;
+    padding: 0 0.3rem;
+    border-radius: 4px;
+  }
+  .media__body {
+    display: grid;
+    gap: 0.35rem;
+    font-size: 0.82rem;
+    min-width: 0;
+  }
+  .media--error .media__note {
+    color: var(--bad);
+  }
+  .media__alt {
+    font-size: 0.82rem !important;
+    padding: 0.3rem 0.5rem !important;
+  }
+  .check {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    color: var(--text-2);
+  }
+  .media__actions {
+    display: flex;
+    gap: 0.25rem;
+  }
+  .media__actions button {
+    padding: 0.25rem 0.5rem;
+  }
+  .yt {
+    max-width: 16rem;
+  }
+  .submit {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .log {
+    margin: 0;
+    padding-left: 1.2rem;
+    font-size: 0.85rem;
+    display: grid;
+    gap: 0.3rem;
+  }
+  .log:empty {
+    display: none;
+  }
+  .toast {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-elev);
+    border: 1px solid var(--bad);
+    color: var(--text);
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    font-size: 0.9rem;
+    z-index: 10;
+  }
+</style>

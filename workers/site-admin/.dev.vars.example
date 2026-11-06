@@ -1,0 +1,2 @@
+# Local secrets for `wrangler dev` (copy to .dev.vars; never commit .dev.vars)
+GITHUB_TOKEN=github_pat_xxx
