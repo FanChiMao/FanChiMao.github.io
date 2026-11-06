@@ -40,6 +40,16 @@ const when = (d: { from?: string; date: string }) => {
   if (m1 !== m2) return `${y1}年${m1}月${d1}日${sep}${m2}月${d2}日`;
   return `${y1}年${m1}月${d1}日${sep}${d2}日`;
 };
+/** Compact form for small tiles: 10/27, 10/20–26, 10/30–11/2 (years only when a period crosses one). */
+const whenShort = (d: { from?: string; date: string }) => {
+  const [y2, m2, d2] = d.date.split('-').map(Number);
+  if (!d.from || d.from === d.date) return `${m2}/${d2}`;
+  const [y1, m1, d1] = d.from.split('-').map(Number);
+  const sep = lang === 'ja' ? '～' : '–';
+  if (y1 !== y2) return `${y1}/${m1}/${d1}${sep}${y2}/${m2}/${d2}`;
+  if (m1 !== m2) return `${m1}/${d1}${sep}${m2}/${d2}`;
+  return `${m1}/${d1}${sep}${d2}`;
+};
 
 const posts = (await getCollection('ajie', ({ data }) => !data.draft)).sort((a, b) => Number(!!b.data.pinned) - Number(!!a.data.pinned) || b.data.date.localeCompare(a.data.date));
 const hasAiCovers = posts.some((post) => Boolean(post.data.cover));
@@ -177,7 +187,8 @@ if (span) {
                     <span class="ajie__hover" aria-hidden="true">
                       <span class="ajie__tile-text">
                         {post.data.title && <span class="ajie__tile-title">{pick(post.data.title)}</span>}
-                        <span>{when(post.data)}</span>
+                        <span class="ajie__tile-date">{when(post.data)}</span>
+                        <span class="ajie__tile-date ajie__tile-date--short">{whenShort(post.data)}</span>
                       </span>
                       {statsEnabled && (
                         <span class="ajie__tile-likes" data-tile-likes={post.id} data-swap-skip hidden>
@@ -931,9 +942,20 @@ if (span) {
     white-space: nowrap;
   }
   /* Small three-up tiles on phones: just the date, the title is in the post. */
+  .ajie__tile-date--short {
+    display: none;
+  }
   @media (max-width: 599px) {
     .ajie__tile-title {
       display: none;
+    }
+    /* Small tiles: one short line (10/20–26) instead of the full date wrapping over the picture. */
+    .ajie__tile-date {
+      display: none;
+    }
+    .ajie__tile-date--short {
+      display: inline;
+      white-space: nowrap;
     }
     .ajie__hover {
       padding: 1.4rem 0.5rem 0.4rem;
