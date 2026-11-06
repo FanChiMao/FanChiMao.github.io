@@ -4,6 +4,7 @@
  */
 import { bars, columns } from './charts';
 import { base64Of, formatBytes, MAX_VIDEO_BYTES, posterOf, prepareVideo, preparePhoto } from './media';
+import { checkPost, fileName, formatGuide, posterName, type Checked, type Kind } from '@/lib/admin-post';
 
 if (import.meta.env.DEV && new URLSearchParams(location.search).has('mock')) (await import('./dev-mock')).installMock();
 
@@ -143,164 +144,181 @@ function alertBox(msg: string) {
   setTimeout(() => (el.hidden = true), 8000);
 }
 
-// ---------------------------------------------------------------- media items
+// ---------------------------------------------------------------- new posts: files + JSON
 
-type Item = {
+type Upload = {
   key: number;
-  type: 'image' | 'video' | 'youtube';
+  /** Name in the repo and in the JSON, e.g. img-1234.jpg */
+  name: string;
+  original: string;
+  type: 'image' | 'video';
   blob?: Blob;
-  poster?: Blob;
-  ytId?: string;
-  loop: boolean;
-  alt: string;
+  /** Thumbnail URL. */
+  url?: string;
+  /** A poster made from a clip (uploaded only if the JSON uses it). */
+  auto?: boolean;
   status: 'working' | 'ready' | 'error';
   note: string;
-  url?: string;
 };
 
 let nextKey = 1;
+const escHtml = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
 class PostForm {
-  items: Item[] = [];
-  cover?: { blob: Blob; url: string };
+  uploads: Upload[] = [];
   busy = false;
+  idTouched = false;
+  kind: Kind;
   list: HTMLElement;
+  json: HTMLTextAreaElement;
+  idField: HTMLInputElement;
+  checked: (Checked & { input: unknown }) | null = null;
 
   constructor(public form: HTMLFormElement) {
-    this.list = $('.media-list', form);
-    const kind = form.dataset.kind!;
-    $<HTMLInputElement>('[data-add-media]', form).addEventListener('change', (e) => {
+    this.kind = form.dataset.kind as Kind;
+    this.list = $('.files', form);
+    this.json = $<HTMLTextAreaElement>('[data-json]', form);
+    this.idField = $<HTMLInputElement>('[name=id]', form);
+
+    $<HTMLInputElement>('[data-add-files]', form).addEventListener('change', (e) => {
       const input = e.currentTarget as HTMLInputElement;
       [...(input.files ?? [])].forEach((f) => this.add(f));
       input.value = '';
     });
-    $('[data-add-youtube]', form).addEventListener('click', () => {
-      const field = $<HTMLInputElement>('[data-youtube]', form);
-      const raw = field.value.trim();
-      field.value = '';
-      const id = /(?:v=|youtu\.be\/|shorts\/|embed\/)([A-Za-z0-9_-]{6,20})/.exec(raw)?.[1] ?? (/^[A-Za-z0-9_-]{6,20}$/.test(raw.trim()) ? raw.trim() : '');
-      if (!id) return raw && alertBox('看不懂這個 YouTube 網址');
-      this.items.push({ key: nextKey++, type: 'youtube', ytId: id, loop: false, alt: '', status: 'ready', note: `YouTube ${id}` });
-      this.render();
-    });
-    const cover = form.querySelector<HTMLInputElement>('[data-cover]');
-    cover?.addEventListener('change', async () => {
-      const f = cover.files?.[0];
+    $<HTMLInputElement>('[data-json-file]', form).addEventListener('change', async (e) => {
+      const input = e.currentTarget as HTMLInputElement;
+      const f = input.files?.[0];
+      input.value = '';
       if (!f) return;
-      const out = $('.cover-preview', form);
-      out.textContent = '處理中…';
-      try {
-        const blob = await preparePhoto(f);
-        if (this.cover) URL.revokeObjectURL(this.cover.url);
-        this.cover = { blob, url: URL.createObjectURL(blob) };
-        out.innerHTML = `<img src="${this.cover.url}" alt=""><span>${formatBytes(blob.size)}</span><button type="button" class="link">移除</button>`;
-        $('button', out).addEventListener('click', () => {
-          this.cover = undefined;
-          out.textContent = '';
-          cover.value = '';
-          this.update();
-        });
-      } catch (e) {
-        out.textContent = (e as Error).message;
-      }
+      this.json.value = await f.text();
+      if (!this.idTouched) this.idField.value = f.name.replace(/\.json$/i, '');
       this.update();
+    });
+    this.idField.addEventListener('input', () => (this.idTouched = this.idField.value.trim() !== ''));
+    $('[data-copy-guide]', form).addEventListener('click', async (e) => {
+      const btn = e.currentTarget as HTMLButtonElement; // read before await: currentTarget is cleared after dispatch
+      const names = this.uploads.filter((u) => !u.auto && u.status === 'ready').map((u) => u.name);
+      await navigator.clipboard.writeText(formatGuide(this.kind, names));
+      btn.textContent = '已複製 ✓';
+      setTimeout(() => (btn.textContent = '複製格式說明（給 agent）'), 2000);
     });
     form.addEventListener('input', () => this.update());
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      this.publish(kind as 'ajie' | 'journey');
+      this.publish();
     });
-    this.update();
+    this.render();
+  }
+
+  uniqueName(name: string) {
+    const taken = new Set(this.uploads.map((u) => u.name));
+    if (!taken.has(name)) return name;
+    const [base, ext] = [name.replace(/\.\w+$/, ''), name.match(/\.\w+$/)![0]];
+    for (let i = 2; ; i++) if (!taken.has(`${base}-${i}${ext}`)) return `${base}-${i}${ext}`;
   }
 
   async add(file: File) {
-    const isVideo = file.type.startsWith('video/') || /\.(mov|mp4|m4v|webm)$/i.test(file.name);
-    const item: Item = { key: nextKey++, type: isVideo ? 'video' : 'image', loop: true, alt: '', status: 'working', note: `${file.name} · 處理中…` };
-    this.items.push(item);
+    const video = file.type.startsWith('video/') || /\.(mov|mp4|m4v|webm)$/i.test(file.name);
+    const item: Upload = { key: nextKey++, name: this.uniqueName(fileName(file.name, video)), original: file.name, type: video ? 'video' : 'image', status: 'working', note: '處理中…' };
+    this.uploads.push(item);
     this.render();
     try {
-      if (isVideo) {
+      if (video) {
         item.blob = await prepareVideo(file, true, (p, pass) => {
-          item.note = `${file.name} · 壓縮中 ${Math.round(p * 100)}%${pass ? `（第 ${pass + 1} 次，畫質再降一級）` : ''}`;
+          item.note = `壓縮中 ${Math.round(p * 100)}%${pass ? `（第 ${pass + 1} 次，畫質再降一級）` : ''}`;
           this.renderNote(item);
         });
-        item.poster = await posterOf(item.blob);
-        item.url = URL.createObjectURL(item.poster);
-        item.note = `${formatBytes(file.size)} → ${formatBytes(item.blob.size)}（已去除位置資訊）`;
+        const poster = await posterOf(item.blob);
+        item.url = URL.createObjectURL(poster);
+        item.note = `${formatBytes(file.size)} → ${formatBytes(item.blob.size)}，已去除位置資訊`;
+        if (!this.uploads.some((u) => u.name === posterName(item.name)))
+          this.uploads.splice(this.uploads.indexOf(item) + 1, 0, { key: nextKey++, name: posterName(item.name), original: '', type: 'image', blob: poster, url: item.url, auto: true, status: 'ready', note: '自動產生的影片封面' });
       } else {
         item.blob = await preparePhoto(file);
         item.url = URL.createObjectURL(item.blob);
-        item.note = `${formatBytes(file.size)} → ${formatBytes(item.blob.size)}（已去除 EXIF / GPS）`;
+        item.note = `${formatBytes(file.size)} → ${formatBytes(item.blob.size)}，已去除 EXIF / GPS`;
       }
       item.status = 'ready';
     } catch (e) {
       item.status = 'error';
-      item.note = `${file.name}：${(e as Error).message}`;
+      item.note = (e as Error).message;
     }
     this.render();
   }
 
-  renderNote(item: Item) {
-    const el = this.list.querySelector(`[data-key="${item.key}"] .media__note`);
+  remove(item: Upload) {
+    const gone = new Set([item, ...(item.type === 'video' ? this.uploads.filter((u) => u.auto && u.name === posterName(item.name)) : [])]);
+    gone.forEach((u) => u.url && !this.uploads.some((o) => !gone.has(o) && o.url === u.url) && URL.revokeObjectURL(u.url));
+    this.uploads = this.uploads.filter((u) => !gone.has(u));
+    this.render();
+  }
+
+  renderNote(item: Upload) {
+    const el = this.list.querySelector(`[data-key="${item.key}"] .file__note`);
     if (el) el.textContent = item.note;
   }
 
   render() {
-    this.list.innerHTML = this.items
+    this.list.innerHTML = this.uploads
       .map(
-        (it, i) => `<li class="media media--${it.status}" data-key="${it.key}">
-          <span class="media__n">${i + 1}</span>
-          <span class="media__thumb">${it.url ? `<img src="${it.url}" alt="">` : it.type === 'youtube' ? '▶' : '…'}${it.type === 'video' ? '<span class="media__badge">影片</span>' : ''}</span>
-          <span class="media__body">
-            <span class="media__note">${it.note.replace(/</g, '&lt;')}</span>
-            <input class="media__alt" type="text" placeholder="替代文字（選填，給看不到圖的人）" value="${it.alt.replace(/"/g, '&quot;')}">
-            ${it.type === 'video' ? `<label class="check"><input type="checkbox" class="media__loop" ${it.loop ? 'checked' : ''}> 像 IG 一樣靜音循環播放（取消則顯示播放鍵、可開聲音）</label>` : ''}
+        (u) => `<li class="file file--${u.status}${u.auto ? ' file--auto' : ''}" data-key="${u.key}">
+          <span class="file__thumb">${u.url ? `<img src="${u.url}" alt="">` : '…'}${u.type === 'video' ? '<span class="file__badge">影片</span>' : ''}</span>
+          <span class="file__body">
+            <button type="button" class="file__name" title="複製檔名">${escHtml(u.name)}</button>
+            <span class="file__note">${u.original && u.original !== u.name ? `${escHtml(u.original)} · ` : ''}${escHtml(u.note)}</span>
           </span>
-          <span class="media__actions">
-            <button type="button" data-move="-1" aria-label="往前" ${i === 0 ? 'disabled' : ''}>↑</button>
-            <button type="button" data-move="1" aria-label="往後" ${i === this.items.length - 1 ? 'disabled' : ''}>↓</button>
-            <button type="button" data-remove aria-label="移除">✕</button>
-          </span>
+          ${u.auto ? '' : '<button type="button" class="file__remove" aria-label="移除">✕</button>'}
         </li>`,
       )
       .join('');
     this.list.querySelectorAll<HTMLElement>('li').forEach((li) => {
-      const item = this.items.find((x) => x.key === Number(li.dataset.key))!;
-      $<HTMLInputElement>('.media__alt', li).addEventListener('input', (e) => (item.alt = (e.target as HTMLInputElement).value));
-      li.querySelector<HTMLInputElement>('.media__loop')?.addEventListener('change', (e) => (item.loop = (e.target as HTMLInputElement).checked));
-      li.querySelectorAll<HTMLButtonElement>('[data-move]').forEach((b) =>
-        b.addEventListener('click', () => {
-          const i = this.items.indexOf(item);
-          const j = i + Number(b.dataset.move);
-          [this.items[i], this.items[j]] = [this.items[j], this.items[i]];
-          this.render();
-        }),
-      );
-      $('[data-remove]', li).addEventListener('click', () => {
-        if (item.url) URL.revokeObjectURL(item.url);
-        this.items = this.items.filter((x) => x !== item);
-        this.render();
+      const item = this.uploads.find((u) => u.key === Number(li.dataset.key))!;
+      li.querySelector('.file__remove')?.addEventListener('click', () => this.remove(item));
+      $('.file__name', li).addEventListener('click', async (e) => {
+        const btn = e.currentTarget as HTMLElement;
+        await navigator.clipboard.writeText(item.name);
+        btn.classList.add('is-copied');
+        setTimeout(() => li.querySelector('.file__name')?.classList.remove('is-copied'), 1200);
       });
     });
     this.update();
   }
 
-  field(name: string) {
-    return (this.form.elements.namedItem(name) as HTMLInputElement | null)?.value.trim() ?? '';
-  }
-  langs(group: string) {
-    return Object.fromEntries($$<HTMLInputElement>(`[data-lang="${group}"] [data-l]`, this.form).map((el) => [el.dataset.l!, el.value.trim()]));
-  }
-
+  /** Live check of the JSON against the uploads (same rules as the Worker). */
   update() {
-    const date = this.field('date');
-    const slug = this.field('slug');
-    $('[data-id]', this.form).textContent = date && slug ? `${date}-${slug}` : '（填好日期和代稱後顯示）';
-    const working = this.items.some((i) => i.status === 'working');
-    const broken = this.items.some((i) => i.status === 'error');
+    const out = $('.check', this.form);
     const btn = $<HTMLButtonElement>('[type=submit]', this.form);
-    btn.disabled = this.busy || working || broken;
-    $('[data-hint]', this.form).textContent = working ? '還有檔案在處理中…' : broken ? '有檔案處理失敗，請移除它' : '';
+    const raw = this.json.value.trim();
+    this.checked = null;
+    const working = this.uploads.some((u) => u.status === 'working');
+    const broken = this.uploads.filter((u) => u.status === 'error');
+    let input: unknown;
+    const lines: string[] = [];
+    if (raw) {
+      try {
+        input = JSON.parse(raw);
+      } catch (e) {
+        lines.push(`<li class="bad">JSON 格式錯誤：${escHtml((e as Error).message)}</li>`);
+      }
+    }
+    if (input !== undefined) {
+      const fromJson = typeof (input as { id?: unknown })?.id === 'string' ? (input as { id: string }).id : '';
+      if (fromJson && !this.idTouched) this.idField.value = fromJson;
+      const ready = new Set(this.uploads.filter((u) => u.status === 'ready').map((u) => u.name));
+      const c = checkPost(this.kind, this.idField.value.trim(), input, ready);
+      this.checked = { ...c, input };
+      c.errors.forEach((m) => lines.push(`<li class="bad">${escHtml(m)}</li>`));
+      const unused = this.uploads.filter((u) => !u.auto && u.status === 'ready' && !c.used.includes(u.name)).map((u) => u.name);
+      if (unused.length) lines.push(`<li class="warn">JSON 沒用到，不會上傳：${escHtml(unused.join(', '))}</li>`);
+      if (!c.errors.length) {
+        const id = this.idField.value.trim();
+        lines.unshift(`<li class="good">可以發布：會新增 <code>src/content/${this.kind}/${escHtml(id)}.json</code> 和 ${c.used.length} 個檔案</li>`);
+      }
+    }
+    broken.forEach((u) => lines.push(`<li class="bad">${escHtml(u.original)}：${escHtml(u.note)}（請移除）</li>`));
+    if (working) lines.push('<li class="muted">還有檔案在處理中…</li>');
+    out.innerHTML = lines.join('') || '<li class="muted">貼上 JSON 後會在這裡即時檢查</li>';
+    btn.disabled = this.busy || working || broken.length > 0 || !this.checked || this.checked.errors.length > 0;
   }
 
   log(msg: string, tone = '') {
@@ -311,59 +329,34 @@ class PostForm {
     return li;
   }
 
-  async publish(kind: 'ajie' | 'journey') {
-    if (!this.form.reportValidity()) return;
+  async publish() {
+    const c = this.checked;
+    if (!c || c.errors.length) return;
+    const id = this.idField.value.trim();
     this.busy = true;
     this.update();
     $('.log', this.form).innerHTML = '';
     try {
-      const uploads: { name: string; blob: Blob }[] = [];
-      const media = this.items.map((it, i) => {
-        const nn = String(i + 1).padStart(2, '0');
-        const alt = it.alt.trim() ? { 'zh-tw': it.alt.trim() } : undefined;
-        if (it.type === 'image') {
-          uploads.push({ name: `${nn}.jpg`, blob: it.blob! });
-          return { type: 'image', file: `${nn}.jpg`, alt };
-        }
-        if (it.type === 'video') {
-          uploads.push({ name: `${nn}.mp4`, blob: it.blob! }, { name: `${nn}-poster.jpg`, blob: it.poster! });
-          return { type: 'video', file: `${nn}.mp4`, poster: `${nn}-poster.jpg`, loop: it.loop, alt };
-        }
-        return { type: 'youtube', id: it.ytId!, alt };
-      });
-      if (this.cover) uploads.push({ name: 'cover.jpg', blob: this.cover.blob });
-      if (kind === 'ajie' && !media.length) throw new Error('阿桔的貼文至少要一張照片或一段影片');
-
+      const toSend = c.used.map((name) => this.uploads.find((u) => u.name === name)!);
       const files: { name: string; sha: string }[] = [];
-      for (const [i, u] of uploads.entries()) {
-        if (u.blob.size > MAX_VIDEO_BYTES + 1) throw new Error(`${u.name} 太大`);
-        const line = this.log(`上傳 ${u.name}（${formatBytes(u.blob.size)}，${i + 1}/${uploads.length}）…`);
-        const { sha } = await api<{ sha: string }>('blob', { method: 'POST', body: await base64Of(u.blob), headers: { 'Content-Type': 'text/plain' } });
+      for (const [i, u] of toSend.entries()) {
+        if (u.blob!.size > MAX_VIDEO_BYTES + 1) throw new Error(`${u.name} 太大`);
+        const line = this.log(`上傳 ${escHtml(u.name)}（${formatBytes(u.blob!.size)}，${i + 1}/${toSend.length}）…`);
+        const { sha } = await api<{ sha: string }>('blob', { method: 'POST', body: await base64Of(u.blob!), headers: { 'Content-Type': 'text/plain' } });
         files.push({ name: u.name, sha });
         line.textContent += ' 完成';
       }
-
-      const input = {
-        kind,
-        slug: this.field('slug'),
-        date: this.field('date'),
-        from: this.field('from') || undefined,
-        title: this.langs('title'),
-        place: this.langs('place'),
-        text: this.langs('text'),
-        category: this.field('category') || undefined,
-        stat: this.field('stat') || undefined,
-        cover: this.cover ? { file: 'cover.jpg', alt: this.langs('cover-alt') } : undefined,
-        media,
-        files,
-      };
       this.log('建立 commit…');
-      const res = await api<{ id: string; commit: { sha: string; url: string } }>('publish', { method: 'POST', body: JSON.stringify(input), headers: { 'Content-Type': 'application/json' } });
+      const res = await api<{ id: string; commit: { sha: string; url: string } }>('publish', {
+        method: 'POST',
+        body: JSON.stringify({ kind: this.kind, id, post: c.input, files }),
+        headers: { 'Content-Type': 'application/json' },
+      });
       this.log(`已 commit 到 main：<a href="${res.commit.url}" target="_blank" rel="noopener">${res.commit.sha.slice(0, 7)}</a>`, 'good');
       this.reset();
-      await this.follow(res.commit.sha, kind);
+      await this.follow(res.commit.sha);
     } catch (e) {
-      this.log((e as Error).message, 'bad');
+      this.log(escHtml((e as Error).message).replace(/\n/g, '<br>'), 'bad');
     } finally {
       this.busy = false;
       this.update();
@@ -371,17 +364,15 @@ class PostForm {
   }
 
   reset() {
-    this.items.forEach((i) => i.url && URL.revokeObjectURL(i.url));
-    this.items = [];
-    this.cover = undefined;
+    this.uploads.forEach((u) => u.url && URL.revokeObjectURL(u.url));
+    this.uploads = [];
     this.form.reset();
-    const cp = this.form.querySelector('.cover-preview');
-    if (cp) cp.textContent = '';
+    this.idTouched = false;
     this.render();
   }
 
   /** Watch the deploy run for this commit until the site is live (about 2-4 minutes). */
-  async follow(sha: string, kind: 'ajie' | 'journey') {
+  async follow(sha: string) {
     const line = this.log('等待網站部署開始…');
     const started = Date.now();
     while (Date.now() - started < 20 * 60_000) {
@@ -395,8 +386,8 @@ class PostForm {
         continue;
       }
       if (run.conclusion === 'success') {
-        const page = kind === 'ajie' ? '/zh-tw/personal/companion/' : '/zh-tw/personal/journey/';
-        line.innerHTML = `網站已更新 🎉 <a href="${page}" target="_blank" rel="noopener">打開${kind === 'ajie' ? '阿桔' : '旅程'}頁面</a>（瀏覽器可能要強制重新整理）`;
+        const page = this.kind === 'ajie' ? '/zh-tw/personal/companion/' : '/zh-tw/personal/journey/';
+        line.innerHTML = `網站已更新 🎉 <a href="${page}" target="_blank" rel="noopener">打開${this.kind === 'ajie' ? '阿桔' : '旅程'}頁面</a>（瀏覽器可能要強制重新整理）`;
         line.className = 'good';
       } else {
         line.innerHTML = `部署${label}：<a href="${run.url}" target="_blank" rel="noopener">看錯誤訊息</a>（內容已在 main，修好後可按「重新部署」）`;

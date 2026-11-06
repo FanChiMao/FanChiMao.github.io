@@ -1,6 +1,7 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
+import { JOURNEY_CATEGORIES } from './lib/admin-post';
 
 /** A string translated into every supported locale. */
 const t = z.object({ en: z.string(), 'zh-tw': z.string(), 'zh-cn': z.string(), ja: z.string() });
@@ -180,7 +181,8 @@ const ajie = defineCollection({
     .refine((d) => !d.from || d.from <= d.date, { message: '`from` must be on or before `date`', path: ['from'] }),
 });
 
-export const journeyCategories = ['run', 'dive', 'jump', 'hike', 'ride', 'travel', 'other'] as const;
+/** Shared with the admin page and its Worker (src/lib/admin-post.ts). */
+export const journeyCategories = JOURNEY_CATEGORIES;
 
 /** The Journey: first times and journeys worth remembering, on a timeline. */
 const journey = defineCollection({

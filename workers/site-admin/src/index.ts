@@ -107,8 +107,8 @@ async function route(req: Request, env: Env): Promise<Response> {
       if (e instanceof InputError) return fail(400, 'INVALID', e.message);
       throw e;
     }
-    const jsonPath = `src/content/${input.kind}/${built.id}.json`;
-    if (await gh.exists(jsonPath)) return fail(409, 'EXISTS', `${built.id} already exists; pick another date or slug.`);
+    const jsonPath = built.files.at(-1)!.path;
+    if (await gh.exists(jsonPath)) return fail(409, 'EXISTS', `${built.id} 已經存在；第一版只能新增，請換一個 ID。`);
     const files = [...built.files];
     if (input.kind === 'ajie') {
       const ids = await gh.readText('src/data/ajie-posts.ts');

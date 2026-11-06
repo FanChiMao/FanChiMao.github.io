@@ -1,7 +1,7 @@
 import { env } from 'cloudflare:test';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import worker, { type Env } from '../src/index';
-import { addAjiePostId, buildPost, localized, type PublishInput } from '../src/publish';
+import { addAjiePostId, buildPost, type PublishInput } from '../src/publish';
 
 const TEAM = 'test-team.cloudflareaccess.com';
 const AUD = 'aud-123';
@@ -153,63 +153,75 @@ describe('stats', () => {
 });
 
 describe('content building', () => {
-  it('uses one text for every language unless all four are filled', () => {
-    expect(localized({ 'zh-tw': '你好', en: '' })).toBe('你好');
-    expect(localized({ en: 'Hi', 'zh-tw': '嗨', 'zh-cn': '嗨', ja: 'やあ' })).toEqual({ en: 'Hi', 'zh-tw': '嗨', 'zh-cn': '嗨', ja: 'やあ' });
-    expect(localized({})).toBeUndefined();
-  });
-
-  const ajie = (over: Partial<PublishInput> = {}): PublishInput => ({
+  const T = { en: 'New toy', 'zh-tw': '新玩具', 'zh-cn': '新玩具', ja: '新しいおもちゃ' };
+  const files = ['cover.jpg', 'img-1234.jpg', 'play.mp4', 'play-poster.jpg'].map((name, i) => ({ name, sha: hex(i + 1) }));
+  const ajie = (post: Record<string, unknown> = {}, over: Partial<PublishInput> = {}): PublishInput => ({
     kind: 'ajie',
-    slug: 'new-toy',
-    date: '2025-11-02',
-    from: '2025-10-28',
-    title: { 'zh-tw': '新玩具' },
-    text: { 'zh-tw': '今天買了逗貓棒。' },
-    cover: { file: 'cover.jpg' },
-    media: [{ type: 'image', file: '01.jpg' }, { type: 'video', file: 'play.mp4', poster: 'play-poster.jpg' }],
-    files: ['cover.jpg', '01.jpg', 'play.mp4', 'play-poster.jpg'].map((name, i) => ({ name, sha: hex(i + 1) })),
+    id: '2025-11-02-new-toy',
+    post: {
+      id: '2025-11-02-new-toy',
+      date: '2025-11-02',
+      from: '2025-10-28',
+      title: T,
+      cover: { src: 'cover.jpg', alt: '插畫' },
+      media: [{ type: 'image', src: 'IMG_1234.JPG' }, { type: 'video', src: 'play.mp4', loop: false }, { type: 'youtube', id: 'dQw4w9WgXcQ' }],
+      caption: '今天買了逗貓棒。',
+      ...post,
+    },
+    files,
     ...over,
   });
 
-  it('builds the post JSON and file paths', () => {
-    const { id, post, files } = buildPost(ajie());
-    expect(id).toBe('2025-11-02-new-toy');
-    expect(post).toMatchObject({
+  it('links file names to the uploads and writes site paths', () => {
+    const { post, files: out } = buildPost(ajie());
+    expect(post).toEqual({
       date: '2025-11-02',
       from: '2025-10-28',
-      title: '新玩具',
-      cover: { src: 'ajie/2025-11-02-new-toy/cover.jpg' },
+      title: T,
+      cover: { src: 'ajie/2025-11-02-new-toy/cover.jpg', alt: '插畫' },
       media: [
-        { type: 'image', src: 'ajie/2025-11-02-new-toy/01.jpg' },
-        { type: 'video', src: '/media/ajie/2025-11-02-new-toy-play.mp4', poster: 'ajie/2025-11-02-new-toy/play-poster.jpg' },
+        { type: 'image', src: 'ajie/2025-11-02-new-toy/img-1234.jpg' },
+        { type: 'video', src: '/media/ajie/2025-11-02-new-toy-play.mp4', loop: false, poster: 'ajie/2025-11-02-new-toy/play-poster.jpg' },
+        { type: 'youtube', id: 'dQw4w9WgXcQ' },
       ],
       caption: '今天買了逗貓棒。',
     });
-    expect(files.map((f) => f.path).sort()).toEqual([
+    expect(out.map((f) => f.path).sort()).toEqual([
       'public/media/ajie/2025-11-02-new-toy-play.mp4',
-      'src/assets/ajie/2025-11-02-new-toy/01.jpg',
       'src/assets/ajie/2025-11-02-new-toy/cover.jpg',
+      'src/assets/ajie/2025-11-02-new-toy/img-1234.jpg',
       'src/assets/ajie/2025-11-02-new-toy/play-poster.jpg',
       'src/content/ajie/2025-11-02-new-toy.json',
     ]);
   });
 
-  it('rejects unsafe or inconsistent input', () => {
-    expect(() => buildPost(ajie({ slug: '../etc' }))).toThrow();
-    expect(() => buildPost(ajie({ date: '2025-02-30' }))).toThrow();
-    expect(() => buildPost(ajie({ from: '2025-12-01' }))).toThrow();
-    expect(() => buildPost(ajie({ text: {} }))).toThrow();
-    expect(() => buildPost(ajie({ media: [{ type: 'image', file: '../../x.jpg' }] }))).toThrow();
-    expect(() => buildPost(ajie({ media: [{ type: 'image', file: 'missing.jpg' }] }))).toThrow();
-    expect(() => buildPost(ajie({ media: [] }))).toThrow();
+  it('accepts full paths of the same post', () => {
+    const { post } = buildPost(ajie({ media: [{ type: 'image', src: 'ajie/2025-11-02-new-toy/img-1234.jpg' }, { type: 'video', src: '/media/ajie/2025-11-02-new-toy-play.mp4' }] , cover: { src: 'src/assets/ajie/2025-11-02-new-toy/cover.jpg' } }));
+    expect((post.media as { src: string }[])[0].src).toBe('ajie/2025-11-02-new-toy/img-1234.jpg');
+  });
+
+  it('explains every problem at once', () => {
+    let msg = '';
+    try {
+      buildPost(ajie({ date: '2025-02-30', title: { en: 'x' }, caption: undefined, mood: 'happy', media: [{ type: 'image', src: '../x.jpg' }, { type: 'image', src: 'missing.jpg' }] }));
+    } catch (e) {
+      msg = (e as Error).message;
+    }
+    for (const part of ['date', '缺少語言', 'caption', 'mood', '只要寫檔名', 'missing.jpg', '沒用到']) expect(msg).toContain(part);
+  });
+
+  it('rejects unsafe IDs and bad file entries', () => {
+    expect(() => buildPost(ajie({}, { id: '../etc' }))).toThrow(/ID/);
+    expect(() => buildPost(ajie({}, { files: [{ name: '../x.jpg', sha: hex(1) }] }))).toThrow();
+    expect(() => buildPost(ajie({ media: [] }, { files: [{ name: 'cover.jpg', sha: hex(1) }] }))).toThrow(/至少/);
   });
 
   it('journey needs a title, a story and a category', () => {
-    const base: PublishInput = { kind: 'journey', slug: 'first-half', date: '2026-01-11', title: { 'zh-tw': '第一次半馬' }, text: { 'zh-tw': '跑完了。' }, category: 'run', stat: '2:05:30', media: [], files: [] };
-    expect(buildPost(base).post).toMatchObject({ category: 'run', stat: '2:05:30', title: '第一次半馬', story: '跑完了。', media: [] });
-    expect(() => buildPost({ ...base, category: 'swim' as never })).toThrow();
-    expect(() => buildPost({ ...base, title: {} })).toThrow();
+    const base: PublishInput = { kind: 'journey', id: '2026-01-11-first-half', post: { date: '2026-01-11', category: 'run', title: '第一次半馬', story: '跑完了。', stat: '2:05:30' }, files: [] };
+    expect(buildPost(base).post).toEqual({ date: '2026-01-11', category: 'run', title: '第一次半馬', story: '跑完了。', stat: '2:05:30', media: [] });
+    expect(() => buildPost({ ...base, post: { ...(base.post as object), category: 'swim' } })).toThrow(/category/);
+    expect(() => buildPost({ ...base, post: { date: '2026-01-11', category: 'run', story: 'x' } })).toThrow(/title/);
+    expect(() => buildPost({ ...base, post: { ...(base.post as object), caption: 'x' } })).toThrow(/caption/);
   });
 
   it('adds the post ID to the like-able list once, sorted', () => {
@@ -235,7 +247,7 @@ describe('publishing', () => {
 
   it('publishes one commit with the files and the new like-able ID', async () => {
     const a = await upload(btoa('photo'));
-    const input = { kind: 'ajie', slug: 'new-toy', date: '2025-11-02', text: { 'zh-tw': '逗貓棒' }, media: [{ type: 'image', file: '01.jpg' }], files: [{ name: '01.jpg', sha: a.sha }] };
+    const input = { kind: 'ajie', id: '2025-11-02-new-toy', post: { date: '2025-11-02', caption: '逗貓棒', media: [{ type: 'image', src: '01.jpg' }] }, files: [{ name: '01.jpg', sha: a.sha }] };
     const res = await call('/api/admin/publish', { method: 'POST', body: JSON.stringify(input), headers: { Origin: SITE } });
     expect(res.status).toBe(200);
     const body = await res.json<{ id: string; commit: { sha: string } }>();
@@ -248,7 +260,7 @@ describe('publishing', () => {
 
   it('rebuilds on the new head when main moved, and refuses duplicates', async () => {
     gh.moveOnce = true;
-    const input = { kind: 'journey', slug: 'first-half', date: '2026-01-11', title: { 'zh-tw': '半馬' }, text: { 'zh-tw': '跑完了' }, category: 'run', media: [], files: [] };
+    const input = { kind: 'journey', id: '2026-01-11-first-half', post: { date: '2026-01-11', title: '半馬', story: '跑完了', category: 'run' }, files: [] };
     const res = await call('/api/admin/publish', { method: 'POST', body: JSON.stringify(input), headers: { Origin: SITE } });
     expect(res.status).toBe(200);
     expect(gh.commits.filter((c) => c.message !== '(tree)')).toHaveLength(2); // first attempt lost the race
@@ -258,7 +270,7 @@ describe('publishing', () => {
   });
 
   it('reports invalid posts as 400 with a reason', async () => {
-    const res = await call('/api/admin/publish', { method: 'POST', body: JSON.stringify({ kind: 'journey', slug: 'x', date: 'nope' }), headers: { Origin: SITE } });
+    const res = await call('/api/admin/publish', { method: 'POST', body: JSON.stringify({ kind: 'journey', id: 'x', post: { date: 'nope' }, files: [] }), headers: { Origin: SITE } });
     expect(res.status).toBe(400);
     expect((await res.json<{ error: { message: string } }>()).error.message).toMatch(/date/);
   });

@@ -7,22 +7,18 @@
 import '@/styles/global.css';
 import { getCollection } from 'astro:content';
 import { personalUi } from '@/i18n/personal';
-import { journeyCategories } from '@/content.config';
 
 const ui = personalUi['zh-tw'];
 const pick = (v: string | Record<string, string> | undefined) => (v == null ? undefined : typeof v === 'string' ? v : v['zh-tw']);
 const posts = await getCollection('ajie');
+const EXAMPLES = {
+  ajie: JSON.stringify({ id: '2025-11-02-new-toy', date: '2025-11-02', media: [{ type: 'image', src: 'img-1234.jpg' }], caption: '…' }, null, 2),
+  journey: JSON.stringify({ id: '2026-01-11-first-half-marathon', date: '2026-01-11', category: 'run', title: '…', story: '…' }, null, 2),
+};
 const names = {
   badges: Object.fromEntries(Object.entries(ui.passport.items).map(([id, it]) => [id, (it as { name: string }).name])),
   posts: Object.fromEntries(posts.map((p) => [p.id, `${p.id.slice(5, 10).replace('-', '/')} ${pick(p.data.title) ?? ''}`.trim()])),
 };
-const categoryNames: Record<(typeof journeyCategories)[number], string> = { run: '跑步', dive: '潛水', jump: '跳傘', hike: '登山', ride: '騎車', travel: '旅行', other: '其他' };
-const LANGS = [
-  ['zh-tw', '繁中'],
-  ['en', 'English'],
-  ['zh-cn', '简中'],
-  ['ja', '日本語'],
-] as const;
 ---
 
 <!doctype html>
@@ -104,101 +100,41 @@ const LANGS = [
       {
         (['ajie', 'journey'] as const).map((kind) => (
           <section data-panel={kind} class="panel" hidden>
-            <form class="post card" data-kind={kind} novalidate={false}>
+            <form class="post card" data-kind={kind}>
               <h1>{kind === 'ajie' ? '新增阿桔貼文' : '新增旅程里程碑'}</h1>
-              <p class="muted small">
-                文字欄位：四種語言都填就各自顯示；只填一種（例如繁中），所有語言都用那一種。
-              </p>
-
-              <div class="fields">
-                <label>
-                  {kind === 'ajie' ? '日期（這篇涵蓋的最後一天）' : '日期'}
-                  <input type="date" name="date" required />
-                </label>
-                {kind === 'ajie' && (
-                  <label>
-                    起始日（選填，期間型貼文）
-                    <input type="date" name="from" />
-                  </label>
-                )}
-                <label>
-                  網址代稱（英文小寫與 -）
-                  <input type="text" name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" maxlength="60" placeholder={kind === 'ajie' ? 'new-toy' : 'first-half-marathon'} autocomplete="off" />
-                </label>
-                {kind === 'journey' && (
-                  <label>
-                    類別
-                    <select name="category" required>
-                      {journeyCategories.map((c) => (
-                        <option value={c}>{categoryNames[c]}</option>
-                      ))}
-                    </select>
-                  </label>
-                )}
-                {kind === 'journey' && (
-                  <label>
-                    成績（選填）
-                    <input type="text" name="stat" maxlength="40" placeholder="2:05:30、18 m" />
-                  </label>
-                )}
-              </div>
-              <p class="small">檔名 ID：<code data-id></code></p>
-
-              {[
-                ['title', kind === 'ajie' ? '標題（選填）' : '標題', false, kind === 'journey'],
-                ['place', kind === 'ajie' ? '地點（選填）' : '地點（選填）', false, false],
-                ['text', kind === 'ajie' ? '內文' : '故事', true, true],
-              ].map(([group, label, multiline, required]) => (
-                <fieldset class="langs" data-lang={group}>
-                  <legend>{label}</legend>
-                  {LANGS.map(([l, name], i) => (
-                    <label class="langs__one">
-                      <span>{name}</span>
-                      {multiline ? (
-                        <textarea data-l={l} rows={l === 'zh-tw' ? 6 : 3} required={required && i === 0} />
-                      ) : (
-                        <input type="text" data-l={l} required={required && i === 0} />
-                      )}
-                    </label>
-                  ))}
-                </fieldset>
-              ))}
-
-              {kind === 'ajie' && (
-                <fieldset class="block">
-                  <legend>AI 插畫封面（選填）</legend>
-                  <input type="file" accept="image/*" data-cover />
-                  <div class="cover-preview" />
-                  <div class="langs" data-lang="cover-alt">
-                    {LANGS.map(([l, name]) => (
-                      <label class="langs__one">
-                        <span>封面說明 · {name}</span>
-                        <input type="text" data-l={l} placeholder={l === 'zh-tw' ? '插畫：阿桔…' : ''} />
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
-              )}
 
               <fieldset class="block">
-                <legend>照片與影片{kind === 'journey' && '（選填）'}</legend>
+                <legend>1. 上傳照片與影片{kind === 'journey' && '（選填）'}</legend>
                 <p class="muted small">
-                  照片會縮到長邊 2400 px 並去除 EXIF / GPS；影片會重新壓縮成 720p MP4（同時去除位置資訊），壓完仍超過 40 MB 會請你剪短。順序就是貼文裡的順序。
+                  照片縮到長邊 2400 px 並去除 EXIF / GPS；影片重新壓縮成 720p MP4（同時去除位置資訊），並自動產生「檔名-poster.jpg」封面。右邊的檔名就是 JSON 裡要寫的名字（點一下複製）。
                 </p>
-                <ol class="media-list" />
-                <div class="row">
-                  <label class="button">
-                    加入照片／影片
-                    <input type="file" accept="image/*,video/*" multiple data-add-media hidden />
-                  </label>
-                  <input type="text" data-youtube placeholder="YouTube 網址" class="yt" />
-                  <button type="button" class="ghost" data-add-youtube>加入 YouTube</button>
-                </div>
+                <ul class="files" />
+                <label class="button">
+                  選擇檔案（可多選）
+                  <input type="file" accept="image/*,video/*" multiple data-add-files hidden />
+                </label>
               </fieldset>
+
+              <fieldset class="block">
+                <legend>2. 貼上 JSON</legend>
+                <div class="row">
+                  <button type="button" class="ghost" data-copy-guide>複製格式說明（給 agent）</button>
+                  <label class="button ghost">
+                    或選擇 .json 檔
+                    <input type="file" accept=".json,application/json" data-json-file hidden />
+                  </label>
+                </div>
+                <textarea data-json rows="16" spellcheck="false" placeholder={EXAMPLES[kind]} />
+                <label class="id">
+                  ID（檔名，取自 JSON 的 "id" 或 .json 檔名）
+                  <input type="text" name="id" required pattern="[a-z0-9]+(-[a-z0-9]+)*" maxlength="80" autocomplete="off" />
+                </label>
+              </fieldset>
+
+              <ul class="check" aria-live="polite" />
 
               <div class="submit">
                 <button type="submit" class="primary">發布（commit 到 main）</button>
-                <span class="muted small" data-hint />
               </div>
               <ol class="log" aria-live="polite" />
             </form>
@@ -774,18 +710,6 @@ const LANGS = [
   .post p {
     margin: 0;
   }
-  .fields {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 0.75rem;
-  }
-  .fields label,
-  .langs__one {
-    display: grid;
-    gap: 0.3rem;
-    font-size: 0.85rem;
-    color: var(--text-2);
-  }
   .admin fieldset {
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
@@ -798,117 +722,6 @@ const LANGS = [
     font-weight: 600;
     font-size: 0.9rem;
     padding: 0 0.3rem;
-  }
-  .langs {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  div.langs {
-    display: grid;
-    gap: 0.6rem;
-  }
-  .langs__one:first-of-type {
-    grid-column: 1 / -1;
-  }
-  @media (max-width: 599px) {
-    .langs {
-      grid-template-columns: minmax(0, 1fr);
-    }
-  }
-  .cover-preview {
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-    font-size: 0.82rem;
-    color: var(--muted);
-  }
-  .cover-preview img {
-    width: 96px;
-    height: 96px;
-    object-fit: cover;
-    border-radius: var(--radius-sm);
-  }
-  .media-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 0.5rem;
-  }
-  .media-list:empty {
-    display: none;
-  }
-  .media {
-    display: grid;
-    grid-template-columns: 1.5rem 72px minmax(0, 1fr) auto;
-    gap: 0.75rem;
-    align-items: center;
-    padding: 0.5rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--bg);
-  }
-  .media--error {
-    border-color: var(--bad);
-  }
-  .media__n {
-    color: var(--muted);
-    font-variant-numeric: tabular-nums;
-    text-align: center;
-  }
-  .media__thumb {
-    position: relative;
-    width: 72px;
-    height: 72px;
-    border-radius: 6px;
-    background: var(--surface-2);
-    display: grid;
-    place-items: center;
-    overflow: hidden;
-    color: var(--muted);
-  }
-  .media__thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .media__badge {
-    position: absolute;
-    left: 4px;
-    bottom: 4px;
-    font-size: 0.68rem;
-    background: rgb(0 0 0 / 0.65);
-    color: #fff;
-    padding: 0 0.3rem;
-    border-radius: 4px;
-  }
-  .media__body {
-    display: grid;
-    gap: 0.35rem;
-    font-size: 0.82rem;
-    min-width: 0;
-  }
-  .media--error .media__note {
-    color: var(--bad);
-  }
-  .media__alt {
-    font-size: 0.82rem !important;
-    padding: 0.3rem 0.5rem !important;
-  }
-  .check {
-    display: flex;
-    gap: 0.4rem;
-    align-items: center;
-    color: var(--text-2);
-  }
-  .media__actions {
-    display: flex;
-    gap: 0.25rem;
-  }
-  .media__actions button {
-    padding: 0.25rem 0.5rem;
-  }
-  .yt {
-    max-width: 16rem;
   }
   .submit {
     display: flex;
@@ -939,5 +752,135 @@ const LANGS = [
     box-shadow: var(--shadow-lg);
     font-size: 0.9rem;
     z-index: 10;
+  }
+
+  /* ---- new post: files + JSON */
+  .files {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+  .files:empty {
+    display: none;
+  }
+  .file {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.45rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+  }
+  .file--auto {
+    margin-left: 1.5rem;
+    opacity: 0.8;
+  }
+  .file--error {
+    border-color: var(--bad);
+  }
+  .file__thumb {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    color: var(--muted);
+  }
+  .file__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .file__badge {
+    position: absolute;
+    left: 3px;
+    bottom: 3px;
+    font-size: 0.66rem;
+    background: rgb(0 0 0 / 0.65);
+    color: #fff;
+    padding: 0 0.3rem;
+    border-radius: 4px;
+  }
+  .file__body {
+    display: grid;
+    gap: 0.15rem;
+    min-width: 0;
+    justify-items: start;
+  }
+  .admin .file__name {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    padding: 0.1rem 0.4rem;
+    background: var(--surface-2);
+    border-color: var(--border);
+  }
+  .admin .file__name.is-copied::after {
+    content: ' 已複製';
+    color: var(--good);
+    font-family: var(--font-sans);
+  }
+  .file__note {
+    font-size: 0.78rem;
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+  .file--error .file__note {
+    color: var(--bad);
+    white-space: normal;
+  }
+  .admin .file__remove {
+    padding: 0.25rem 0.5rem;
+  }
+  .admin textarea[data-json] {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    tab-size: 2;
+  }
+  .id {
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    color: var(--text-2);
+    max-width: 28rem;
+  }
+  .check {
+    list-style: none;
+    margin: 0;
+    padding: 0.75rem 0.9rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: grid;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+  }
+  .check li::before {
+    margin-right: 0.4rem;
+  }
+  .check .good::before {
+    content: '✓';
+  }
+  .check .bad::before {
+    content: '✕';
+  }
+  .check .warn {
+    color: var(--gold);
+  }
+  .check .warn::before {
+    content: '!';
+  }
+  .check code {
+    font-size: 0.8rem;
   }
 </style>
