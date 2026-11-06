@@ -1,7 +1,7 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
-import { JOURNEY_CATEGORIES } from './lib/admin-post';
+import { ALBUM_CATEGORIES, JOURNEY_CATEGORIES } from './lib/admin-post';
 
 /** A string translated into every supported locale. */
 const t = z.object({ en: z.string(), 'zh-tw': z.string(), 'zh-cn': z.string(), ja: z.string() });
@@ -106,7 +106,7 @@ const education = defineCollection({
 /** A string shared by all languages, or one per language. */
 const textOrT = z.union([z.string(), t]);
 
-export const albumCategories = ['astro', 'drone', 'landscape', 'city', 'everyday'] as const;
+export const albumCategories = ALBUM_CATEGORIES;
 
 const albums = defineCollection({
   loader: glob({ pattern: '*.json', base: './src/content/albums' }),

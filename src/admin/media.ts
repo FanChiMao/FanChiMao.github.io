@@ -107,6 +107,42 @@ export async function posterOf(video: Blob): Promise<Blob> {
   }
 }
 
+export type Shot = { taken?: string; exif?: { camera?: string; lens?: string; focalLength?: number; aperture?: number; shutter?: string; iso?: number } };
+
+/**
+ * Shooting date and camera settings of a photo, read before it is re-drawn (which drops EXIF).
+ * Same fields and rules as readShot() in scripts/photos.mjs, so admin uploads match `npm run photos`.
+ */
+export async function shotOf(file: Blob): Promise<Shot> {
+  let d: Record<string, any> | undefined;
+  try {
+    const exifr = (await import('exifr')).default;
+    d = await exifr.parse(file, { tiff: true, exif: true, gps: false, xmp: false, icc: false, iptc: false });
+  } catch {
+    d = undefined;
+  }
+  if (!d) return {};
+  const round = (n: number) => Math.round(n * 10) / 10;
+  const make = d.Make?.trim();
+  const model = d.Model?.trim();
+  const camera = model ? (make && !model.toLowerCase().startsWith(make.toLowerCase().split(' ')[0]) ? `${make} ${model}` : model) : make;
+  const t = d.ExposureTime;
+  const shutter = Number.isFinite(t) && t > 0 ? (t >= 1 ? `${round(t)}s` : `1/${Math.round(1 / t)}s`) : undefined;
+  const exif: NonNullable<Shot['exif']> = {
+    camera: camera || undefined,
+    lens: d.LensModel?.trim() || undefined,
+    focalLength: Number.isFinite(d.FocalLength) ? round(d.FocalLength) : undefined,
+    aperture: Number.isFinite(d.FNumber) ? round(d.FNumber) : undefined,
+    shutter,
+    iso: Number.isFinite(d.ISO) ? d.ISO : undefined,
+  };
+  for (const k of Object.keys(exif) as (keyof typeof exif)[]) if (exif[k] === undefined || exif[k] === '') delete exif[k];
+  const when = d.DateTimeOriginal ?? d.CreateDate;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const taken = when instanceof Date && !Number.isNaN(+when) ? `${when.getFullYear()}-${pad(when.getMonth() + 1)}-${pad(when.getDate())}` : undefined;
+  return { ...(taken ? { taken } : {}), ...(Object.keys(exif).length ? { exif } : {}) };
+}
+
 /** Base64 text of a blob (what POST /api/admin/blob takes). */
 export async function base64Of(blob: Blob): Promise<string> {
   const url = await new Promise<string>((ok, fail) => {

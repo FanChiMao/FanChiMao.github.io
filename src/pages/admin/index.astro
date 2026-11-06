@@ -1,7 +1,7 @@
 ---
 /**
  * Private admin page (52hzfan.com/admin/), behind Cloudflare Access: site stats and adding
- * Ajie posts / Journey milestones, which the site-admin Worker commits to main. The page
+ * albums, Journey milestones and Ajie posts, which the site-admin Worker commits to main. The page
  * itself holds no secrets; every action goes through /api/admin/* (see workers/site-admin).
  */
 import '@/styles/global.css';
@@ -11,21 +11,32 @@ import { personalUi } from '@/i18n/personal';
 const ui = personalUi['zh-tw'];
 const pick = (v: string | Record<string, string> | undefined) => (v == null ? undefined : typeof v === 'string' ? v : v['zh-tw']);
 const posts = await getCollection('ajie');
+const albums = await getCollection('albums');
 const EXAMPLES = {
+  album: JSON.stringify({ id: 'taipei_night', emoji: '🌃', categories: ['city'], title: { en: '…', 'zh-tw': '…', 'zh-cn': '…', ja: '…' }, photos: [{ src: 'dsc-0012.jpg' }] }, null, 2),
   ajie: JSON.stringify({ id: '2025-11-02-new-toy', date: '2025-11-02', media: [{ type: 'image', src: 'img-1234.jpg' }], caption: '…' }, null, 2),
   journey: JSON.stringify({ id: '2026-01-11-first-half-marathon', date: '2026-01-11', category: 'run', title: '…', story: '…' }, null, 2),
 };
 const names = {
   badges: Object.fromEntries(Object.entries(ui.passport.items).map(([id, it]) => [id, (it as { name: string }).name])),
   posts: Object.fromEntries(posts.map((p) => [p.id, `${p.id.slice(5, 10).replace('-', '/')} ${pick(p.data.title) ?? ''}`.trim()])),
+  /** Album IDs already in the repo (adding only), and the order a new album gets by default. */
+  albums: albums.map((a) => a.id),
+  nextAlbumOrder: Math.max(-1, ...albums.map((a) => a.data.order)) + 1,
 };
+const FORMS = {
+  album: { title: '新增相簿', files: '1. 上傳照片', accept: 'image/*', note: '照片縮到長邊 2400 px、去除 GPS；拍攝日期與相機參數會自動讀出並寫進 JSON。右邊的檔名就是 JSON 裡要寫的名字（點一下複製），按住 ⠿ 拖曳排序。' },
+  journey: { title: '新增旅程里程碑', files: '1. 上傳照片與影片（選填）', accept: 'image/*,video/*', note: '' },
+  ajie: { title: '新增阿桔貼文', files: '1. 上傳照片與影片', accept: 'image/*,video/*', note: '' },
+} as const;
+const MEDIA_NOTE = '照片縮到長邊 2400 px 並去除 EXIF / GPS；影片重新壓縮成 720p MP4（同時去除位置資訊），並自動產生「檔名-poster.jpg」封面。右邊的檔名就是 JSON 裡要寫的名字（點一下複製），按住 ⠿ 拖曳排序。';
 ---
 
 <!doctype html>
 <html lang="zh-Hant-TW" data-theme="dark">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="robots" content="noindex, nofollow" />
     <title>管理 · 52Hz</title>
     <link rel="icon" href="/icon.png" />
@@ -45,17 +56,23 @@ const names = {
     </div>
 
     <div class="shell">
-      <!-- Desktop: Cloudflare-style sidebar in groups. Phones: one row of tabs under the header. -->
+      <!-- Desktop: Cloudflare-style sidebar in groups. Phones: a tab bar fixed at the bottom (thumb reach). -->
       <nav class="side" aria-label="管理選單">
         <div class="side__group">
           <span class="side__label">網頁</span>
-          <button type="button" data-tab="stats"><span aria-hidden="true">▦</span>統計資料</button>
-          <button type="button" data-tab="deploys"><span aria-hidden="true">⟳</span>網站部署<span class="side__status" id="deploy-latest"></span></button>
+          <button type="button" data-tab="stats"><span aria-hidden="true">▦</span><span class="side__text">統計資料</span><span class="side__short">統計</span></button>
+          <button type="button" data-tab="deploys"><span aria-hidden="true">⟳</span><span class="side__text">網站部署</span><span class="side__short">部署</span><span class="side__status" id="deploy-latest"></span></button>
         </div>
-        <div class="side__group">
-          <span class="side__label">新增資料</span>
-          <button type="button" data-tab="ajie"><span aria-hidden="true">✚</span>新增阿桔貼文</button>
-          <button type="button" data-tab="journey"><span aria-hidden="true">✚</span>新增旅程</button>
+        <div class="side__group side__add">
+          <span class="side__label">內容</span>
+          <button type="button" class="side__menu-btn" aria-expanded="false" aria-controls="add-menu">
+            <span aria-hidden="true">✚</span><span class="side__text">新增資料</span><span class="side__short">新增</span><span class="side__caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="side__menu" id="add-menu" hidden>
+            <button type="button" data-tab="album"><span aria-hidden="true">▣</span>新增相簿</button>
+            <button type="button" data-tab="journey"><span aria-hidden="true">⚑</span>新增旅程</button>
+            <button type="button" data-tab="ajie"><span aria-hidden="true">♡</span>新增阿桔貼文</button>
+          </div>
         </div>
       </nav>
 
@@ -98,20 +115,18 @@ const names = {
       </section>
 
       {
-        (['ajie', 'journey'] as const).map((kind) => (
+        (['album', 'journey', 'ajie'] as const).map((kind) => (
           <section data-panel={kind} class="panel" hidden>
             <form class="post card" data-kind={kind}>
-              <h1>{kind === 'ajie' ? '新增阿桔貼文' : '新增旅程里程碑'}</h1>
+              <h1>{FORMS[kind].title}</h1>
 
               <fieldset class="block">
-                <legend>1. 上傳照片與影片{kind === 'journey' && '（選填）'}</legend>
-                <p class="muted small">
-                  照片縮到長邊 2400 px 並去除 EXIF / GPS；影片重新壓縮成 720p MP4（同時去除位置資訊），並自動產生「檔名-poster.jpg」封面。右邊的檔名就是 JSON 裡要寫的名字（點一下複製）。
-                </p>
+                <legend>{FORMS[kind].files}</legend>
+                <p class="muted small">{FORMS[kind].note || MEDIA_NOTE}</p>
                 <ul class="files" />
                 <label class="button">
                   選擇檔案（可多選）
-                  <input type="file" accept="image/*,video/*" multiple data-add-files hidden />
+                  <input type="file" accept={FORMS[kind].accept} multiple data-add-files hidden />
                 </label>
               </fieldset>
 
@@ -127,14 +142,14 @@ const names = {
                 <textarea data-json rows="16" spellcheck="false" placeholder={EXAMPLES[kind]} />
                 <label class="id">
                   ID（檔名，取自 JSON 的 "id" 或 .json 檔名）
-                  <input type="text" name="id" required pattern="[a-z0-9]+(-[a-z0-9]+)*" maxlength="80" autocomplete="off" />
+                  <input type="text" name="id" required pattern="[a-z0-9]+([_\-][a-z0-9]+)*" maxlength="80" autocomplete="off" />
                 </label>
               </fieldset>
 
               <ul class="check" aria-live="polite" />
 
               <div class="submit">
-                <button type="submit" class="primary">發布（commit 到 main）</button>
+                <button type="submit" class="primary">發布</button>
               </div>
               <ol class="log" aria-live="polite" />
             </form>
@@ -359,6 +374,26 @@ const names = {
   .side__status {
     margin-left: auto;
   }
+  .side__caret {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--muted);
+    transition: transform 0.2s var(--ease-out);
+  }
+  .side__menu-btn[aria-expanded='true'] .side__caret {
+    transform: rotate(180deg);
+  }
+  .admin .side .side__menu-btn.is-active {
+    color: var(--text);
+  }
+  .side__menu {
+    display: grid;
+    gap: 0.15rem;
+    padding-left: 1rem;
+  }
+  .side__menu[hidden] {
+    display: none;
+  }
   .side__status .pill {
     font-size: 0.66rem;
   }
@@ -384,43 +419,136 @@ const names = {
     .shell {
       grid-template-columns: minmax(0, 1fr);
     }
-    /* Phones: the groups collapse into one scrollable row of tabs. */
+    /* Phones: the groups become a tab bar fixed at the bottom, within thumb reach. */
+    .wrap {
+      padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+    }
     .side {
-      position: sticky;
-      top: 0;
-      z-index: 5;
+      position: fixed;
+      top: auto;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 6;
       height: auto;
-      display: flex;
-      gap: 0.25rem;
-      overflow-x: auto;
-      padding: 0.6rem var(--gutter);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      overflow: visible;
+      padding: 0.3rem 0.25rem calc(0.3rem + env(safe-area-inset-bottom));
       border-right: 0;
-      border-bottom: 1px solid var(--border);
+      border-top: 1px solid var(--border-strong);
       background: var(--glass);
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
     }
     .side__group {
       display: contents;
     }
     .side__label,
-    .side__status,
-    .admin .side button > span[aria-hidden] {
+    .side__text {
       display: none;
     }
     .admin .side button {
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.15rem;
+      min-height: 3.4rem;
+      padding: 0.35rem 0.1rem;
+      font-size: 0.72rem;
+      text-align: center;
+      color: var(--muted);
+    }
+    .admin .side button > span[aria-hidden] {
       width: auto;
-      flex: none;
-      white-space: nowrap;
-      border: 1px solid var(--border-strong);
-      background: var(--surface-2);
-      padding: 0.45rem 0.85rem;
+      font-size: 1.3rem;
+      line-height: 1;
     }
     .admin .side button[aria-current='page'] {
-      border-color: var(--accent);
-      font-weight: 400;
+      background: transparent;
+      color: var(--accent);
+      font-weight: 600;
     }
     .admin .side button[aria-current='page']::before {
+      left: 30%;
+      right: 30%;
+      top: 0;
+      bottom: auto;
+      width: auto;
+      height: 3px;
+      border-radius: 0 0 3px 3px;
+    }
+    .side__caret {
       display: none;
+    }
+    .admin .side .side__menu-btn.is-active,
+    .admin .side .side__menu-btn[aria-expanded='true'] {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .side__add {
+      position: relative;
+    }
+    .side__menu {
+      position: absolute;
+      bottom: calc(100% + 0.6rem);
+      right: 0.4rem;
+      min-width: 12rem;
+      padding: 0.4rem;
+      gap: 0.1rem;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      background: var(--bg-elev);
+      box-shadow: var(--shadow-lg);
+    }
+    .admin .side .side__menu button {
+      flex-direction: row;
+      justify-content: flex-start;
+      gap: 0.7rem;
+      min-height: 3rem;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.95rem;
+      color: var(--text-2);
+    }
+    .admin .side .side__menu button > span[aria-hidden] {
+      font-size: 1.1rem;
+    }
+    .admin .side .side__menu button[aria-current='page'] {
+      background: var(--accent-soft);
+      color: var(--text);
+    }
+    .admin .side .side__menu button[aria-current='page']::before {
+      display: none;
+    }
+    /* Latest deploy: a dot on the tab instead of the pill. */
+    .side__status {
+      position: absolute;
+      top: 0.45rem;
+      left: calc(50% + 0.55rem);
+      margin: 0;
+    }
+    .side__status .pill {
+      display: block;
+      width: 0.55rem;
+      height: 0.55rem;
+      padding: 0;
+      font-size: 0;
+      border: 0;
+      background: currentColor;
+    }
+    .side__status .pill::before {
+      content: none;
+    }
+  }
+  .side__short {
+    display: none;
+  }
+  @media (max-width: 899px) {
+    .side__short {
+      display: inline;
+    }
+    .toast {
+      bottom: calc(5rem + env(safe-area-inset-bottom)) !important;
     }
   }
   .card {
@@ -765,24 +893,46 @@ const names = {
   .files:empty {
     display: none;
   }
-  .file__order {
+  /* Drag handle: press and drag to reorder (touch-action none so the page does not scroll). */
+  .file__grip {
+    width: 2.5rem;
+  }
+  .admin button.file__grip {
+    align-self: stretch;
     display: grid;
+    place-content: center;
     justify-items: center;
     gap: 0.1rem;
-    width: 2.5rem;
-    font-size: 0.75rem;
-    color: var(--muted);
-    font-variant-numeric: tabular-nums;
-  }
-  .admin .file__order button {
-    width: 2.5rem;
-    height: 2rem;
     padding: 0;
-    font-size: 1rem;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    cursor: grab;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .admin button.file__grip span {
+    font-size: 1.35rem;
     line-height: 1;
   }
-  .file--auto .file__order {
-    height: 0;
+  .admin button.file__grip small {
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .files.is-sorting .file {
+    transition: transform 0.15s var(--ease-out);
+  }
+  .files.is-sorting,
+  .files.is-sorting .admin button.file__grip {
+    cursor: grabbing;
+  }
+  .files .file.is-dragging {
+    transition: none;
+    position: relative;
+    z-index: 2;
+    border-color: var(--accent);
+    box-shadow: var(--shadow-lg);
   }
   .file {
     display: grid;

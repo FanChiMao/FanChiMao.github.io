@@ -224,6 +224,35 @@ describe('content building', () => {
     expect(() => buildPost({ ...base, post: { ...(base.post as object), caption: 'x' } })).toThrow(/caption/);
   });
 
+  it('album: photos in the gallery folder, cover defaults to the first photo', () => {
+    const base: PublishInput = {
+      kind: 'album',
+      id: 'taipei_night',
+      post: {
+        id: 'taipei_night',
+        order: 6,
+        emoji: '🌃',
+        categories: ['city'],
+        title: { en: 'Taipei at night', 'zh-tw': '台北夜景', 'zh-cn': '台北夜景', ja: '台北の夜景' },
+        photos: [
+          { src: 'DSC_0012.JPG', title: '象山看 101', taken: '2025-12-31', exif: { camera: 'Sony A7 III', focalLength: 24, iso: 100 } },
+          { src: 'dsc-0020.jpg' },
+        ],
+      },
+      files: [{ name: 'dsc-0012.jpg', sha: hex(1) }, { name: 'dsc-0020.jpg', sha: hex(2) }],
+    };
+    const { post, files: out } = buildPost(base);
+    expect(post.cover).toBe('gallery/taipei_night/dsc-0012.jpg');
+    expect((post.photos as { src: string }[]).map((p) => p.src)).toEqual(['gallery/taipei_night/dsc-0012.jpg', 'gallery/taipei_night/dsc-0020.jpg']);
+    expect(out.map((f) => f.path)).toEqual(['src/assets/gallery/taipei_night/dsc-0012.jpg', 'src/assets/gallery/taipei_night/dsc-0020.jpg', 'src/content/albums/taipei_night.json']);
+    const bad = (post: Record<string, unknown>) => () => buildPost({ ...base, post: { ...(base.post as object), ...post } });
+    expect(bad({ title: '台北夜景' })).toThrow(/四種語言/);
+    expect(bad({ categories: ['food'] })).toThrow(/categories/);
+    expect(bad({ order: undefined })).toThrow(/order/);
+    expect(bad({ photos: [{ src: 'dsc-0012.jpg', exif: { iso: '100' } }, { src: 'dsc-0020.jpg' }] })).toThrow(/exif\.iso/);
+    expect(bad({ photos: [{ src: 'dsc-0012.jpg', link: 'javascript:alert(1)' }, { src: 'dsc-0020.jpg' }] })).toThrow(/link/);
+  });
+
   it('adds the post ID to the like-able list once, sorted', () => {
     const src = "export const AJIE_POST_IDS = ['2025-10-04-adoption', '2025-10-27-the-decision'] as const;";
     const out = addAjiePostId(src, '2025-10-11-first-vet-visit');

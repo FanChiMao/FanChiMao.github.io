@@ -114,7 +114,7 @@ async function route(req: Request, env: Env): Promise<Response> {
       const ids = await gh.readText('src/data/ajie-posts.ts');
       files.push({ path: 'src/data/ajie-posts.ts', text: addAjiePostId(ids.text, built.id) });
     }
-    const label = input.kind === 'ajie' ? 'Ajie' : 'Journey';
+    const label = { ajie: 'Ajie', journey: 'Journey', album: 'Gallery' }[input.kind];
     const commit = await gh.commit(`${label}: ${built.id} (published from the admin page)`, files);
     return json({ id: built.id, commit });
   }

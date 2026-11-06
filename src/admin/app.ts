@@ -1,14 +1,14 @@
 /**
- * Admin page logic: dashboard, the two "add" forms and deploy status. Talks only to
+ * Admin page logic: dashboard, deploy status and the three "add" forms (album, journey, Ajie). Talks only to
  * /api/admin/* on this origin (the site-admin Worker, behind Cloudflare Access).
  */
 import { bars, columns } from './charts';
-import { base64Of, formatBytes, MAX_VIDEO_BYTES, posterOf, prepareVideo, preparePhoto } from './media';
-import { checkPost, fileName, formatGuide, posterName, refName, type Checked, type Kind } from '@/lib/admin-post';
+import { base64Of, formatBytes, MAX_VIDEO_BYTES, posterOf, prepareVideo, preparePhoto, shotOf, type Shot } from './media';
+import { checkPost, contentPath, fileName, formatGuide, posterName, refName, type Checked, type Kind } from '@/lib/admin-post';
 
 if (import.meta.env.DEV && new URLSearchParams(location.search).has('mock')) (await import('./dev-mock')).installMock();
 
-type Names = { badges: Record<string, string>; posts: Record<string, string> };
+type Names = { badges: Record<string, string>; posts: Record<string, string>; albums: string[]; nextAlbumOrder: number };
 const names: Names = JSON.parse(document.getElementById('admin-data')!.textContent!);
 const $ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel)!;
 const $$ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => [...root.querySelectorAll<T>(sel)];
@@ -31,14 +31,37 @@ async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 // ---------------------------------------------------------------- tabs
 
+/** The "add" panels, opened from one 新增 menu (inline in the sidebar, a pop-up above the phone tab bar). */
+const ADD_PANELS = ['album', 'journey', 'ajie'];
+const PANELS = ['stats', 'deploys', ...ADD_PANELS];
+const phone = matchMedia('(max-width: 899px)');
+const menuBtn = $<HTMLButtonElement>('.side__menu-btn');
+const menu = $('#add-menu');
+const setMenu = (open: boolean) => {
+  menu.hidden = !open;
+  menuBtn.setAttribute('aria-expanded', String(open));
+};
+
 function showTab(id: string) {
   $$('[data-tab]').forEach((b) => (b.dataset.tab === id ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current')));
   $$('[data-panel]').forEach((p) => (p.hidden = p.dataset.panel !== id));
+  const adding = ADD_PANELS.includes(id);
+  menuBtn.classList.toggle('is-active', adding);
+  setMenu(!phone.matches && (adding || !menu.hidden));
   history.replaceState(null, '', `${location.search}#${id}`);
   scrollTo({ top: 0 });
 }
 $$('[data-tab]').forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab!)));
-const PANELS = ['stats', 'deploys', 'ajie', 'journey'];
+menuBtn.addEventListener('click', () => setMenu(Boolean(menu.hidden)));
+document.addEventListener('click', (e) => {
+  if (phone.matches && !menu.hidden && !(e.target as Element).closest('.side__add')) setMenu(false);
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && phone.matches && !menu.hidden) {
+    setMenu(false);
+    menuBtn.focus();
+  }
+});
 showTab(PANELS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'stats');
 
 // ---------------------------------------------------------------- dashboard
@@ -159,6 +182,8 @@ type Upload = {
   auto?: boolean;
   status: 'working' | 'ready' | 'error';
   note: string;
+  /** Albums: shooting date / camera read before re-drawing, added to the photo entry. */
+  shot?: Shot;
 };
 
 let nextKey = 1;
@@ -219,6 +244,7 @@ class PostForm {
 
   async add(file: File) {
     const video = file.type.startsWith('video/') || /\.(mov|mp4|m4v|webm)$/i.test(file.name);
+    if (video && this.kind === 'album') return alertBox(`相簿只能放照片：${file.name}`);
     const item: Upload = { key: nextKey++, name: this.uniqueName(fileName(file.name, video)), original: file.name, type: video ? 'video' : 'image', status: 'working', note: '處理中…' };
     this.uploads.push(item);
     this.render();
@@ -234,9 +260,13 @@ class PostForm {
         if (!this.uploads.some((u) => u.name === posterName(item.name)))
           this.uploads.splice(this.uploads.indexOf(item) + 1, 0, { key: nextKey++, name: posterName(item.name), original: '', type: 'image', blob: poster, url: item.url, auto: true, status: 'ready', note: '自動產生的影片封面' });
       } else {
+        if (this.kind === 'album') item.shot = await shotOf(file);
         item.blob = await preparePhoto(file);
         item.url = URL.createObjectURL(item.blob);
-        item.note = `${formatBytes(file.size)} → ${formatBytes(item.blob.size)}，已去除 EXIF / GPS`;
+        const s = item.shot;
+        item.note = `${formatBytes(file.size)} → ${formatBytes(item.blob.size)}，${
+          this.kind === 'album' ? `已去除 GPS${s?.taken || s?.exif ? `，保留 ${[s.taken, s.exif?.camera].filter(Boolean).join(' · ')}` : ''}` : '已去除 EXIF / GPS'
+        }`;
       }
       item.status = 'ready';
     } catch (e) {
@@ -275,26 +305,95 @@ class PostForm {
     this.render();
   }
 
-  /** Reorder the JSON's media items that point at uploads to match the list (others stay put). */
+  /**
+   * Press and drag a file's handle to reorder (touch, pen or mouse). The dragged row follows the
+   * finger, the others slide out of the way; the list and the JSON update on release.
+   */
+  drag(e: PointerEvent, item: Upload, handle: HTMLElement) {
+    if (e.button !== 0 || this.uploads.some((u) => u.status === 'working')) return;
+    e.preventDefault();
+    const groups = this.groups();
+    const from = groups.findIndex((g) => g[0] === item);
+    if (from < 0 || groups.length < 2) return;
+    const els = groups.map((g) => g.map((u) => this.list.querySelector<HTMLElement>(`[data-key="${u.key}"]`)!));
+    const box = (g: HTMLElement[]) => ({ top: g[0].getBoundingClientRect().top + scrollY, bottom: g.at(-1)!.getBoundingClientRect().bottom + scrollY });
+    const rects = els.map(box);
+    const gap = rects[1].top - rects[0].bottom;
+    const height = rects[from].bottom - rects[from].top + gap;
+    const mid = (r: { top: number; bottom: number }) => (r.top + r.bottom) / 2;
+    const startY = e.clientY + scrollY;
+    let lastY = e.clientY;
+    let to = from;
+    let raf = 0;
+    handle.setPointerCapture(e.pointerId);
+    this.list.classList.add('is-sorting');
+    els[from].forEach((el) => el.classList.add('is-dragging'));
+    const layout = () => {
+      const dy = lastY + scrollY - startY;
+      const center = mid(rects[from]) + dy;
+      to = from;
+      for (let i = from + 1; i < rects.length; i++) if (center > mid(rects[i])) to = i;
+      for (let i = from - 1; i >= 0; i--) if (center < mid(rects[i])) to = i;
+      els.forEach((g, i) => {
+        const shift = i === from ? dy : from < i && i <= to ? -height : to <= i && i < from ? height : 0;
+        g.forEach((el) => (el.style.transform = shift ? `translateY(${shift}px)` : ''));
+      });
+    };
+    // Scroll the page while holding near the top or bottom (above the phone tab bar).
+    const edge = () => {
+      const bottom = innerHeight - (phone.matches ? 90 : 40);
+      const step = lastY < 90 ? -12 : lastY > bottom ? 12 : 0;
+      if (step) {
+        scrollBy(0, step);
+        layout();
+      }
+      raf = requestAnimationFrame(edge);
+    };
+    raf = requestAnimationFrame(edge);
+    const onMove = (ev: PointerEvent) => {
+      lastY = ev.clientY;
+      layout();
+    };
+    const done = () => {
+      cancelAnimationFrame(raf);
+      handle.removeEventListener('pointermove', onMove);
+      handle.removeEventListener('pointerup', done);
+      handle.removeEventListener('pointercancel', done);
+      this.list.classList.remove('is-sorting');
+      if (to !== from) {
+        const [g] = groups.splice(from, 1);
+        groups.splice(to, 0, g);
+        this.uploads = groups.flat();
+        this.syncJsonOrder();
+      }
+      this.render();
+    };
+    handle.addEventListener('pointermove', onMove);
+    handle.addEventListener('pointerup', done);
+    handle.addEventListener('pointercancel', done);
+  }
+
+  /** Reorder the JSON's media (albums: photos) that point at uploads to match the list (others stay put). */
   syncJsonOrder() {
-    let input: { id?: unknown; media?: unknown };
+    let input: Record<string, unknown>;
     try {
       input = JSON.parse(this.json.value);
     } catch {
       return;
     }
-    if (!Array.isArray(input?.media)) return;
+    const key = this.kind === 'album' ? 'photos' : 'media';
+    if (!Array.isArray(input?.[key])) return;
     const id = this.idField.value.trim() || (typeof input.id === 'string' ? input.id : '');
     const order = new Map(this.uploads.map((u, i) => [u.name, i]));
     const rank = (m: { type?: unknown; src?: unknown }) =>
-      typeof m?.src === 'string' && (m.type === 'image' || m.type === 'video') ? order.get(refName(this.kind, id, m.src, m.type === 'video') ?? '') : undefined;
-    const media = input.media as { type?: unknown; src?: unknown }[];
+      typeof m?.src === 'string' && (this.kind === 'album' || m.type === 'image' || m.type === 'video') ? order.get(refName(this.kind, id, m.src, m.type === 'video') ?? '') : undefined;
+    const media = input[key] as { type?: unknown; src?: unknown }[];
     const slots = media.map((m, i) => (rank(m) === undefined ? -1 : i)).filter((i) => i >= 0);
     const sorted = slots.map((i) => media[i]).sort((a, b) => rank(a)! - rank(b)!);
     const next = [...media];
     slots.forEach((slot, k) => (next[slot] = sorted[k]));
     if (next.every((m, i) => m === media[i])) return;
-    input.media = next;
+    input[key] = next;
     this.json.value = JSON.stringify(input, null, 2);
   }
 
@@ -310,8 +409,8 @@ class PostForm {
         (u) => `<li class="file file--${u.status}${u.auto ? ' file--auto' : ''}" data-key="${u.key}">
           ${
             u.auto
-              ? '<span class="file__order"></span>'
-              : `<span class="file__order"><button type="button" data-move="-1" aria-label="往前移" ${heads[0] === u ? 'disabled' : ''}>↑</button><span>${heads.indexOf(u) + 1}</span><button type="button" data-move="1" aria-label="往後移" ${heads.at(-1) === u ? 'disabled' : ''}>↓</button></span>`
+              ? '<span class="file__grip"></span>'
+              : `<button type="button" class="file__grip" data-grip aria-label="第 ${heads.indexOf(u) + 1} 個，按住拖曳排序（或用上下鍵）"><span aria-hidden="true">⠿</span><small>${heads.indexOf(u) + 1}</small></button>`
           }
           <span class="file__thumb">${u.url ? `<img src="${u.url}" alt="">` : '…'}${u.type === 'video' ? '<span class="file__badge">影片</span>' : ''}</span>
           <span class="file__body">
@@ -325,7 +424,14 @@ class PostForm {
     this.list.querySelectorAll<HTMLElement>('li').forEach((li) => {
       const item = this.uploads.find((u) => u.key === Number(li.dataset.key))!;
       li.querySelector('.file__remove')?.addEventListener('click', () => this.remove(item));
-      li.querySelectorAll<HTMLButtonElement>('[data-move]').forEach((b) => b.addEventListener('click', () => this.move(item, Number(b.dataset.move) as -1 | 1)));
+      const grip = li.querySelector<HTMLElement>('[data-grip]');
+      grip?.addEventListener('pointerdown', (e) => this.drag(e, item, grip));
+      grip?.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+        e.preventDefault();
+        this.move(item, e.key === 'ArrowUp' ? -1 : 1);
+        this.list.querySelector<HTMLElement>(`[data-key="${item.key}"] [data-grip]`)?.focus();
+      });
       $('.file__name', li).addEventListener('click', async (e) => {
         const btn = e.currentTarget as HTMLElement;
         await navigator.clipboard.writeText(item.name);
@@ -334,6 +440,25 @@ class PostForm {
       });
     });
     this.update();
+  }
+
+  /**
+   * Albums: fill in what the page knows and the JSON need not say. Each photo gets its shooting
+   * date / camera (unless written), order defaults to after the last album.
+   */
+  prepare(input: unknown): unknown {
+    if (this.kind !== 'album' || typeof input !== 'object' || input === null || Array.isArray(input)) return input;
+    const out = { ...(input as Record<string, unknown>) };
+    if (out.order === undefined) out.order = names.nextAlbumOrder;
+    const id = this.idField.value.trim();
+    if (Array.isArray(out.photos))
+      out.photos = out.photos.map((ph) => {
+        if (typeof ph !== 'object' || ph === null || typeof (ph as { src?: unknown }).src !== 'string') return ph;
+        const name = refName('album', id, (ph as { src: string }).src, false);
+        const shot = this.uploads.find((u) => u.name === name)?.shot;
+        return shot ? { ...ph, ...(('taken' in ph) ? {} : shot.taken ? { taken: shot.taken } : {}), ...(('exif' in ph) ? {} : shot.exif ? { exif: shot.exif } : {}) } : ph;
+      });
+    return out;
   }
 
   /** Live check of the JSON against the uploads (same rules as the Worker). */
@@ -357,15 +482,15 @@ class PostForm {
       const fromJson = typeof (input as { id?: unknown })?.id === 'string' ? (input as { id: string }).id : '';
       if (fromJson && !this.idTouched) this.idField.value = fromJson;
       const ready = new Set(this.uploads.filter((u) => u.status === 'ready').map((u) => u.name));
-      const c = checkPost(this.kind, this.idField.value.trim(), input, ready);
-      this.checked = { ...c, input };
+      const id = this.idField.value.trim();
+      const prepared = this.prepare(input);
+      const c = checkPost(this.kind, id, prepared, ready);
+      if (this.kind === 'album' && names.albums.includes(id)) c.errors.push(`相簿「${id}」已經存在；第一版只能新增，請換一個 ID`);
+      this.checked = { ...c, input: prepared };
       c.errors.forEach((m) => lines.push(`<li class="bad">${escHtml(m)}</li>`));
       const unused = this.uploads.filter((u) => !u.auto && u.status === 'ready' && !c.used.includes(u.name)).map((u) => u.name);
       if (unused.length) lines.push(`<li class="warn">JSON 沒用到，不會上傳：${escHtml(unused.join(', '))}</li>`);
-      if (!c.errors.length) {
-        const id = this.idField.value.trim();
-        lines.unshift(`<li class="good">可以發布：會新增 <code>src/content/${this.kind}/${escHtml(id)}.json</code> 和 ${c.used.length} 個檔案</li>`);
-      }
+      if (!c.errors.length) lines.unshift(`<li class="good">可以發布：會新增 <code>${escHtml(contentPath(this.kind, id))}</code> 和 ${c.used.length} 個檔案</li>`);
     }
     broken.forEach((u) => lines.push(`<li class="bad">${escHtml(u.original)}：${escHtml(u.note)}（請移除）</li>`));
     if (working) lines.push('<li class="muted">還有檔案在處理中…</li>');
@@ -406,7 +531,7 @@ class PostForm {
       });
       this.log(`已 commit 到 main：<a href="${res.commit.url}" target="_blank" rel="noopener">${res.commit.sha.slice(0, 7)}</a>`, 'good');
       this.reset();
-      await this.follow(res.commit.sha);
+      await this.follow(res.commit.sha, id);
     } catch (e) {
       this.log(escHtml((e as Error).message).replace(/\n/g, '<br>'), 'bad');
     } finally {
@@ -424,7 +549,7 @@ class PostForm {
   }
 
   /** Watch the deploy run for this commit until the site is live (about 2-4 minutes). */
-  async follow(sha: string) {
+  async follow(sha: string, id: string) {
     const line = this.log('等待網站部署開始…');
     const started = Date.now();
     while (Date.now() - started < 20 * 60_000) {
@@ -438,8 +563,9 @@ class PostForm {
         continue;
       }
       if (run.conclusion === 'success') {
-        const page = this.kind === 'ajie' ? '/zh-tw/personal/companion/' : '/zh-tw/personal/journey/';
-        line.innerHTML = `網站已更新 🎉 <a href="${page}" target="_blank" rel="noopener">打開${this.kind === 'ajie' ? '阿桔' : '旅程'}頁面</a>（瀏覽器可能要強制重新整理）`;
+        const page = { ajie: '/zh-tw/personal/companion/', journey: '/zh-tw/personal/journey/', album: `/zh-tw/personal/gallery/${id}/` }[this.kind];
+        const label = { ajie: '阿桔頁面', journey: '旅程頁面', album: '這本相簿（draft 的相簿不會公開）' }[this.kind];
+        line.innerHTML = `網站已更新 🎉 <a href="${page}" target="_blank" rel="noopener">打開${label}</a>（瀏覽器可能要強制重新整理）`;
         line.className = 'good';
       } else {
         line.innerHTML = `部署${label}：<a href="${run.url}" target="_blank" rel="noopener">看錯誤訊息</a>（內容已在 main，修好後可按「重新部署」）`;
