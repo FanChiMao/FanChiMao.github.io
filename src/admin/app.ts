@@ -4,7 +4,7 @@
  */
 import { bars, columns } from './charts';
 import { base64Of, formatBytes, MAX_VIDEO_BYTES, posterOf, prepareVideo, preparePhoto } from './media';
-import { checkPost, fileName, formatGuide, posterName, type Checked, type Kind } from '@/lib/admin-post';
+import { checkPost, fileName, formatGuide, posterName, refName, type Checked, type Kind } from '@/lib/admin-post';
 
 if (import.meta.env.DEV && new URLSearchParams(location.search).has('mock')) (await import('./dev-mock')).installMock();
 
@@ -253,15 +253,66 @@ class PostForm {
     this.render();
   }
 
+  /** Uploads grouped as [file, its auto poster?], in list order. */
+  groups(): Upload[][] {
+    const out: Upload[][] = [];
+    for (const u of this.uploads) {
+      if (u.auto && out.length && out.at(-1)![0].type === 'video' && posterName(out.at(-1)![0].name) === u.name) out.at(-1)!.push(u);
+      else out.push([u]);
+    }
+    return out;
+  }
+
+  /** Move a file up / down the list; the JSON's media order follows. */
+  move(item: Upload, by: -1 | 1) {
+    const groups = this.groups();
+    const i = groups.findIndex((g) => g[0] === item);
+    const j = i + by;
+    if (i < 0 || j < 0 || j >= groups.length) return;
+    [groups[i], groups[j]] = [groups[j], groups[i]];
+    this.uploads = groups.flat();
+    this.syncJsonOrder();
+    this.render();
+  }
+
+  /** Reorder the JSON's media items that point at uploads to match the list (others stay put). */
+  syncJsonOrder() {
+    let input: { id?: unknown; media?: unknown };
+    try {
+      input = JSON.parse(this.json.value);
+    } catch {
+      return;
+    }
+    if (!Array.isArray(input?.media)) return;
+    const id = this.idField.value.trim() || (typeof input.id === 'string' ? input.id : '');
+    const order = new Map(this.uploads.map((u, i) => [u.name, i]));
+    const rank = (m: { type?: unknown; src?: unknown }) =>
+      typeof m?.src === 'string' && (m.type === 'image' || m.type === 'video') ? order.get(refName(this.kind, id, m.src, m.type === 'video') ?? '') : undefined;
+    const media = input.media as { type?: unknown; src?: unknown }[];
+    const slots = media.map((m, i) => (rank(m) === undefined ? -1 : i)).filter((i) => i >= 0);
+    const sorted = slots.map((i) => media[i]).sort((a, b) => rank(a)! - rank(b)!);
+    const next = [...media];
+    slots.forEach((slot, k) => (next[slot] = sorted[k]));
+    if (next.every((m, i) => m === media[i])) return;
+    input.media = next;
+    this.json.value = JSON.stringify(input, null, 2);
+  }
+
   renderNote(item: Upload) {
     const el = this.list.querySelector(`[data-key="${item.key}"] .file__note`);
     if (el) el.textContent = item.note;
   }
 
   render() {
+    const heads = this.groups().map((g) => g[0]);
     this.list.innerHTML = this.uploads
       .map(
         (u) => `<li class="file file--${u.status}${u.auto ? ' file--auto' : ''}" data-key="${u.key}">
+          ${
+            u.auto
+              ? '<span class="file__order"></span>'
+              : `<span class="file__order"><button type="button" data-move="-1" aria-label="往前移" ${heads[0] === u ? 'disabled' : ''}>↑</button><span>${heads.indexOf(u) + 1}</span><button type="button" data-move="1" aria-label="往後移" ${heads.at(-1) === u ? 'disabled' : ''}>↓</button></span>`
+          }
           <span class="file__thumb">${u.url ? `<img src="${u.url}" alt="">` : '…'}${u.type === 'video' ? '<span class="file__badge">影片</span>' : ''}</span>
           <span class="file__body">
             <button type="button" class="file__name" title="複製檔名">${escHtml(u.name)}</button>
@@ -274,6 +325,7 @@ class PostForm {
     this.list.querySelectorAll<HTMLElement>('li').forEach((li) => {
       const item = this.uploads.find((u) => u.key === Number(li.dataset.key))!;
       li.querySelector('.file__remove')?.addEventListener('click', () => this.remove(item));
+      li.querySelectorAll<HTMLButtonElement>('[data-move]').forEach((b) => b.addEventListener('click', () => this.move(item, Number(b.dataset.move) as -1 | 1)));
       $('.file__name', li).addEventListener('click', async (e) => {
         const btn = e.currentTarget as HTMLElement;
         await navigator.clipboard.writeText(item.name);

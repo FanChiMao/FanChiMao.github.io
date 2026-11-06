@@ -45,6 +45,16 @@ export async function prepareVideo(file: Blob, keepAudio: boolean, onProgress: (
     const input = new Input({ source: new BlobSource(file), formats: ALL_FORMATS });
     const track = await input.getPrimaryVideoTrack();
     if (!track) throw new Error('檔案裡沒有影片軌');
+    const cantDecode = async () => {
+      const hevc = track.codec === 'hevc';
+      const hdr = await track.hasHighDynamicRange().catch(() => false);
+      const kind = `${hevc ? 'HEVC（iPhone「高效率」格式）' : (track.codec ?? '未知格式')}${hdr ? '、HDR' : ''}`;
+      return new Error(
+        `這支影片是 ${kind}，這個瀏覽器解不開。` +
+          (hevc ? '請改用 iPhone 或 Mac 的 Safari 打開 admin 頁面上傳（直接支援）；之後拍的影片可在 iPhone「設定 → 相機 → 格式」選「最相容」避免這個問題。' : '請先用手機或剪輯軟體轉成 H.264 MP4 再上傳。'),
+      );
+    };
+    if (!(await track.canDecode())) throw await cantDecode();
     const w = track.displayWidth;
     const h = track.displayHeight;
     const scale = Math.min(1, VIDEO_SHORT_SIDE / Math.min(w, h));
@@ -59,7 +69,13 @@ export async function prepareVideo(file: Blob, keepAudio: boolean, onProgress: (
     });
     if (!conversion.isValid) throw new Error(`無法轉檔：${conversion.discardedTracks.map((t) => t.reason).join(', ')}`);
     conversion.onProgress = (p) => onProgress(p, pass);
-    await conversion.execute();
+    try {
+      await conversion.execute();
+    } catch (e) {
+      // canDecode() only checks the codec string; some files (10-bit HDR, Dolby Vision) still fail here.
+      if (/decod/i.test(String((e as Error)?.message ?? e))) throw await cantDecode();
+      throw e;
+    }
     const blob = new Blob([output.target.buffer!], { type: 'video/mp4' });
     if (blob.size <= MAX_VIDEO_BYTES) return blob;
   }

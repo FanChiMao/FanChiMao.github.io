@@ -29,6 +29,20 @@ export function fileName(original: string, video: boolean): string {
   return `${base || 'file'}${video ? '.mp4' : '.jpg'}`;
 }
 
+/**
+ * The uploaded file name a reference in the JSON points to: a bare name ("IMG_1234.JPG" ->
+ * "img-1234.jpg", the same clean-up as uploads) or a full path of this post. Undefined for
+ * paths elsewhere.
+ */
+export function refName(kind: Kind, id: string, ref: string, video: boolean): string | undefined {
+  let name = ref.trim();
+  for (const prefix of [`src/assets/${kind}/${id}/`, `${kind}/${id}/`, `public/media/${kind}/${id}-`, `/media/${kind}/${id}-`]) {
+    if (name.startsWith(prefix)) name = name.slice(prefix.length);
+  }
+  if (name.includes('/')) return undefined;
+  return FILE.test(name) ? name : fileName(name, video);
+}
+
 /** Poster generated for a clip: play.mp4 -> play-poster.jpg */
 export const posterName = (video: string) => video.replace(/\.mp4$/, '-poster.jpg');
 
@@ -82,12 +96,8 @@ export function checkPost(kind: Kind, id: string, input: unknown, uploaded: Read
   /** A file reference -> the uploaded name (checked), or undefined. */
   const file = (where: string, ref: unknown, video: boolean): string | undefined => {
     if (typeof ref !== 'string' || !ref.trim()) return void err(`${where}：缺少檔名`);
-    let name = ref.trim();
-    for (const prefix of [`src/assets/${kind}/${id}/`, `${kind}/${id}/`, `public/media/${kind}/${id}-`, `/media/${kind}/${id}-`]) {
-      if (name.startsWith(prefix)) name = name.slice(prefix.length);
-    }
-    if (name.includes('/')) return void err(`${where}：「${ref}」只要寫檔名，不要路徑`);
-    if (!FILE.test(name)) name = fileName(name, video); // same clean-up as the upload
+    const name = refName(kind, id, ref, video);
+    if (!name) return void err(`${where}：「${ref}」只要寫檔名，不要路徑`);
     if (!uploaded.has(name)) return void err(`${where}：找不到上傳的檔案「${name}」`);
     if (!used.includes(name)) used.push(name);
     return name;
@@ -164,7 +174,7 @@ export function formatGuide(kind: Kind, files: string[]): string {
 - 日期格式 YYYY-MM-DD。
 - "id" 是貼文 ID / 檔名：小寫英文、數字和 -，通常是「最後一天日期-英文代稱」。
 
-已上傳的檔案：
+已上傳的檔案（media 請照這個順序排；AI 封面插圖放 cover，不放 media）：
 ${list}`;
   if (kind === 'ajie')
     return `請幫我整理成網站「阿桔」貼文的 JSON。
@@ -178,7 +188,7 @@ ${common}
 - title?：短標題
 - location?：地點
 - cover?：AI 插畫封面 { "src": "檔名.jpg", "alt"?: 說明 }
-- media：照片 / 影片，依顯示順序，至少一個
+- media：照片 / 影片，至少一個，照「已上傳的檔案」的順序
   - { "type": "image", "src": "檔名.jpg", "alt"?: 說明 }
   - { "type": "video", "src": "檔名.mp4", "loop"?: true（預設，像 IG 靜音循環）| false（顯示播放鍵）, "alt"?: 說明 }
   - { "type": "youtube", "id": "YouTube 影片 ID" }
@@ -209,7 +219,7 @@ ${common}
 - title：標題
 - place?：地點
 - stat?：成績，例如 "2:05:30"、"18 m"
-- media?：照片 / 影片（格式同下），可省略
+- media?：照片 / 影片，照「已上傳的檔案」的順序（格式同下），可省略
   - { "type": "image", "src": "檔名.jpg", "alt"?: 說明 }
   - { "type": "video", "src": "檔名.mp4", "loop"?: false }
   - { "type": "youtube", "id": "YouTube 影片 ID" }
