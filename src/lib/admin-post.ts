@@ -56,7 +56,7 @@ export const posterName = (video: string) => video.replace(/\.mp4$/, '-poster.jp
 
 const KEYS: Record<Kind, string[]> = {
   ajie: ['date', 'from', 'title', 'location', 'cover', 'media', 'caption', 'pinned', 'draft'],
-  journey: ['date', 'category', 'title', 'place', 'coords', 'stat', 'media', 'story', 'draft'],
+  journey: ['date', 'category', 'title', 'short', 'place', 'coords', 'stat', 'media', 'story', 'draft'],
   album: ['order', 'emoji', 'categories', 'title', 'cover', 'photos', 'draft'],
 };
 const PHOTO_KEYS = ['src', 'caption', 'title', 'description', 'taken', 'exif', 'link'];
@@ -171,6 +171,7 @@ export function checkPost(kind: Kind, id: string, input: unknown, uploaded: Read
     }
   } else {
     text('story', post.story, true);
+    text('short', post.short, false);
     text('place', post.place, false);
     if (!(JOURNEY_CATEGORIES as readonly unknown[]).includes(post.category)) err(`「category」要是其中一個：${JOURNEY_CATEGORIES.join(', ')}`);
     if (post.stat !== undefined && (typeof post.stat !== 'string' || post.stat.length > 40)) err('「stat」要是 40 字以內的文字');
@@ -313,6 +314,7 @@ ${common}
 - date
 - category：${JOURNEY_CATEGORIES.join(' / ')}（跑步 / 潛水 / 跳傘 / 登山 / 騎車 / 旅行 / 其他）
 - title：標題
+- short?：地球小卡上的短標題（標題太長時用，例如「第一次完成半馬」）
 - place?：地點
 - coords?：地點座標，給地球檢視用 { "lat": 緯度, "lng": 經度 }（十進位，越精確越好，例如 Google 地圖右鍵複製的數字）
 - stat?：成績，例如 "2:05:30"、"18 m"

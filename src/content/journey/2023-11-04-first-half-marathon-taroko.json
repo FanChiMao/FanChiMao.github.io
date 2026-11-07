@@ -7,6 +7,12 @@
     "zh-cn": "第一次完成半程马拉松｜太鲁阁",
     "ja": "初めてのハーフマラソン完走｜太魯閣"
   },
+  "short": {
+    "en": "First half marathon",
+    "zh-tw": "第一次完成半馬",
+    "zh-cn": "第一次完成半马",
+    "ja": "初ハーフマラソン完走"
+  },
   "place": {
     "en": "Taroko Gorge, Hualien, Taiwan",
     "zh-tw": "花蓮・太魯閣",

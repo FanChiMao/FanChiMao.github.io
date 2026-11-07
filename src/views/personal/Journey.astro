@@ -33,10 +33,11 @@ const unplaced = items.filter((x) => !x.data.coords).length;
 ---
 
 <PersonalLayout {lang} path="/personal/journey/" title={c.name} description={c.blurb} overlay={false} noindex={items.length === 0}>
-  <div class="journey pw-page pw-sea" data-journey data-view="timeline">
+  <div class="journey pw-page pw-sea" data-journey data-view="globe">
     <script is:inline>
+      // Opens on the globe unless the timeline was picked in this browser.
       try {
-        if (localStorage.getItem('journey:view:v1') === 'globe') document.currentScript.closest('[data-journey]').dataset.view = 'globe';
+        if (localStorage.getItem('journey:view:v2') === 'timeline') document.currentScript.closest('[data-journey]').dataset.view = 'timeline';
       } catch {}
     </script>
     <div class="container journey__inner">
@@ -56,11 +57,11 @@ const unplaced = items.filter((x) => !x.data.coords).length;
           <div class="journey__posts">
           <div class="journey__bar">
             <div class="journey__views" role="group" aria-label={p.journey.view}>
-              <button type="button" data-view-btn="timeline" aria-pressed="true" aria-label={p.journey.viewTimeline} title={p.journey.viewTimeline}>
-                <Icon name="lucide:list" />
-              </button>
-              <button type="button" data-view-btn="globe" aria-pressed="false" aria-label={p.journey.viewGlobe} title={p.journey.viewGlobe}>
+              <button type="button" data-view-btn="globe" aria-pressed="true" aria-label={p.journey.viewGlobe} title={p.journey.viewGlobe}>
                 <Icon name="lucide:globe" />
+              </button>
+              <button type="button" data-view-btn="timeline" aria-pressed="false" aria-label={p.journey.viewTimeline} title={p.journey.viewTimeline}>
+                <Icon name="lucide:list" />
               </button>
             </div>
             {used.length > 0 && (
@@ -115,6 +116,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
                                 {m.data.stat && <span class="badge milestone__stat-chip">{m.data.stat}</span>}
                               </span>
                               <h3 class="milestone__title">{title}</h3>
+                              {m.data.short && <span class="milestone__short" hidden>{pick(m.data.short)}</span>}
                               <span class="milestone__meta">
                                 <span class="milestone__full-date">{fmt.format(asDate(m.data.date))}</span>
                                 {place && (
@@ -222,6 +224,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     const card = (pin: Pin) => {
       const m = byId(pin.id)!;
       const title = text(m, '.milestone__title');
+      const short = text(m, '.milestone__short');
       const date = text(m, '.milestone__full-date');
       const el = document.createElement('div');
       el.className = 'gpin';
@@ -230,7 +233,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
       const icon = m.querySelector('.milestone__dot svg');
       if (icon) el.querySelector('.gpin__head')!.append(icon.cloneNode(true));
       el.querySelector('.gpin__date')!.textContent = date;
-      el.querySelector('.gpin__title')!.textContent = title.split(/[：:]/)[0].trim() || title;
+      el.querySelector('.gpin__title')!.textContent = short || title.split(/[：:｜|]/)[0].trim() || title;
       const btn = el.querySelector('button')!;
       btn.setAttribute('aria-label', [title, date].filter(Boolean).join(', '));
       btn.addEventListener('click', () => pick(pin.id));
@@ -277,6 +280,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
         if (!mod.canDrawGlobe()) {
           status.hidden = true;
           globeEl.querySelector<HTMLElement>('[data-globe-unsupported]')!.hidden = false;
+          fallBack();
           return;
         }
         try {
@@ -291,12 +295,19 @@ const unplaced = items.filter((x) => !x.data.coords).length;
         } catch {
           status.hidden = true;
           globeEl.querySelector<HTMLElement>('[data-globe-unsupported]')!.hidden = false;
+          fallBack();
         }
       })();
       return loading;
     }
 
-    // ---- Timeline / globe (remembered in this browser).
+    // ---- Globe (default) / timeline (remembered in this browser).
+    // Without WebGL the globe cannot be drawn: show the timeline instead (not remembered).
+    const fallBack = () => {
+      if (root.dataset.view !== 'globe') return;
+      root.dataset.view = 'timeline';
+      paintView();
+    };
     const viewBtns = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-view-btn]'));
     const paintView = () => {
       viewBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.viewBtn === root.dataset.view)));
@@ -309,7 +320,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
       b.addEventListener('click', () => {
         root.dataset.view = b.dataset.viewBtn;
         try {
-          localStorage.setItem('journey:view:v1', root.dataset.view!);
+          localStorage.setItem('journey:view:v2', root.dataset.view!);
         } catch {}
         paintView();
       }),
@@ -339,10 +350,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     globeEl.querySelector('[data-globe-read]')!.addEventListener('click', () => {
       const m = current ? byId(current) : null;
       if (!m) return;
-      root.dataset.view = 'timeline';
-      try {
-        localStorage.setItem('journey:view:v1', 'timeline');
-      } catch {}
+      root.dataset.view = 'timeline'; // just this once: the page still opens on the globe next time
       paintView();
       const d = m.querySelector('details')!;
       d.open = true;

@@ -191,6 +191,8 @@ const journey = defineCollection({
     date: z.iso.date(),
     category: z.enum(journeyCategories),
     title: textOrT,
+    /** Shorter title for the globe pin (the full title is in the panel and the timeline). */
+    short: textOrT.optional(),
     place: textOrT.optional(),
     /** Where it happened, for the globe view: one point, as precise as you like (decimal degrees). */
     coords: z.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) }).optional(),
