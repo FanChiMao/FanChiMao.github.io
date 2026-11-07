@@ -48,7 +48,7 @@ const items = await Promise.all(
     {
       items.map((m, i) => (
         <li class="pmedia__slide" data-ai-cover={firstIsAi && i === 0 ? '' : undefined} aria-label={items.length > 1 ? `${i + 1} / ${items.length}` : undefined}>
-          {m.type === 'image' && <Image class:list={{ 'pmedia__contain': m.fit === 'contain' }} src={m.img} alt={m.alt} widths={[480, 800, 1200]} {sizes} quality={80} loading={eager && i === 0 ? 'eager' : 'lazy'} />}
+          {m.type === 'image' && <Image class:list={{ 'pmedia__contain': m.fit === 'contain' }} src={m.img} alt={m.alt} width={1200} widths={[480, 800, 1200]} {sizes} quality={80} loading={eager && i === 0 ? 'eager' : 'lazy'} />}
           {m.type === 'video' &&
             (m.loop ? (
               <>

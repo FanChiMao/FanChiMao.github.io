@@ -21,7 +21,7 @@ const { images, alt, labels, sizes = '(min-width: 1000px) 540px, 100vw', ratio =
     {
       images.map((src, i) => (
         <li class="carousel__slide" aria-label={`${i + 1} / ${images.length}`}>
-          <Image src={src} alt={`${alt} (${i + 1})`} widths={[480, 800, 1200]} {sizes} quality={72} loading="lazy" />
+          <Image src={src} alt={`${alt} (${i + 1})`} width={1200} widths={[480, 800, 1200]} {sizes} quality={72} loading="lazy" />
         </li>
       ))
     }
