@@ -7,7 +7,7 @@
  *    with metadata tags cleared, so location atoms and huge phone bitrates are gone. If the
  *    result is still too big, it tries again at a lower quality.
  */
-import { ALL_FORMATS, BlobSource, BufferTarget, Conversion, Input, Mp4OutputFormat, Output, Quality, canEncode } from 'mediabunny';
+import { ALL_FORMATS, BlobSource, BufferTarget, CanvasSink, Conversion, Input, Mp4OutputFormat, Output, Quality, canEncode } from 'mediabunny';
 
 export const MAX_VIDEO_BYTES = 40 * 1024 * 1024; // what we upload; the API accepts ~50 MB
 const PHOTO_LONG_SIDE = 2400;
@@ -82,21 +82,55 @@ export async function prepareVideo(file: Blob, keepAudio: boolean, onProgress: (
   throw new Error('壓縮後仍超過 40 MB，請先把影片剪短再上傳（或改用 YouTube）');
 }
 
-/** First frame worth showing (at ~0.5 s) of a clip, as a JPEG poster. */
+/**
+ * First frame worth showing (at ~0.5 s) of a clip, as a JPEG poster.
+ *
+ * Decoded with mediabunny (the same WebCodecs path as the compression), not a <video> element:
+ * Safari, iOS especially, often never loads a detached <video>, so `loadeddata` never fired and
+ * the upload sat at "壓縮中 100%" forever. The <video> route is kept only as a fallback, with a
+ * timeout so it can no longer hang.
+ */
 export async function posterOf(video: Blob): Promise<Blob> {
+  try {
+    const input = new Input({ source: new BlobSource(video), formats: ALL_FORMATS });
+    const track = await input.getPrimaryVideoTrack();
+    if (track) {
+      const start = await track.getFirstTimestamp();
+      const end = await track.computeDuration();
+      const at = Math.min(start + 0.5, start + Math.max(0, end - start) / 2);
+      const frame = (await new CanvasSink(track, { poolSize: 0 }).getCanvas(at)) ?? (await new CanvasSink(track, { poolSize: 0 }).getCanvas(start));
+      if (frame) {
+        const c = frame.canvas;
+        if ('convertToBlob' in c) return await c.convertToBlob({ type: 'image/jpeg', quality: 0.82 });
+        return await canvasBlob(c, 0.82);
+      }
+    }
+  } catch {
+    // fall through to the <video> element
+  }
+  return posterFromElement(video);
+}
+
+/** Same, through a <video> element; gives up after 15 s instead of waiting forever. */
+async function posterFromElement(video: Blob): Promise<Blob> {
   const url = URL.createObjectURL(video);
+  const timeout = (ms: number) => new Promise<never>((_, fail) => setTimeout(() => fail(new Error('無法產生影片封面（瀏覽器沒有載入影片畫面），請換用電腦版 Chrome / Edge 再試一次')), ms));
   try {
     const el = document.createElement('video');
     el.muted = true;
     el.playsInline = true;
     el.preload = 'auto';
     el.src = url;
-    await new Promise<void>((ok, fail) => {
-      el.onloadeddata = () => ok();
-      el.onerror = () => fail(new Error('無法讀取影片畫面'));
-    });
+    el.load();
+    await Promise.race([
+      new Promise<void>((ok, fail) => {
+        el.onloadeddata = () => ok();
+        el.onerror = () => fail(new Error('無法讀取影片畫面'));
+      }),
+      timeout(15000),
+    ]);
     el.currentTime = Math.min(0.5, (el.duration || 1) / 2);
-    await new Promise<void>((ok) => (el.onseeked = () => ok()));
+    await Promise.race([new Promise<void>((ok) => (el.onseeked = () => ok())), timeout(15000)]);
     const canvas = document.createElement('canvas');
     canvas.width = el.videoWidth;
     canvas.height = el.videoHeight;

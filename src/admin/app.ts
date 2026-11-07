@@ -254,6 +254,8 @@ class PostForm {
           item.note = `壓縮中 ${Math.round(p * 100)}%${pass ? `（第 ${pass + 1} 次，畫質再降一級）` : ''}`;
           this.renderNote(item);
         });
+        item.note = '產生影片封面中…';
+        this.renderNote(item);
         const poster = await posterOf(item.blob);
         item.url = URL.createObjectURL(poster);
         item.note = `${formatBytes(file.size)} → ${formatBytes(item.blob.size)}，已去除位置資訊`;
