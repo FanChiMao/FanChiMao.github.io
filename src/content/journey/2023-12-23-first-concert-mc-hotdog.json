@@ -1,0 +1,75 @@
+{
+  "date": "2023-12-23",
+  "category": "other",
+  "title": {
+    "en": "First Concert | MC HotDog at Taipei Arena",
+    "zh-tw": "第一次聽演唱會｜MC HotDog 熱狗",
+    "zh-cn": "第一次听演唱会｜MC HotDog 热狗",
+    "ja": "初めてのライブ｜MC HotDog"
+  },
+  "short": {
+    "en": "First Concert",
+    "zh-tw": "第一次聽演唱會",
+    "zh-cn": "第一次听演唱会",
+    "ja": "初めてのライブ"
+  },
+  "place": {
+    "en": "Taipei Arena, Taipei",
+    "zh-tw": "台北・台北小巨蛋",
+    "zh-cn": "台北・台北小巨蛋",
+    "ja": "台湾・台北・台北アリーナ"
+  },
+  "coords": {
+    "lat": 25.05136,
+    "lng": 121.54974
+  },
+  "media": [
+    {
+      "type": "image",
+      "src": "journey/2023-12-23-first-concert-mc-hotdog/img-1711.jpg"
+    },
+    {
+      "type": "video",
+      "src": "/media/journey/2023-12-23-first-concert-mc-hotdog-img-1709.mp4",
+      "loop": false,
+      "poster": "journey/2023-12-23-first-concert-mc-hotdog/img-1709-poster.jpg"
+    },
+    {
+      "type": "video",
+      "src": "/media/journey/2023-12-23-first-concert-mc-hotdog-img-1713.mp4",
+      "loop": false,
+      "poster": "journey/2023-12-23-first-concert-mc-hotdog/img-1713-poster.jpg"
+    },
+    {
+      "type": "video",
+      "src": "/media/journey/2023-12-23-first-concert-mc-hotdog-img-1718.mp4",
+      "loop": false,
+      "poster": "journey/2023-12-23-first-concert-mc-hotdog/img-1718-poster.jpg"
+    },
+    {
+      "type": "video",
+      "src": "/media/journey/2023-12-23-first-concert-mc-hotdog-img-1736.mp4",
+      "loop": false,
+      "poster": "journey/2023-12-23-first-concert-mc-hotdog/img-1736-poster.jpg"
+    },
+    {
+      "type": "video",
+      "src": "/media/journey/2023-12-23-first-concert-mc-hotdog-img-1778.mp4",
+      "loop": false,
+      "poster": "journey/2023-12-23-first-concert-mc-hotdog/img-1778-poster.jpg"
+    },
+    {
+      "type": "video",
+      "src": "/media/journey/2023-12-23-first-concert-mc-hotdog-img-1783.mp4",
+      "loop": false,
+      "poster": "journey/2023-12-23-first-concert-mc-hotdog/img-1783-poster.jpg"
+    }
+  ],
+  "story": {
+    "en": "First time going to a concert, watching MC HotDog perform at Taipei Arena. I normally do not have much of a habit of going to concerts or listening to rap, so I did not really know what to expect beforehand. Once the show started, though, I immediately understood how powerful the atmosphere of a live performance could be. The music, lights and energy from the crowd made it easy to get pulled into the moment, and before long I was jumping along with everyone else. Even without being a regular concertgoer, it was surprisingly easy to enjoy the feeling of thousands of people getting excited together.",
+    "zh-tw": "第一次聽演唱會，在台北小巨蛋看 MC HotDog 熱狗。平常其實沒有特別聽演唱會或饒舌的習慣，所以出發前也沒有太多預期。但真正到了現場之後，才發現演唱會的氣氛真的很容易渲染情緒。音樂、燈光和全場觀眾一起把氣氛堆起來，就算原本不是很熟悉這種場合，也會不知不覺跟著大家一起蹦蹦跳跳。看著整個小巨蛋的人一起嗨起來，是在耳機裡聽歌完全不同的體驗。",
+    "zh-cn": "第一次听演唱会，在台北小巨蛋看 MC HotDog 热狗。平常其实没有特别听演唱会或说唱的习惯，所以出发前也没有太多预期。但真正到了现场之后，才发现演唱会的气氛真的很容易感染情绪。音乐、灯光和全场观众一起把气氛堆起来，就算原本不是很熟悉这种场合，也会不知不觉跟着大家一起蹦蹦跳跳。看着整个小巨蛋的人一起嗨起来，是在耳机里听歌完全不同的体验。",
+    "ja": "初めてのライブで、台北アリーナでMC HotDogのステージを観た。普段はライブに行く習慣もなく、ラップをよく聴くわけでもなかったので、行く前はそれほど大きな期待をしていなかった。でも実際に始まってみると、音楽や照明、会場全体の熱気が気分を一気に盛り上げる力に驚いた。いつの間にか周りのみんなと一緒に跳ねながら楽しんでいて、大勢の人が同じ瞬間に盛り上がるライブならではの空気を初めて実感した。"
+  },
+  "draft": false
+}
