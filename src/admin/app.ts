@@ -517,12 +517,19 @@ class PostForm {
     $('.log', this.form).innerHTML = '';
     try {
       const toSend = c.used.map((name) => this.uploads.find((u) => u.name === name)!);
-      const files: { name: string; sha: string }[] = [];
+      const files: { name: string; sha?: string }[] = [];
       for (const [i, u] of toSend.entries()) {
         if (u.blob!.size > MAX_VIDEO_BYTES + 1) throw new Error(`${u.name} 太大`);
         const line = this.log(`上傳 ${escHtml(u.name)}（${formatBytes(u.blob!.size)}，${i + 1}/${toSend.length}）…`);
-        const { sha } = await api<{ sha: string }>('blob', { method: 'POST', body: await base64Of(u.blob!), headers: { 'Content-Type': 'text/plain' } });
-        files.push({ name: u.name, sha });
+        if (u.type === 'video') {
+          // Clips go to the R2 bucket (media.52hzfan.com), not into git.
+          const q = new URLSearchParams({ kind: this.kind, id, name: u.name });
+          await api<{ key: string }>(`media?${q}`, { method: 'PUT', body: u.blob!, headers: { 'Content-Type': 'video/mp4' } });
+          files.push({ name: u.name });
+        } else {
+          const { sha } = await api<{ sha: string }>('blob', { method: 'POST', body: await base64Of(u.blob!), headers: { 'Content-Type': 'text/plain' } });
+          files.push({ name: u.name, sha });
+        }
         line.textContent += ' 完成';
       }
       this.log('建立 commit…');

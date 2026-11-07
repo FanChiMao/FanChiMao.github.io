@@ -86,6 +86,7 @@ const recordingFetch: typeof fetch = async (input, init) => {
 
 const E = (over: Partial<Env> = {}): Env => ({
   DB: env.DB,
+  MEDIA: env.MEDIA,
   GITHUB_TOKEN: 'test-token',
   GITHUB_REPO: 'FanChiMao/FanChiMao.github.io',
   GITHUB_BRANCH: 'main',
@@ -154,7 +155,7 @@ describe('stats', () => {
 
 describe('content building', () => {
   const T = { en: 'New toy', 'zh-tw': '新玩具', 'zh-cn': '新玩具', ja: '新しいおもちゃ' };
-  const files = ['cover.jpg', 'img-1234.jpg', 'play.mp4', 'play-poster.jpg'].map((name, i) => ({ name, sha: hex(i + 1) }));
+  const files = ['cover.jpg', 'img-1234.jpg', 'play.mp4', 'play-poster.jpg'].map((name, i) => (name.endsWith('.mp4') ? { name } : { name, sha: hex(i + 1) }));
   const ajie = (post: Record<string, unknown> = {}, over: Partial<PublishInput> = {}): PublishInput => ({
     kind: 'ajie',
     id: '2025-11-02-new-toy',
@@ -173,7 +174,7 @@ describe('content building', () => {
   });
 
   it('links file names to the uploads and writes site paths', () => {
-    const { post, files: out } = buildPost(ajie());
+    const { post, files: out, clips } = buildPost(ajie());
     expect(post).toEqual({
       date: '2025-11-02',
       from: '2025-10-28',
@@ -186,8 +187,8 @@ describe('content building', () => {
       ],
       caption: '今天買了逗貓棒。',
     });
+    expect(clips).toEqual(['ajie/2025-11-02-new-toy-play.mp4']); // in R2, not in the commit
     expect(out.map((f) => f.path).sort()).toEqual([
-      'public/media/ajie/2025-11-02-new-toy-play.mp4',
       'src/assets/ajie/2025-11-02-new-toy/cover.jpg',
       'src/assets/ajie/2025-11-02-new-toy/img-1234.jpg',
       'src/assets/ajie/2025-11-02-new-toy/play-poster.jpg',
@@ -213,6 +214,8 @@ describe('content building', () => {
   it('rejects unsafe IDs and bad file entries', () => {
     expect(() => buildPost(ajie({}, { id: '../etc' }))).toThrow(/ID/);
     expect(() => buildPost(ajie({}, { files: [{ name: '../x.jpg', sha: hex(1) }] }))).toThrow();
+    expect(() => buildPost(ajie({}, { files: [{ name: 'cover.jpg' }] }))).toThrow(/檔案資料/); // photos need a blob
+    expect(() => buildPost(ajie({}, { files: [{ name: 'play.mp4', sha: hex(1) }] }))).toThrow(/檔案資料/); // clips are not in git
     expect(() => buildPost(ajie({ media: [] }, { files: [{ name: 'cover.jpg', sha: hex(1) }] }))).toThrow(/至少/);
   });
 
@@ -270,6 +273,47 @@ describe('publishing', () => {
   it('streams uploads to GitHub as blobs', async () => {
     const { sha } = await upload(btoa('fake jpeg bytes'));
     expect(gh.blobs.get(sha)).toBe('fake jpeg bytes');
+  });
+
+  const mp4 = (n = 64) => {
+    const b = new Uint8Array(n);
+    b.set(new TextEncoder().encode('ftypisom'), 4);
+    return b;
+  };
+  const putClip = (q: string, body: Uint8Array, headers: Record<string, string> = {}) =>
+    call(`/api/admin/media?${q}`, { method: 'PUT', body, headers: { Origin: SITE, 'Content-Length': String(body.length), ...headers } });
+
+  it('stores clips in R2 under <kind>/<id>-<name>', async () => {
+    const res = await putClip('kind=ajie&id=2025-11-02-new-toy&name=play.mp4', mp4());
+    expect(res.status).toBe(200);
+    expect((await res.json<{ key: string }>()).key).toBe('ajie/2025-11-02-new-toy-play.mp4');
+    const obj = await env.MEDIA.get('ajie/2025-11-02-new-toy-play.mp4');
+    expect(obj?.httpMetadata?.contentType).toBe('video/mp4');
+    expect((await obj!.arrayBuffer()).byteLength).toBe(64);
+  });
+
+  it('refuses bad clip names, non-MP4 bodies, huge clips and live posts', async () => {
+    for (const q of ['kind=ajie&id=../x&name=a.mp4', 'kind=ajie&id=ok&name=a.jpg', 'kind=ajie&id=ok&name=../a.mp4', 'kind=album&id=ok&name=a.mp4', 'kind=x&id=ok&name=a.mp4'])
+      expect((await putClip(q, mp4())).status, q).toBe(400);
+    expect((await putClip('kind=ajie&id=ok&name=a.mp4', new Uint8Array(64))).status).toBe(400);
+    expect((await putClip('kind=ajie&id=ok&name=a.mp4', mp4(), { 'Content-Length': String(46 * 1024 * 1024) })).status).toBe(413);
+    gh.files.set('src/content/ajie/2025-10-04-adoption.json', '{}');
+    expect((await putClip('kind=ajie&id=2025-10-04-adoption&name=a.mp4', mp4())).status).toBe(409);
+    expect(await env.MEDIA.head('ajie/2025-10-04-adoption-a.mp4')).toBeNull();
+  });
+
+  it('publishes a clip only once it is in R2, and keeps it out of the commit', async () => {
+    const poster = await upload(btoa('poster'));
+    const input = { kind: 'ajie', id: '2025-11-03-zoomies', post: { date: '2025-11-03', caption: '暴衝', media: [{ type: 'video', src: 'run.mp4' }] }, files: [{ name: 'run.mp4' }, { name: 'run-poster.jpg', sha: poster.sha }] };
+    const send = () => call('/api/admin/publish', { method: 'POST', body: JSON.stringify(input), headers: { Origin: SITE } });
+    const early = await send();
+    expect(early.status).toBe(400);
+    expect((await early.json<{ error: { message: string } }>()).error.message).toContain('run.mp4');
+    expect((await putClip('kind=ajie&id=2025-11-03-zoomies&name=run.mp4', mp4())).status).toBe(200);
+    expect((await send()).status).toBe(200);
+    const tree = gh.commits.find((c) => c.message === '(tree)')!.tree;
+    expect(tree.map((t) => t.path).sort()).toEqual(['src/assets/ajie/2025-11-03-zoomies/run-poster.jpg', 'src/content/ajie/2025-11-03-zoomies.json', 'src/data/ajie-posts.ts']);
+    expect(tree.find((t) => t.path.endsWith('.json'))!.content).toContain('"/media/ajie/2025-11-03-zoomies-run.mp4"');
   });
 
   it('rejects bodies that are not base64', async () => {

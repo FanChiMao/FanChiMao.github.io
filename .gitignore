@@ -6,3 +6,6 @@ dist/
 .env
 .env.*
 !.env.example
+
+# Clips live in the R2 bucket (media.52hzfan.com), not in git.
+public/media/**/*.mp4

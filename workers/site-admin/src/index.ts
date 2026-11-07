@@ -3,7 +3,9 @@
  *
  *   GET  /api/admin/me        who is signed in
  *   GET  /api/admin/stats     dashboard numbers from the stats database (read only)
- *   POST /api/admin/blob      upload one file (body: base64 text) to GitHub, returns its blob SHA
+ *   POST /api/admin/blob      upload one photo (body: base64 text) to GitHub, returns its blob SHA
+ *   PUT  /api/admin/media     upload one clip (body: the MP4) to the R2 bucket behind media.52hzfan.com,
+ *                             ?kind=ajie&id=<post id>&name=<file>.mp4
  *   POST /api/admin/publish   new Ajie post or Journey milestone: one commit on main
  *   GET  /api/admin/deploys   latest site deploy runs (GitHub Actions)
  *   POST /api/admin/redeploy  rebuild the site without a new commit
@@ -13,9 +15,12 @@
 import { verifyAccess } from './access';
 import { client, GitHubError } from './github';
 import { addAjiePostId, buildPost, InputError, type PublishInput } from './publish';
+import { contentPath, FILE, ID, isClip, KINDS, mediaKey, type Kind } from '../../../src/lib/admin-post';
 
 export interface Env {
   DB: D1Database;
+  /** Clips, served publicly at https://media.52hzfan.com/<key>. */
+  MEDIA: R2Bucket;
   GITHUB_TOKEN?: string;
   GITHUB_REPO: string;
   GITHUB_BRANCH: string;
@@ -29,6 +34,7 @@ export interface Env {
 const SITE_ORIGIN = 'https://52hzfan.com';
 const MAX_BLOB_B64 = 72 * 1024 * 1024; // ~54 MB file
 const MAX_JSON = 256 * 1024;
+const MAX_CLIP = 45 * 1024 * 1024; // the admin page compresses clips to 40 MB at most
 const BASE64 = /^[A-Za-z0-9+/]*={0,2}$/;
 const TZ_OFFSET = 8 * 3600; // dashboard days in Taiwan time
 
@@ -91,6 +97,26 @@ async function route(req: Request, env: Env): Promise<Response> {
     return json({ sha });
   }
 
+  if (pathname === '/api/admin/media' && req.method === 'PUT') {
+    const q = new URL(req.url).searchParams;
+    const kind = q.get('kind') as Kind;
+    const id = q.get('id') ?? '';
+    const name = q.get('name') ?? '';
+    if (!KINDS.includes(kind) || kind === 'album' || !ID.test(id) || id.length > 80 || !FILE.test(name) || !isClip(name)) return fail(400, 'BAD_NAME', 'Bad kind, id or file name.');
+    const len = Number(req.headers.get('Content-Length') ?? '');
+    if (!Number.isFinite(len) || len <= 0) return fail(411, 'LENGTH_REQUIRED', 'Send the clip with a Content-Length.');
+    if (len > MAX_CLIP) return fail(413, 'TOO_LARGE', 'Clip too large (40 MB at most).');
+    // Never replace a clip of a post that is already live.
+    if (await gh.exists(contentPath(kind, id))) return fail(409, 'EXISTS', `${id} 已經存在；第一版只能新增，請換一個 ID。`);
+    const bytes = new Uint8Array(await req.arrayBuffer());
+    if (bytes.length !== len) return fail(400, 'BAD_BODY', 'Body length does not match.');
+    // An MP4 starts with a box whose type is "ftyp".
+    if (String.fromCharCode(...bytes.subarray(4, 8)) !== 'ftyp') return fail(400, 'BAD_BODY', 'Body must be an MP4 file.');
+    const key = mediaKey(kind, id, name);
+    await env.MEDIA.put(key, bytes, { httpMetadata: { contentType: 'video/mp4', cacheControl: 'public, max-age=604800' } });
+    return json({ key });
+  }
+
   if (pathname === '/api/admin/publish' && req.method === 'POST') {
     const text = await req.text();
     if (text.length > MAX_JSON) return fail(413, 'TOO_LARGE', 'Post data too large.');
@@ -109,6 +135,7 @@ async function route(req: Request, env: Env): Promise<Response> {
     }
     const jsonPath = built.files.at(-1)!.path;
     if (await gh.exists(jsonPath)) return fail(409, 'EXISTS', `${built.id} 已經存在；第一版只能新增，請換一個 ID。`);
+    for (const key of built.clips) if (!(await env.MEDIA.head(key))) return fail(400, 'INVALID', `影片還沒上傳完成：${key.split('/').pop()}`);
     const files = [...built.files];
     if (input.kind === 'ajie') {
       const ids = await gh.readText('src/data/ajie-posts.ts');

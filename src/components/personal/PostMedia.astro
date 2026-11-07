@@ -2,7 +2,7 @@
 /**
  * Photos and videos of one post (Ajie, Journey), as a swipeable strip.
  * - image: responsive <Image>
- * - video: a file under /public/media; muted loop like an IG clip (plays only while in view,
+ * - video: a clip in the R2 bucket (src "/media/..." -> https://media.52hzfan.com/...); muted loop like an IG clip (plays only while in view,
  *   never with reduced motion), or with controls and sound when `loop: false`
  * - youtube: poster with a play button; opens in the shared media dialog (Base.astro)
  */
@@ -12,6 +12,7 @@ import { Icon } from 'astro-icon/components';
 import { ui, type Locale } from '@/i18n/ui';
 import { personalUi } from '@/i18n/personal';
 import { asset } from '@/lib/assets';
+import { clipUrl } from '@/lib/media';
 
 /** `fit: 'contain'` shows the whole picture (e.g. a square illustration) instead of cropping it. */
 type Media = CollectionEntry<'ajie'>['data']['media'][number] & { fit?: 'contain' };
@@ -37,7 +38,7 @@ const items = await Promise.all(
     const alt = pick(m.alt) ?? (media.length > 1 ? `${label} (${i + 1}/${media.length})` : label);
     if (m.type === 'image') return { ...m, alt, img: asset(m.src) };
     const poster = m.poster ? await getImage({ src: asset(m.poster), width: 1080, format: 'webp', quality: 78 }) : null;
-    return { ...m, alt, posterSrc: poster?.src };
+    return { ...m, alt, posterSrc: poster?.src, ...(m.type === 'video' ? { src: clipUrl(m.src) } : {}) };
   }),
 );
 ---

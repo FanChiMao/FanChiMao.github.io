@@ -212,8 +212,15 @@ export function checkPost(kind: Kind, id: string, input: unknown, uploaded: Read
   return { post, used, errors };
 }
 
-/** Where each used file goes in the repo. */
-export const repoPath = (kind: Kind, id: string, name: string) => (name.endsWith('.mp4') ? `public/media/${kind}/${id}-${name}` : `src/assets/${assetDir(kind, id)}/${name}`);
+/** Where a photo goes in the repo (clips are not in the repo, see mediaKey). */
+export const repoPath = (kind: Kind, id: string, name: string) => `src/assets/${assetDir(kind, id)}/${name}`;
+
+/**
+ * Clips live in the R2 bucket behind https://media.52hzfan.com, not in git. The JSON keeps the
+ * site path "/media/ajie/<id>-<name>.mp4"; the object key is that path without "/media/".
+ */
+export const mediaKey = (kind: Kind, id: string, name: string) => `${kind}/${id}-${name}`;
+export const isClip = (name: string) => name.endsWith('.mp4');
 
 /** Format notes to hand to whoever (or whichever agent) writes the JSON. */
 export function formatGuide(kind: Kind, files: string[]): string {

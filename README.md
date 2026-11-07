@@ -98,7 +98,7 @@ Second paragraph."
 }
 ```
 
-An Ajie post has `date`, `media`, `caption`, and optionally `location` and `pinned`. Short clips go in `public/media/<ajie|journey>/` (H.264 MP4, a few MB; they loop muted like an IG clip, or set `"loop": false` for controls and sound); long ones are better on YouTube. `npm run photos` also strips GPS from photos in these folders, and the build fails if a video still carries a location (iPhone: Share → Options → turn off Location before exporting). A chapter with no posts yet stays noindex and out of the sitemap.
+An Ajie post has `date`, `media`, `caption`, and optionally `location` and `pinned`. Short clips (H.264 MP4, a few MB; they loop muted like an IG clip, or set `"loop": false` for controls and sound) are not in git: they live in the Cloudflare R2 bucket `52hzfan-media`, served at `https://media.52hzfan.com`. The JSON keeps the site path `/media/<ajie|journey>/<id>-<name>.mp4` and the bucket key is the same path without `/media/`. The admin page uploads them there (re-encoded, metadata removed); by hand, check the file with `npm run photos:check` while it is still in `public/media/` (MP4s there are gitignored), then `npx wrangler r2 object put 52hzfan-media/ajie/<id>-<name>.mp4 --file <file> --content-type video/mp4 --cache-control "public, max-age=604800" --remote` from `workers/site-admin`. Long clips are better on YouTube. A chapter with no posts yet stays noindex and out of the sitemap.
 
 ### Explorer Passport (achievements)
 

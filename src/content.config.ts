@@ -140,14 +140,14 @@ const albums = defineCollection({
 
 /**
  * One photo or video in a post. Images live in src/assets (resolved like everything else);
- * short clips are files under public/media/ (shown like an IG video: muted loop by default),
+ * short clips are in the R2 bucket behind media.52hzfan.com (shown like an IG video: muted loop by default),
  * long ones are YouTube embeds.
  */
 const media = z.discriminatedUnion('type', [
   z.object({ type: z.literal('image'), src: asset, alt: textOrT.optional() }),
   z.object({
     type: z.literal('video'),
-    /** Path under /public, e.g. "/media/ajie/first-day.mp4". */
+    /** Site path, e.g. "/media/ajie/first-day.mp4" -> https://media.52hzfan.com/ajie/first-day.mp4 (src/lib/media.ts). */
     src: z.string().startsWith('/media/'),
     /** Still frame shown before playing (path under src/assets). */
     poster: asset,
