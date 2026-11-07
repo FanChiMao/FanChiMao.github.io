@@ -730,6 +730,9 @@ const unplaced = items.filter((x) => !x.data.coords).length;
   }
   .jglobe__stage {
     position: relative;
+    /* The globe's pin layer has its own z-index: keep it inside the stage so the panel and tools stay on top. */
+    isolation: isolate;
+    z-index: 0;
     height: min(72vh, 620px);
     min-height: 360px;
     border-radius: var(--radius-lg);
@@ -772,6 +775,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
   }
   .jglobe__tools {
     position: absolute;
+    z-index: 2;
     top: 0.75rem;
     right: 0.75rem;
     display: flex;
@@ -823,6 +827,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
   }
   .jglobe__panel {
     position: absolute;
+    z-index: 2;
     left: 0.75rem;
     bottom: 2.6rem;
     width: min(22rem, calc(100% - 1.5rem));
