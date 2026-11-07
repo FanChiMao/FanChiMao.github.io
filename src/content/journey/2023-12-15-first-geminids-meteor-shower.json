@@ -1,0 +1,49 @@
+{
+  "date": "2023-12-15",
+  "category": "other",
+  "title": {
+    "en": "First Meteor Shower | Geminids at Qingtiangang",
+    "zh-tw": "第一次看流星｜擎天岡雙子座流星雨",
+    "zh-cn": "第一次看流星｜擎天岗双子座流星雨",
+    "ja": "初めての流星観測｜擎天崗のふたご座流星群"
+  },
+  "short": {
+    "en": "First Meteor Shower",
+    "zh-tw": "第一次看流星",
+    "zh-cn": "第一次看流星",
+    "ja": "初めての流星観測"
+  },
+  "place": {
+    "en": "Qingtiangang, Yangmingshan, Taipei",
+    "zh-tw": "台北・陽明山・擎天岡",
+    "zh-cn": "台北・阳明山・擎天岗",
+    "ja": "台湾・台北・陽明山・擎天崗"
+  },
+  "coords": {
+    "lat": 25.165931,
+    "lng": 121.57532
+  },
+  "media": [
+    {
+      "type": "video",
+      "src": "/media/journey/2023-12-15-first-geminids-meteor-shower-dji-export-20231215-030155-1702580515852-editor.mp4",
+      "loop": false,
+      "poster": "journey/2023-12-15-first-geminids-meteor-shower/dji-export-20231215-030155-1702580515852-editor-poster.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-12-15-first-geminids-meteor-shower/img-1639.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-12-15-first-geminids-meteor-shower/img-1635.jpg"
+    }
+  ],
+  "story": {
+    "en": "First time going out specifically to watch a meteor shower. For the Geminids, we headed up to Qingtiangang at night and set up a time-lapse camera while waiting for meteors. The grassland was surprisingly crowded, with lots of people bringing their own picnic mats and sitting together under the night sky. Whenever a meteor appeared, you could hear a wave of \"ohhh\" from somewhere in the crowd, which made the whole experience unexpectedly fun. We did manage to see meteors, although what I remember just as clearly is how freezing it was and how many cars were packed onto the mountain that night.",
+    "zh-tw": "第一次特地跑去看流星，為了雙子座流星雨晚上上擎天岡，架好相機拍縮時，一邊等流星出現。沒想到現場超多人，大家帶著自己的野餐墊直接坐在草地上一起看天空。每次真的有流星劃過，就會聽到四周突然傳來一片「哦～」，整個氣氛意外地滿有趣。最後確實有看到流星，也留下了縮時，只是除了流星之外，印象最深的大概就是山上真的很冷，還有那天多到有點誇張的車。",
+    "zh-cn": "第一次特地跑去看流星，为了双子座流星雨晚上上擎天岗，架好相机拍缩时，一边等流星出现。没想到现场超多人，大家带着自己的野餐垫直接坐在草地上一起看天空。每次真的有流星划过，就会听到四周突然传来一片“哦～”，整个气氛意外地很有趣。最后确实有看到流星，也留下了缩时，只是除了流星之外，印象最深的大概就是山上真的很冷，还有那天多到有点夸张的车。",
+    "ja": "初めて流星を見るためだけに夜の擎天崗へ出かけ、ふたご座流星群を観測した。カメラを設置してタイムラプスを撮りながら流星を待っていると、想像以上に多くの人が集まっていて、それぞれ持参したレジャーシートに座って夜空を眺めていた。流星が現れるたびに、あちこちから一斉に「おお～」という声が上がるのが意外と楽しかった。実際に流星を見ることもでき、タイムラプスも残せたが、それと同じくらい印象に残っているのは、とにかく寒かったことと、山の上とは思えないほど車が多かったことだった。"
+  },
+  "draft": false
+}
