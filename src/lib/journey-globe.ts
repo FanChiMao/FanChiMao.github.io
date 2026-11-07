@@ -30,6 +30,8 @@ export type GlobeView = {
   setSpin(on: boolean): void;
   /** Called when spinning starts or stops (also when the reader grabs the globe). */
   onSpin(cb: (on: boolean) => void): void;
+  /** Called once per gesture when the reader really turns or zooms the globe (not on a plain tap, not on flyTo). */
+  onUserMove(cb: () => void): void;
   pause(): void;
   resume(): void;
 };
@@ -208,6 +210,19 @@ export async function createGlobe(stage: HTMLElement, pin: (p: Pin) => HTMLEleme
   controls.autoRotate = !reduceMotion;
   controls.addEventListener('start', () => controls.autoRotate && spin(false));
 
+  // A drag or zoom by the reader ('start' only fires for user input). A tap on a pin can also
+  // start a gesture, so it only counts once the camera has really moved.
+  let moveListener: () => void = () => {};
+  const camera = g.camera();
+  let from: { x: number; y: number; z: number } | null = null;
+  controls.addEventListener('start', () => (from = camera.position.clone()));
+  controls.addEventListener('change', () => {
+    if (!from || camera.position.distanceTo(from as never) < RADIUS * 0.02) return;
+    from = null;
+    moveListener();
+  });
+  controls.addEventListener('end', () => (from = null));
+
   const size = () => g.width(stage.clientWidth).height(stage.clientHeight);
   size();
   new ResizeObserver(size).observe(stage);
@@ -246,6 +261,9 @@ export async function createGlobe(stage: HTMLElement, pin: (p: Pin) => HTMLEleme
     onSpin(cb) {
       spinListener = cb;
       cb(controls.autoRotate);
+    },
+    onUserMove(cb) {
+      moveListener = cb;
     },
     pause: () => g.pauseAnimation(),
     resume: () => g.resumeAnimation(),

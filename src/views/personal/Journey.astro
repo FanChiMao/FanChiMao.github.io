@@ -289,6 +289,8 @@ const unplaced = items.filter((x) => !x.data.coords).length;
           globe.reset(true);
           const spinBtn = globeEl.querySelector<HTMLButtonElement>('[data-globe-spin]')!;
           globe.onSpin((on) => spinBtn.setAttribute('aria-pressed', String(on)));
+          // Turning the globe away from the picked pin closes its card.
+          globe.onUserMove(() => current && closePanel());
           spinBtn.addEventListener('click', () => globe?.setSpin(spinBtn.getAttribute('aria-pressed') !== 'true'));
           status.hidden = true;
           globeEl.classList.add('is-ready');
