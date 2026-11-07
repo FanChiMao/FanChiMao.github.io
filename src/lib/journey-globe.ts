@@ -10,6 +10,9 @@
  *
  * Colours come from CSS custom properties on the stage (--globe-ocean, --globe-dot, ...), so the
  * globe follows the light / dark theme.
+ *
+ * Pins that land too close together on screen are drawn as one group (a count), recomputed as the
+ * camera moves, so a cluster like northern Taiwan never piles up into unreadable labels.
  */
 import Globe, { type GlobeInstance } from 'globe.gl';
 import { CanvasTexture, Color, MeshPhongMaterial, SRGBColorSpace } from 'three';
@@ -19,11 +22,23 @@ import landUrl from 'world-atlas/land-50m.json?url';
 
 export type Pin = { id: string; lat: number; lng: number };
 
+/**
+ * What is drawn on the globe: a single pin, a group of pins too close together on screen (at
+ * their centre), or the "peek" pin shown while the reader points at a milestone in a group's list.
+ */
+export type Mark = { kind: 'pin'; pin: Pin; lat: number; lng: number } | { kind: 'group'; pins: Pin[]; lat: number; lng: number } | { kind: 'peek'; pin: Pin; lat: number; lng: number };
+
 export type GlobeView = {
-  /** Show these pins (each drawn by the `pin` callback). */
-  setPins(pins: Pin[]): void;
+  /** Show these pins (newest first: the first one of a group leads it). `solo`: never grouped (the picked one). */
+  setPins(pins: Pin[], solo?: string | null): void;
+  /** Redraw every mark (e.g. after the language or the picked pin changed). */
+  redraw(): void;
+  /** Show the real pin of a milestone on top of its group, or none. */
+  peek(pin: Pin | null): void;
   /** Turn and zoom to a pin. */
   flyTo(pin: Pin): void;
+  /** Turn and zoom so these pins fill the view. */
+  flyToAll(pins: Pin[]): void;
   /** Back to the whole globe, centred on the pins. */
   reset(instant?: boolean): void;
   /** Turn like the real Earth (west to east) or stop. */
@@ -147,7 +162,29 @@ function paint(land: Ring[][], c: Palette, W: number): HTMLCanvasElement {
   return canvas;
 }
 
-export async function createGlobe(stage: HTMLElement, pin: (p: Pin) => HTMLElement, reduceMotion: boolean): Promise<GlobeView> {
+/** Pins closer than this on screen (px) are drawn as one group. */
+const GROUP_PX = 56;
+const toRad = Math.PI / 180;
+
+/** Unit-vector mean of points (works across the date line). */
+function centreOf(points: { lat: number; lng: number }[]) {
+  let x = 0, y = 0, z = 0;
+  for (const p of points) {
+    const la = p.lat * toRad, lo = p.lng * toRad;
+    x += Math.cos(la) * Math.cos(lo);
+    y += Math.cos(la) * Math.sin(lo);
+    z += Math.sin(la);
+  }
+  return { lat: Math.atan2(z, Math.hypot(x, y)) / toRad, lng: Math.atan2(y, x) / toRad };
+}
+
+/** Great-circle angle between two points, in radians. */
+function arc(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  const s = Math.sin(((b.lat - a.lat) * toRad) / 2) ** 2 + Math.cos(a.lat * toRad) * Math.cos(b.lat * toRad) * Math.sin(((b.lng - a.lng) * toRad) / 2) ** 2;
+  return 2 * Math.asin(Math.min(1, Math.sqrt(s)));
+}
+
+export async function createGlobe(stage: HTMLElement, draw: (m: Mark) => HTMLElement, reduceMotion: boolean): Promise<GlobeView> {
   const land = await loadLand();
   const css = (): Palette => {
     const s = getComputedStyle(stage);
@@ -171,7 +208,7 @@ export async function createGlobe(stage: HTMLElement, pin: (p: Pin) => HTMLEleme
     .htmlLat('lat')
     .htmlLng('lng')
     .htmlAltitude(0.002)
-    .htmlElement((d) => pin(d as Pin))
+    .htmlElement((d) => draw(d as Mark))
     .htmlTransitionDuration(0)
     // Pins on the far side of the Earth fade out instead of showing through it.
     .htmlElementVisibilityModifier((el, visible) => el.classList.toggle('is-behind', !visible));
@@ -231,28 +268,102 @@ export async function createGlobe(stage: HTMLElement, pin: (p: Pin) => HTMLEleme
   new MutationObserver(repaint).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
   let pins: Pin[] = [];
+  let solo: string | null = null;
+  let peeked: Pin | null = null;
   const ms = (n: number) => (reduceMotion ? 0 : n);
-  /** Centre of the pins (by unit vectors, so it works across the date line). */
-  const centre = () => {
-    if (!pins.length) return { lat: 23.7, lng: 121 }; // Taiwan
-    let x = 0, y = 0, z = 0;
-    for (const p of pins) {
-      const la = (p.lat * Math.PI) / 180, lo = (p.lng * Math.PI) / 180;
-      x += Math.cos(la) * Math.cos(lo);
-      y += Math.cos(la) * Math.sin(lo);
-      z += Math.sin(la);
-    }
-    return { lat: (Math.atan2(z, Math.hypot(x, y)) * 180) / Math.PI, lng: (Math.atan2(y, x) * 180) / Math.PI };
+  const centre = () => (pins.length ? centreOf(pins) : { lat: 23.7, lng: 121 }); // Taiwan
+
+  // ---- Grouping. Marks are cached by key, so an unchanged mark keeps its element (no flicker).
+  let cache = new Map<string, Mark>();
+  let shownKey = '';
+  /** Is this point on the side of the Earth facing the camera? */
+  const facing = (p: Pin) => {
+    const phi = (90 - p.lat) * toRad, theta = (90 - p.lng) * toRad;
+    const x = RADIUS * Math.sin(phi) * Math.cos(theta), y = RADIUS * Math.cos(phi), z = RADIUS * Math.sin(phi) * Math.sin(theta);
+    const c = camera.position;
+    return x * c.x + y * c.y + z * c.z > RADIUS * RADIUS;
   };
+  const regroup = (force = false) => {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    const groups: { pins: Pin[]; x: number; y: number; front: boolean }[] = [];
+    for (const p of pins) {
+      if (p.id === solo) continue;
+      const { x, y } = g.getScreenCoords(p.lat, p.lng, 0.002);
+      const front = facing(p);
+      // Off-screen or behind the Earth: drawn alone (globe.gl hides it), never pulls others in.
+      const near = front && x > -GROUP_PX && y > -GROUP_PX && x < w + GROUP_PX && y < h + GROUP_PX ? groups.find((gr) => gr.front && Math.hypot(gr.x - x, gr.y - y) < GROUP_PX) : undefined;
+      if (near) near.pins.push(p);
+      else groups.push({ pins: [p], x, y, front });
+    }
+    const marks: Mark[] = [];
+    const keys: string[] = [];
+    const take = (key: string, make: () => Mark) => {
+      keys.push(key);
+      const m = cache.get(key) ?? make();
+      marks.push(m);
+    };
+    for (const gr of groups) {
+      if (gr.pins.length === 1) {
+        const p = gr.pins[0];
+        take(`p:${p.id}`, () => ({ kind: 'pin', pin: p, lat: p.lat, lng: p.lng }));
+      } else take(`g:${gr.pins.map((p) => p.id).join(',')}`, () => ({ kind: 'group', pins: gr.pins, ...centreOf(gr.pins) }));
+    }
+    const soloPin = pins.find((p) => p.id === solo);
+    if (soloPin) take(`p:${soloPin.id}`, () => ({ kind: 'pin', pin: soloPin, lat: soloPin.lat, lng: soloPin.lng }));
+    if (peeked && peeked.id !== solo) {
+      const p = peeked;
+      take(`k:${p.id}`, () => ({ kind: 'peek', pin: p, lat: p.lat, lng: p.lng }));
+    }
+    const key = keys.join('|');
+    if (!force && key === shownKey) return;
+    shownKey = key;
+    cache = new Map(keys.map((k, i) => [k, marks[i]]));
+    g.htmlElementsData(marks);
+  };
+  const rebuild = () => {
+    cache = new Map();
+    regroup(true);
+  };
+  // Regroup whenever the camera moves (drags, zooms, fly-to animations, spinning): cheap, and
+  // the pins are only redrawn when the grouping really changes.
+  let last = '';
+  let looping = true;
+  const loop = () => {
+    if (!looping) return;
+    const c = camera.position;
+    const now = `${c.x.toFixed(2)},${c.y.toFixed(2)},${c.z.toFixed(2)},${stage.clientWidth}x${stage.clientHeight}`;
+    if (now !== last) {
+      last = now;
+      regroup();
+    }
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
 
   return {
-    setPins(next) {
+    setPins(next, only = null) {
       pins = next;
-      g.htmlElementsData(next);
+      solo = only;
+      if (peeked && !next.some((p) => p.id === peeked!.id)) peeked = null;
+      rebuild();
+    },
+    redraw: rebuild,
+    peek(p) {
+      if ((p?.id ?? null) === (peeked?.id ?? null)) return;
+      peeked = p;
+      regroup(true);
     },
     flyTo(p) {
       if (controls.autoRotate) spin(false);
       g.pointOfView({ lat: p.lat, lng: p.lng, altitude: 0.35 }, ms(1600));
+    },
+    flyToAll(list) {
+      if (!list.length) return;
+      if (controls.autoRotate) spin(false);
+      const c = centreOf(list);
+      const spread = Math.max(...list.map((p) => arc(c, p)));
+      // About 2.4 x the spread fills the view comfortably; never closer than the zoom limit.
+      g.pointOfView({ ...c, altitude: Math.min(1.9, Math.max(0.07, spread * 2.4 + 0.05)) }, ms(1400));
     },
     reset(instant = false) {
       g.pointOfView({ ...centre(), altitude: 1.9 }, instant ? 0 : ms(1200));
@@ -265,7 +376,15 @@ export async function createGlobe(stage: HTMLElement, pin: (p: Pin) => HTMLEleme
     onUserMove(cb) {
       moveListener = cb;
     },
-    pause: () => g.pauseAnimation(),
-    resume: () => g.resumeAnimation(),
+    pause: () => {
+      looping = false;
+      g.pauseAnimation();
+    },
+    resume: () => {
+      g.resumeAnimation();
+      if (looping) return;
+      looping = true;
+      requestAnimationFrame(loop);
+    },
   };
 }

@@ -166,9 +166,15 @@ const unplaced = items.filter((x) => !x.data.coords).length;
                 {p.journey.resetView}
               </button>
             </div>
+            {/* Text the script needs (swapped with the page language like any other text). */}
+            <span data-globe-str="group" hidden>{p.journey.groupOf}</span>
             <aside class="jglobe__panel" data-globe-panel hidden>
               <button type="button" class="icon-btn jglobe__close" data-globe-close aria-label={p.journey.closePanel}>
                 <Icon name="lucide:x" />
+              </button>
+              <button type="button" class="jglobe__back" data-globe-back hidden>
+                <Icon name="lucide:arrow-left" />
+                {p.journey.backToList}
               </button>
               <div class="jglobe__panel-body" data-globe-panel-body data-swap-skip />
               <button type="button" class="jglobe__read" data-globe-read>
@@ -187,7 +193,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
 
 <script>
   import { track } from '@/lib/passport';
-  import type { GlobeView, Pin } from '@/lib/journey-globe';
+  import type { GlobeView, Mark, Pin } from '@/lib/journey-globe';
 
   document.querySelectorAll<HTMLDetailsElement>('details[data-milestone]').forEach((d) =>
     d.addEventListener('toggle', () => d.open && track('milestone', d.dataset.milestone ?? '')),
@@ -201,12 +207,17 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     const status = globeEl.querySelector<HTMLElement>('[data-globe-status]')!;
     const panel = globeEl.querySelector<HTMLElement>('[data-globe-panel]')!;
     const panelBody = globeEl.querySelector<HTMLElement>('[data-globe-panel-body]')!;
+    const backBtn = globeEl.querySelector<HTMLButtonElement>('[data-globe-back]')!;
+    const readBtn = globeEl.querySelector<HTMLButtonElement>('[data-globe-read]')!;
+    const str = (key: string, n: number) => (globeEl.querySelector(`[data-globe-str="${key}"]`)?.textContent ?? '').replace('{n}', String(n));
     const milestones = Array.from(root.querySelectorAll<HTMLElement>('.milestone'));
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let filter = 'all';
     let globe: GlobeView | null = null;
     let loading: Promise<void> | null = null;
     let current: string | null = null;
+    /** The group whose list is in the panel (or the list a picked milestone came from). */
+    let list: Pin[] | null = null;
 
     const byId = (id: string) => milestones.find((m) => m.dataset.id === id);
     const text = (m: HTMLElement, sel: string) => m.querySelector(sel)?.textContent?.trim() ?? '';
@@ -221,7 +232,36 @@ const unplaced = items.filter((x) => !x.data.coords).length;
      * colon, since many milestones sit close together (the panel shows the whole title). Text
      * comes from the timeline, so it is always in the current language.
      */
-    const card = (pin: Pin) => {
+    const shortOf = (m: HTMLElement) => {
+      const title = text(m, '.milestone__title');
+      return text(m, '.milestone__short') || title.split(/[：:｜|]/)[0].trim() || title;
+    };
+    /** "2023年11月" or "2023年10月 – 11月", in the page language. */
+    const monthsOf = (list: Pin[]) => {
+      const days = list.map((p) => byId(p.id)?.dataset.date ?? '').filter(Boolean).sort();
+      if (!days.length) return '';
+      const f = new Intl.DateTimeFormat(document.documentElement.lang || undefined, { year: 'numeric', month: 'short', timeZone: 'UTC' });
+      const a = new Date(`${days[0]}T00:00:00Z`), b = new Date(`${days.at(-1)}T00:00:00Z`);
+      return days[0].slice(0, 7) === days.at(-1)!.slice(0, 7) ? f.format(a) : f.formatRange(a, b);
+    };
+    const draw = (mark: Mark) => (mark.kind === 'group' ? groupCard(mark.pins) : card(mark.pin, mark.kind === 'peek'));
+
+    /** Pins too close together: one bubble with the count; it opens their list. */
+    const groupCard = (list: Pin[]) => {
+      const el = document.createElement('div');
+      el.className = 'gpin gpin--group';
+      el.innerHTML =
+        '<span class="gpin__pulse" aria-hidden="true"></span><button type="button" class="gpin__btn"><span class="gpin__count" aria-hidden="true"></span><span class="gpin__label" aria-hidden="true"><span class="gpin__date"></span><span class="gpin__title"></span></span></button>';
+      el.querySelector('.gpin__count')!.textContent = String(list.length);
+      el.querySelector('.gpin__date')!.textContent = monthsOf(list);
+      el.querySelector('.gpin__title')!.textContent = list.slice(0, 2).map((p) => shortOf(byId(p.id)!)).join('、') + (list.length > 2 ? '…' : '');
+      const btn = el.querySelector('button')!;
+      btn.setAttribute('aria-label', `${str('group', list.length)}: ${list.map((p) => shortOf(byId(p.id)!)).join(', ')}`);
+      btn.addEventListener('click', () => openList(list));
+      return el;
+    };
+
+    const card = (pin: Pin, peek = false) => {
       const m = byId(pin.id)!;
       const title = text(m, '.milestone__title');
       const short = text(m, '.milestone__short');
@@ -234,6 +274,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
       if (icon) el.querySelector('.gpin__head')!.append(icon.cloneNode(true));
       el.querySelector('.gpin__date')!.textContent = date;
       el.querySelector('.gpin__title')!.textContent = short || title.split(/[：:｜|]/)[0].trim() || title;
+      el.classList.toggle('is-peek', peek);
       const btn = el.querySelector('button')!;
       btn.setAttribute('aria-label', [title, date].filter(Boolean).join(', '));
       btn.addEventListener('click', () => pick(pin.id));
@@ -257,19 +298,78 @@ const unplaced = items.filter((x) => !x.data.coords).length;
       add('p', 'jglobe__meta', [text(m, '.milestone__full-date'), text(m, '.milestone__meta > span:not(.milestone__full-date)')].filter(Boolean).join(' · '));
     };
 
-    function pick(id: string) {
+    /** The list of a group: pointing at a row shows that milestone's real pin; a click opens it. */
+    const fillList = (group: Pin[]) => {
+      panelBody.replaceChildren();
+      const head = document.createElement('p');
+      head.className = 'jglobe__tags';
+      head.textContent = str('group', group.length);
+      const ul = document.createElement('ul');
+      ul.className = 'jglobe__list';
+      for (const pin of group) {
+        const m = byId(pin.id);
+        if (!m) continue;
+        const li = document.createElement('li');
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'jglobe__row';
+        const icon = document.createElement('span');
+        icon.className = 'jglobe__row-icon';
+        icon.setAttribute('aria-hidden', 'true');
+        const svg = m.querySelector('.milestone__dot svg');
+        if (svg) icon.append(svg.cloneNode(true));
+        const name = document.createElement('span');
+        name.className = 'jglobe__row-title';
+        name.textContent = shortOf(m);
+        const when = document.createElement('span');
+        when.className = 'jglobe__row-date';
+        when.textContent = text(m, '.milestone__full-date');
+        b.append(icon, name, when);
+        b.addEventListener('pointerenter', (e) => e.pointerType === 'mouse' && globe?.peek(pin));
+        b.addEventListener('pointerleave', () => globe?.peek(null));
+        b.addEventListener('focus', () => globe?.peek(pin));
+        b.addEventListener('blur', () => globe?.peek(null));
+        b.addEventListener('click', () => pick(pin.id, true));
+        li.append(b);
+        ul.append(li);
+      }
+      panelBody.append(head, ul);
+    };
+
+    function openList(group: Pin[], fly = true) {
+      if (!globe) return;
+      list = group;
+      current = null;
+      fillList(group);
+      panel.dataset.mode = 'list';
+      backBtn.hidden = true;
+      readBtn.hidden = true;
+      panel.hidden = false;
+      globe.peek(null);
+      globe.setPins(pins());
+      if (fly) globe.flyToAll(group);
+    }
+
+    function pick(id: string, fromList = false) {
       const pin = pins().find((p) => p.id === id);
       if (!pin || !globe) return;
+      if (!fromList) list = null;
       current = id;
       fillPanel(id);
+      panel.dataset.mode = 'one';
+      backBtn.hidden = !list;
+      readBtn.hidden = false;
       panel.hidden = false;
-      globe.setPins(pins());
+      globe.peek(null);
+      globe.setPins(pins(), id); // the picked one is never grouped
       globe.flyTo(pin);
       track('milestone', id);
     }
     const closePanel = () => {
       panel.hidden = true;
       current = null;
+      list = null;
+      globe?.peek(null);
       globe?.setPins(pins());
     };
 
@@ -284,13 +384,13 @@ const unplaced = items.filter((x) => !x.data.coords).length;
           return;
         }
         try {
-          globe = await mod.createGlobe(stage, card, reduce);
+          globe = await mod.createGlobe(stage, draw, reduce);
           globe.setPins(pins());
           globe.reset(true);
           const spinBtn = globeEl.querySelector<HTMLButtonElement>('[data-globe-spin]')!;
           globe.onSpin((on) => spinBtn.setAttribute('aria-pressed', String(on)));
-          // Turning the globe away from the picked pin closes its card.
-          globe.onUserMove(() => current && closePanel());
+          // Turning the globe away from the picked pin (or the group) closes its card.
+          globe.onUserMove(() => !panel.hidden && closePanel());
           spinBtn.addEventListener('click', () => globe?.setSpin(spinBtn.getAttribute('aria-pressed') !== 'true'));
           status.hidden = true;
           globeEl.classList.add('is-ready');
@@ -335,8 +435,8 @@ const unplaced = items.filter((x) => !x.data.coords).length;
       filterBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === filter)));
       milestones.forEach((m) => (m.hidden = filter !== 'all' && m.dataset.category !== filter));
       root.querySelectorAll<HTMLElement>('.milestones__year').forEach((y) => (y.hidden = !y.querySelector('.milestone:not([hidden])')));
-      if (current && !pins().some((p) => p.id === current)) closePanel();
-      globe?.setPins(pins());
+      if (list || (current && !pins().some((p) => p.id === current))) closePanel();
+      globe?.setPins(pins(), current);
     };
     filterBtns.forEach((b) =>
       b.addEventListener('click', () => {
@@ -349,6 +449,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     // Long-press on a phone: no context menu (save image / select) over the globe.
     stage.addEventListener('contextmenu', (e) => e.preventDefault());
     globeEl.querySelector('[data-globe-close]')!.addEventListener('click', closePanel);
+    backBtn.addEventListener('click', () => list && openList(list, false));
     globeEl.querySelector('[data-globe-read]')!.addEventListener('click', () => {
       const m = current ? byId(current) : null;
       if (!m) return;
@@ -366,7 +467,9 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     document.addEventListener('langswap', () => {
       paintView();
       applyFilter();
+      globe?.redraw();
       if (current) fillPanel(current);
+      else if (list) fillList(list);
     });
   }
 </script>
@@ -865,6 +968,89 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     font-size: 0.82rem;
     color: var(--muted);
   }
+  .jglobe__back {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin: -0.15rem 0 0.1rem;
+    padding: 0.15rem 0.1rem;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.78rem;
+    cursor: pointer;
+  }
+  .jglobe__back:hover {
+    color: var(--accent);
+  }
+  .jglobe__back[hidden],
+  .jglobe__read[hidden] {
+    display: none;
+  }
+  .jglobe__back :global(svg) {
+    width: 0.85rem;
+    height: 0.85rem;
+  }
+  .jglobe__panel-body :global(.jglobe__list) {
+    display: grid;
+    gap: 0.15rem;
+    margin: 0.35rem -0.4rem 0;
+    padding: 0;
+    list-style: none;
+    max-height: min(16rem, 40vh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .jglobe__panel-body :global(.jglobe__row) {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.55rem;
+    width: 100%;
+    padding: 0.45rem 0.45rem;
+    border: 0;
+    border-radius: 10px;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+  .jglobe__panel-body :global(.jglobe__row:hover),
+  .jglobe__panel-body :global(.jglobe__row:focus-visible) {
+    background: var(--accent-soft);
+    outline: none;
+  }
+  .jglobe__panel-body :global(.jglobe__row-icon) {
+    display: grid;
+    place-items: center;
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+  }
+  .jglobe__panel-body :global(.jglobe__row-icon svg) {
+    width: 0.85rem;
+    height: 0.85rem;
+  }
+  .jglobe__panel-body :global(.jglobe__row-title) {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+  .jglobe__panel-body :global(.jglobe__row-date) {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
   .jglobe__read {
     justify-self: start;
     display: inline-flex;
@@ -951,6 +1137,54 @@ const unplaced = items.filter((x) => !x.data.coords).length;
   .jglobe :global(.gpin__btn:focus-visible .gpin__head) {
     outline: 2px solid var(--text);
     outline-offset: 2px;
+  }
+  /* A group: a round bubble centred on the pins' middle, with the count. */
+  .jglobe :global(.gpin--group .gpin__btn) {
+    left: -19px;
+    bottom: -19px;
+    width: 38px;
+    height: 38px;
+  }
+  .jglobe :global(.gpin--group .gpin__pulse) {
+    display: none;
+  }
+  .jglobe :global(.gpin__count) {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 28%, transparent);
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .jglobe :global(.gpin--group .gpin__label) {
+    left: 46px;
+    top: 50%;
+    translate: 0 -50%;
+  }
+  /* The real pin of a milestone pointed at in a group's list, drawn over the group. */
+  .jglobe :global(.gpin.is-peek) {
+    z-index: 1;
+    animation: gpin-peek 0.25s var(--ease-out);
+  }
+  .jglobe :global(.gpin.is-peek .gpin__btn) {
+    transform: scale(1.15);
+  }
+  .jglobe :global(.gpin.is-peek .gpin__label) {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  @keyframes gpin-peek {
+    from {
+      opacity: 0;
+      translate: 0 -8px;
+    }
   }
   /* The teardrop: a square with three round corners, turned so the sharp one points down. */
   .jglobe :global(.gpin__head) {
