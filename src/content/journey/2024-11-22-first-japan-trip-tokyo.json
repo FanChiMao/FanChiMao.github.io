@@ -1,0 +1,93 @@
+{
+  "date": "2024-11-22",
+  "category": "travel",
+  "title": {
+    "en": "First Trip to Japan | Tokyo",
+    "zh-tw": "第一次去日本玩｜東京",
+    "zh-cn": "第一次去日本玩｜东京",
+    "ja": "初めての日本旅行｜東京"
+  },
+  "short": {
+    "en": "First Trip to Japan",
+    "zh-tw": "第一次去日本玩",
+    "zh-cn": "第一次去日本玩",
+    "ja": "初めての日本旅行"
+  },
+  "place": {
+    "en": "Tokyo, Japan",
+    "zh-tw": "日本・東京",
+    "zh-cn": "日本・东京",
+    "ja": "日本・東京"
+  },
+  "coords": {
+    "lat": 35.6938,
+    "lng": 139.7034
+  },
+  "media": [
+    {
+      "type": "image",
+      "src": "journey/2024-11-22-first-japan-trip-tokyo/img-3720.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2024-11-22-first-japan-trip-tokyo/img-3729.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2024-11-22-first-japan-trip-tokyo/img-3743.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2024-11-22-first-japan-trip-tokyo/img-3780.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2024-11-22-first-japan-trip-tokyo/img-3746.jpg"
+    },
+    {
+      "type": "video",
+      "src": "/media/journey/2024-11-22-first-japan-trip-tokyo-img-3749.mp4",
+      "loop": false,
+      "poster": "journey/2024-11-22-first-japan-trip-tokyo/img-3749-poster.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2024-11-22-first-japan-trip-tokyo/img-3755.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2024-11-22-first-japan-trip-tokyo/img-3759.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2024-11-22-first-japan-trip-tokyo/img-3777.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2024-11-22-first-japan-trip-tokyo/img-3767.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2024-11-22-first-japan-trip-tokyo/img-3768.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2024-11-22-first-japan-trip-tokyo/img-3771.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2024-11-22-first-japan-trip-tokyo/img-3773.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2024-11-22-first-japan-trip-tokyo/img-3776.jpg"
+    }
+  ],
+  "story": {
+    "en": "First time traveling to Japan, with Tokyo as the first stop. Seeing the Kabukicho Ichibangai gate in person was one of those moments when a place I had seen countless times in photos and videos suddenly became real. The bright signs, crowds and streets at night felt exactly like the image of Tokyo I had always imagined.\n\nLater that evening, I returned to Akihabara near the hotel and also had my first experience eating at a Japanese izakaya. Sitting down for drinks and food after walking around the city all day felt very different from simply visiting tourist attractions. It was a small experience, but it made the first night in Japan feel much more complete.",
+    "zh-tw": "第一次去日本玩，第一站來到東京。走到歌舞伎町一番街時，看到那個以前在照片和影片裡看過很多次的招牌真的出現在眼前，還是有種「真的來到日本了」的感覺。晚上的霓虹燈、人潮和街景，也很符合以前對東京的想像。\n\n晚上回到秋葉原，在離飯店很近的地方第一次吃日本居酒屋。逛了一整天之後坐下來喝點東西、吃些料理，和單純跑景點的感覺又不太一樣。雖然只是旅程裡一個很小的片段，但也讓第一次到日本的第一個晚上變得很有記憶點。",
+    "zh-cn": "第一次去日本玩，第一站来到东京。走到歌舞伎町一番街时，看到那个以前在照片和影片里看过很多次的招牌真的出现在眼前，还是有种“真的来到日本了”的感觉。晚上的霓虹灯、人潮和街景，也很符合以前对东京的想象。\n\n晚上回到秋叶原，在离饭店很近的地方第一次吃日本居酒屋。逛了一整天之后坐下来喝点东西、吃些料理，和单纯跑景点的感觉又不太一样。虽然只是旅程里一个很小的片段，但也让第一次到日本的第一个晚上变得很有记忆点。",
+    "ja": "初めての日本旅行で、最初の目的地は東京だった。歌舞伎町一番街のゲートを実際に目の前で見たとき、写真や動画で何度も見てきた場所が本当にそこにあることに、「本当に日本に来たんだ」と実感した。夜のネオン、人混み、街の雰囲気も、それまで想像していた東京そのものだった。\n\n夜はホテルの近くの秋葉原に戻り、初めて日本の居酒屋にも入った。一日中街を歩いたあと、座ってお酒を飲みながら料理を食べる時間は、観光地を巡るだけとはまた違う感覚だった。旅の中では小さな出来事だけれど、初めての日本の夜を印象深いものにしてくれた。"
+  },
+  "draft": false
+}
