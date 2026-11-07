@@ -1,7 +1,7 @@
 import type { Locale } from '@/i18n/ui';
 
 /**
- * Ajie's profile at the top of /personal/companion/. Facts only, filled in by Chi-Mao;
+ * Ajie's profile at the top of /personal/ajie/. Facts only, filled in by Chi-Mao;
  * anything left null is simply not shown.
  */
 export const ajieProfile: {

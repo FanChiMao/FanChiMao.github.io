@@ -32,7 +32,7 @@ if (world === 'personal') {
       ['/personal/', p.home],
       ['/personal/gallery/', p.gallery],
       ['/personal/journey/', p.journey],
-      ['/personal/companion/', p.companion],
+      ['/personal/ajie/', p.companion],
       ['/personal/achievements/', p.achievements],
     ] as const
   ).map(([to, label]) => ({ href: localePath(lang, to), label, current: here(to) }));

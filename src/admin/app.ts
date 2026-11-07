@@ -678,7 +678,7 @@ class PostForm {
         }
         clearInterval(timer);
         if (run.conclusion === 'success') {
-          const page = { ajie: '/zh-tw/personal/companion/', journey: '/zh-tw/personal/journey/', album: `/zh-tw/personal/gallery/${id}/` }[this.kind];
+          const page = { ajie: '/zh-tw/personal/ajie/', journey: '/zh-tw/personal/journey/', album: `/zh-tw/personal/gallery/${id}/` }[this.kind];
           const name = { ajie: '阿桔頁面', journey: '旅程頁面', album: '這本相簿' }[this.kind];
           pr.done(
             '網站已更新 🎉',

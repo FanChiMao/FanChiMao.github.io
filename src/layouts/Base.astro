@@ -70,6 +70,36 @@ const ogAlt = Astro.props.ogAlt ?? `${t.hero.name} · ${t.hero.position}`;
     <meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)" />
 
     <script is:inline>
+      // An address without a language (52hzfan.com, /personal/, ...) opens in the reader's
+      // language on their first visit: the browser's languages, with the time zone deciding
+      // between Traditional and Simplified for a plain "zh". Picking a language in the switcher
+      // is remembered and always wins (including English). Crawlers are left alone.
+      (() => {
+        const p = location.pathname;
+        if (/^\/(?:zh-tw|zh-cn|ja)(?:\/|$)/.test(p) || /^\/(?:admin|playground)(?:\/|$)/.test(p)) return;
+        if (navigator.webdriver || /bot|crawl|spider|slurp|lighthouse|headless|preview/i.test(navigator.userAgent)) return;
+        let pref = null;
+        try { pref = localStorage.getItem('lang'); } catch {}
+        if (pref === 'en') return;
+        const tz = (Intl.DateTimeFormat().resolvedOptions().timeZone || '');
+        const pick = (tag) => {
+          tag = String(tag || '').toLowerCase();
+          if (tag.startsWith('ja')) return 'ja';
+          if (tag.startsWith('zh')) {
+            if (/hant|-tw|-hk|-mo/.test(tag)) return 'zh-tw';
+            if (/hans|-cn|-sg|-my/.test(tag)) return 'zh-cn';
+            return /Taipei|Hong_Kong|Macau/.test(tz) ? 'zh-tw' : 'zh-cn';
+          }
+          if (tag.startsWith('en')) return 'en';
+          return null;
+        };
+        let lang = pref === 'zh-tw' || pref === 'zh-cn' || pref === 'ja' ? pref : null;
+        if (!lang) for (const t of navigator.languages || [navigator.language]) if ((lang = pick(t))) break;
+        if (!lang || lang === 'en') return;
+        location.replace('/' + lang + p + location.search + location.hash);
+      })();
+    </script>
+    <script is:inline>
       (() => {
         const d = document.documentElement;
         d.classList.add('js');
@@ -189,6 +219,10 @@ const ogAlt = Astro.props.ogAlt ?? `${t.hero.name} · ${t.hero.position}`;
       document.addEventListener('click', (ev) => {
         const a = langLink(ev);
         if (!a || ev.defaultPrevented || ev.button !== 0 || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
+        // A language picked by hand is the reader's choice from now on (see the redirect in <head>).
+        try {
+          localStorage.setItem('lang', new URL(a.href).pathname.match(/^\/(zh-tw|zh-cn|ja)(?:\/|$)/)?.[1] ?? 'en');
+        } catch {}
         a.closest('details')?.removeAttribute('open');
         if (a.hasAttribute('aria-current')) {
           // Already in this language: nothing to do.

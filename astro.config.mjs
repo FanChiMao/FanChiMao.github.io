@@ -10,7 +10,7 @@ const published = (dir) =>
   existsSync(dir) && readdirSync(dir).some((f) => f.endsWith('.json') && !JSON.parse(readFileSync(`${dir}/${f}`, 'utf8')).draft);
 const STUB_SLUGS = [
   ...(published('./src/content/journey') ? [] : ['journey']),
-  ...(published('./src/content/ajie') ? [] : ['companion']),
+  ...(published('./src/content/ajie') ? [] : ['ajie']),
 ];
 const stubPath = STUB_SLUGS.length ? new RegExp(`^/(?:(?:zh-tw|zh-cn|ja)/)?personal/(?:${STUB_SLUGS.join('|')})/$`) : /^$/;
 
@@ -22,10 +22,10 @@ export default defineConfig({
   integrations: [
     icon({ include: { lucide: ['*'], mdi: ['github', 'linkedin', 'facebook', 'instagram', 'youtube', 'skateboarding'] } }),
     sitemap({
-      // Skip standalone apps, the private admin page, the old gallery URLs (now redirects) and placeholder chapters.
+      // Skip standalone apps, the private admin page, old URLs that are now redirects (gallery, companion) and placeholder chapters.
       filter: (page) => {
         const path = new URL(page).pathname;
-        return !path.startsWith('/playground/') && !path.startsWith('/admin/') && !/^\/(?:(?:zh-tw|zh-cn|ja)\/)?gallery\//.test(path) && !stubPath.test(path);
+        return !path.startsWith('/playground/') && !path.startsWith('/admin/') && !/^\/(?:(?:zh-tw|zh-cn|ja)\/)?(?:gallery|personal\/companion)\//.test(path) && !stubPath.test(path);
       },
       i18n: {
         defaultLocale: 'en',

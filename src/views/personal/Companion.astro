@@ -1,7 +1,7 @@
 ---
 import { AJIE_POST_IDS } from '@/data/ajie-posts';
 /**
- * /personal/companion/: Ajie, as an IG-style profile. A header with Ajie's facts, a grid of
+ * /personal/ajie/: Ajie, as an IG-style profile. A header with Ajie's facts, a grid of
  * square thumbnails, and one dialog per post (photos / clips, caption, date, place).
  * Posts come from src/content/ajie/*.json; nothing here is invented.
  */
@@ -108,7 +108,7 @@ if (span) {
 }
 ---
 
-<PersonalLayout {lang} path="/personal/companion/" title={c.name} description={c.blurb} overlay={false} noindex={posts.length === 0}>
+<PersonalLayout {lang} path="/personal/ajie/" title={c.name} description={c.blurb} overlay={false} noindex={posts.length === 0}>
   <div class="ajie pw-page pw-sea" data-ajie data-ai-illustrations="show" data-view="grid">
     <script is:inline>
       try {

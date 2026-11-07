@@ -674,7 +674,7 @@ export const personalUi: Record<Locale, PersonalUI> = { en, 'zh-tw': zhTw, 'zh-c
 export const chapters = [
   { id: 'gallery', path: '/personal/gallery/', nav: 'gallery' },
   { id: 'journey', path: '/personal/journey/', nav: 'journey' },
-  { id: 'companion', path: '/personal/companion/', nav: 'companion' },
+  { id: 'companion', path: '/personal/ajie/', nav: 'companion' },
   { id: 'secrets', path: '/personal/achievements/', nav: 'achievements' },
 ] as const;
 export type ChapterId = (typeof chapters)[number]['id'];

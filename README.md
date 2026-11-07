@@ -75,7 +75,7 @@ Every build runs `npm run photos:check` first and fails if any image under `src/
 
 Each post is one JSON file. Text fields take a plain string (used for every language) or `{ "en", "zh-tw", "zh-cn", "ja" }`.
 
-- **Ajie** (`/personal/companion/`, IG-style grid): `src/content/ajie/<date>-<slug>.json`, photos in `src/assets/ajie/`.
+- **Ajie** (`/personal/ajie/`, IG-style grid; the old `/personal/companion/` redirects): `src/content/ajie/<date>-<slug>.json`, photos in `src/assets/ajie/`.
   Profile facts (adoption date, birthday, bio) live in `src/data/ajie.ts`.
 - **Journey** (`/personal/journey/`, timeline): `src/content/journey/<date>-<slug>.json`, photos in `src/assets/journey/`.
   `category` is one of `run`, `dive`, `jump`, `hike`, `ride`, `travel`, `other`.
