@@ -21,7 +21,7 @@
     // The only identity allowed in (checked again here, on top of the Access policy).
     "ADMIN_EMAIL": "qaz5517359@gmail.com",
     // Instagram account (@ajie.archive) the admin posts to; its token is the IG_TOKEN secret.
-    "IG_USER_ID": ""
+    "IG_USER_ID": "17841415388947081"
   }
   // Secret (Dashboard → Settings → Variables and Secrets):
   //   GITHUB_TOKEN  fine-grained token for this repo only: Contents read/write, Actions read/write
