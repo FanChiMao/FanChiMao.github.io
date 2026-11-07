@@ -1,0 +1,90 @@
+{
+  "date": "2023-11-18",
+  "category": "hike",
+  "title": {
+    "en": "First Summit of Datun Mountain | Taiwan Little 100 Peaks No. 001",
+    "zh-tw": "第一次登頂大屯山｜小百岳 001",
+    "zh-cn": "第一次登顶大屯山｜小百岳 001",
+    "ja": "初めての大屯山登頂｜台湾小百岳 001"
+  },
+  "short": {
+    "en": "First Summit of Datun Mountain",
+    "zh-tw": "第一次登頂大屯山",
+    "zh-cn": "第一次登顶大屯山",
+    "ja": "初めての大屯山登頂"
+  },
+  "place": {
+    "en": "Datun Mountain, Yangmingshan, Taipei",
+    "zh-tw": "台北・陽明山・大屯山",
+    "zh-cn": "台北・阳明山・大屯山",
+    "ja": "台湾・台北・陽明山・大屯山"
+  },
+  "coords": {
+    "lat": 25.17432,
+    "lng": 121.5226492
+  },
+  "stat": "1,092 m",
+  "media": [
+    {
+      "type": "image",
+      "src": "journey/2023-11-18-first-datun-mountain-summit/img-1008.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-18-first-datun-mountain-summit/img-1002.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0997.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0993.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0990.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0981.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0970.jpg"
+    },
+    {
+      "type": "video",
+      "src": "/media/journey/2023-11-18-first-datun-mountain-summit-img-0958.mp4",
+      "loop": false,
+      "poster": "journey/2023-11-18-first-datun-mountain-summit/img-0958-poster.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0961.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0928.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0926.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0925.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0924.jpg"
+    }
+  ],
+  "story": {
+    "en": "First time reaching the summit of Datun Mountain, Taiwan Little 100 Peaks No. 001. I came here with my coworkers for a hike, and along the way we met a group of hikers in their fifties and sixties. They started chatting with us as soon as we met, and before long we ended up climbing the mountain together. We even added each other on LINE and said we could organize another hike sometime. Somehow, after all these years, that second hike still has not happened.",
+    "zh-tw": "第一次登頂大屯山，也是我的小百岳 001。這天和同事一起來爬山，途中遇到一群五、六十歲的山友，看到我們之後很自然地聊了起來，最後乾脆一路一起爬上大屯山。下山前還互加了 LINE，說以後爬山可以再揪團。結果過了這麼久，到現在還是沒有跟他們約成第二次。",
+    "zh-cn": "第一次登顶大屯山，也是我的小百岳 001。这天和同事一起来爬山，途中遇到一群五、六十岁的山友，看到我们之后很自然地聊了起来，最后干脆一路一起爬上大屯山。下山前还互加了 LINE，说以后爬山可以再约。结果过了这么久，到现在还是没有跟他们约成第二次。",
+    "ja": "初めて大屯山に登頂し、台湾小百岳の001座目となった。この日は同僚と一緒に登山へ行き、途中で50代から60代くらいの登山者のグループと出会った。話しかけられたことをきっかけに自然と会話が始まり、そのまま一緒に大屯山を登ることに。下山前にはLINEも交換し、またいつか一緒に山へ行こうと話した。けれど、それからずいぶん時間が経った今も、まだ2回目の登山は実現していない。"
+  },
+  "draft": false
+}
