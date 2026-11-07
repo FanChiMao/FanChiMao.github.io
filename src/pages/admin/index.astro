@@ -6,7 +6,10 @@
  */
 import '@/styles/global.css';
 import { getCollection } from 'astro:content';
+import { getImage } from 'astro:assets';
 import { personalUi } from '@/i18n/personal';
+import { asset } from '@/lib/assets';
+import { clipUrl } from '@/lib/media';
 
 const ui = personalUi['zh-tw'];
 const pick = (v: string | Record<string, string> | undefined) => (v == null ? undefined : typeof v === 'string' ? v : v['zh-tw']);
@@ -29,6 +32,27 @@ const FORMS = {
   journey: { title: '新增旅程里程碑', files: '1. 上傳照片與影片（選填）', accept: 'image/*,video/*', note: '' },
   ajie: { title: '新增阿桔貼文', files: '1. 上傳照片與影片', accept: 'image/*,video/*', note: '' },
 } as const;
+/** Ajie posts as Instagram would get them: big JPEGs of every slide (AI cover first) and the clips on R2. */
+const jpg = async (src: string) => (await getImage({ src: asset(src), width: 1440, format: 'jpg', quality: 90 })).src;
+const igPosts = await Promise.all(
+  posts
+    .filter((p) => !p.data.draft)
+    .sort((a, b) => b.data.date.localeCompare(a.data.date))
+    .map(async (p) => {
+      const slides: { type: 'image' | 'video'; src: string; thumb: string; ai?: boolean }[] = [];
+      if (p.data.cover) {
+        const s = await jpg(p.data.cover.src);
+        slides.push({ type: 'image', src: s, thumb: s, ai: true });
+      }
+      for (const m of p.data.media) {
+        if (m.type === 'image') {
+          const s = await jpg(m.src);
+          slides.push({ type: 'image', src: s, thumb: s });
+        } else if (m.type === 'video') slides.push({ type: 'video', src: clipUrl(m.src), thumb: await jpg(m.poster) });
+      }
+      return { id: p.id, date: p.data.date, from: p.data.from, title: pick(p.data.title) ?? '', caption: pick(p.data.caption) ?? '', place: pick(p.data.location) ?? '', slides };
+    }),
+);
 const MEDIA_NOTE = '照片縮到長邊 2400 px 並去除 EXIF / GPS；影片重新壓縮成 720p MP4（同時去除位置資訊），並自動產生「檔名-poster.jpg」封面。右邊的檔名就是 JSON 裡要寫的名字（點一下複製），按住 ⠿ 拖曳排序。';
 ---
 
@@ -43,6 +67,7 @@ const MEDIA_NOTE = '照片縮到長邊 2400 px 並去除 EXIF / GPS；影片重�
   </head>
   <body class="admin">
     <script type="application/json" id="admin-data" set:html={JSON.stringify(names)} />
+    <script type="application/json" id="ig-data" set:html={JSON.stringify(igPosts)} />
 
     <header class="top">
       <div class="top__brand"><strong>52Hz 管理</strong><span id="who" class="muted">確認登入中…</span></div>
@@ -62,6 +87,7 @@ const MEDIA_NOTE = '照片縮到長邊 2400 px 並去除 EXIF / GPS；影片重�
           <span class="side__label">網頁</span>
           <button type="button" data-tab="stats"><span aria-hidden="true">▦</span><span class="side__text">統計資料</span><span class="side__short">統計</span></button>
           <button type="button" data-tab="deploys"><span aria-hidden="true">⟳</span><span class="side__text">網站部署</span><span class="side__short">部署</span><span class="side__status" id="deploy-latest"></span></button>
+          <button type="button" data-tab="ig"><span aria-hidden="true">◎</span><span class="side__text">發到 IG</span><span class="side__short">IG</span></button>
         </div>
         <div class="side__group side__add">
           <span class="side__label">內容</span>
@@ -87,6 +113,39 @@ const MEDIA_NOTE = '照片縮到長邊 2400 px 並去除 EXIF / GPS；影片重�
           <ul id="deploys" class="deploys__list"><li class="muted">載入中…</li></ul>
         </div>
         <p class="muted small">新增內容會直接 commit 到 main，GitHub Actions 自動重建網站（約 2–4 分鐘）。「重新部署」不需要新的 commit，用在部署失敗修好之後，或想重新抓 GitHub 資料時。</p>
+      </section>
+
+      <section data-panel="ig" class="panel" hidden>
+        <div class="panel__head">
+          <h1>發到 IG</h1>
+          <span id="ig-account" class="muted small">確認帳號中…</span>
+        </div>
+        <form class="post card ig" id="ig-form">
+          <fieldset class="block">
+            <legend>1. 選一篇阿桔貼文</legend>
+            <select id="ig-post"></select>
+            <p class="muted small">只列出網站上已經發布的貼文（新貼文要等網站部署完成）。已發過的會標 ✓。</p>
+          </fieldset>
+          <fieldset class="block">
+            <legend>2. 照片與影片 <span id="ig-count" class="muted small"></span></legend>
+            <div class="row ig__frame">
+              <span class="muted small">照片統一轉成 4:5：</span>
+              <label><input type="radio" name="ig-frame" value="pad" checked /> 補邊（模糊背景，完整保留畫面）</label>
+              <label><input type="radio" name="ig-frame" value="crop" /> 裁切置中</label>
+            </div>
+            <ul id="ig-slides" class="ig__slides"></ul>
+            <p class="muted small">取消勾選就不放進 IG；最多 10 個。影片若被 IG 拒絕（例如比例不支援），取消勾選它再發一次即可，失敗時不會發出任何東西。</p>
+          </fieldset>
+          <fieldset class="block">
+            <legend>3. IG 文案 <span id="ig-chars" class="muted small"></span></legend>
+            <textarea id="ig-caption" rows="12"></textarea>
+            <button type="button" class="ghost" id="ig-reset-caption">重新產生文案</button>
+          </fieldset>
+          <div class="submit">
+            <button type="submit" class="primary" id="ig-publish">發到 IG</button>
+          </div>
+          <ol class="log" aria-live="polite" id="ig-log"></ol>
+        </form>
       </section>
 
       <section data-panel="stats" id="stats" class="panel">
@@ -856,6 +915,84 @@ const MEDIA_NOTE = '照片縮到長邊 2400 px 並去除 EXIF / GPS；影片重�
     gap: 1rem;
     align-items: center;
     flex-wrap: wrap;
+  }
+  /* ---- Instagram */
+  .ig select {
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    font: inherit;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-strong);
+    background: var(--surface-2);
+    color: var(--text);
+  }
+  .ig textarea {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .ig__frame {
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    font-size: 0.88rem;
+  }
+  .ig__slides {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 0.6rem;
+    margin: 0.6rem 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ig__slide label {
+    position: relative;
+    display: block;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background: #000;
+    cursor: pointer;
+  }
+  .ig__slide label:has(input:checked) {
+    border-color: var(--accent);
+  }
+  .ig__slide label:has(input:not(:checked)) {
+    opacity: 0.4;
+  }
+  .ig__slide .ig__bg {
+    position: absolute;
+    inset: -10%;
+    width: 120%;
+    height: 120%;
+    object-fit: cover;
+    filter: blur(12px) brightness(0.8);
+  }
+  .ig__slide .ig__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .ig[data-frame='crop'] .ig__slide .ig__img {
+    object-fit: cover;
+  }
+  .ig__slide input {
+    position: absolute;
+    top: 0.3rem;
+    left: 0.3rem;
+    z-index: 1;
+  }
+  .ig__slide .ig__tag {
+    position: absolute;
+    right: 0.25rem;
+    bottom: 0.25rem;
+    z-index: 1;
+    padding: 0.05rem 0.35rem;
+    border-radius: 4px;
+    background: rgb(0 0 0 / 0.6);
+    color: #fff;
+    font-size: 0.68rem;
   }
   .log {
     margin: 0;

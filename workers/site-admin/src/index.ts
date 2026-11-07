@@ -9,6 +9,7 @@
  *   POST /api/admin/publish   new Ajie post or Journey milestone: one commit on main
  *   GET  /api/admin/deploys   latest site deploy runs (GitHub Actions)
  *   POST /api/admin/redeploy  rebuild the site without a new commit
+ *   /api/admin/ig/*           post a site post to Instagram (see instagram.ts)
  *
  * Every request needs a valid Access token for ADMIN_EMAIL; writes also need the site's Origin.
  */
@@ -16,12 +17,16 @@ import { verifyAccess } from './access';
 import { client, GitHubError } from './github';
 import { addAjiePostId, buildPost, InputError, type PublishInput } from './publish';
 import { contentPath, FILE, ID, isClip, KINDS, mediaKey, type Kind } from '../../../src/lib/admin-post';
+import { IgError, IgInput, instagram, type Item } from './instagram';
 
 export interface Env {
   DB: D1Database;
   /** Clips, served publicly at https://media.52hzfan.com/<key>. */
   MEDIA: R2Bucket;
   GITHUB_TOKEN?: string;
+  /** Instagram: system user token (secret) and the @ajie.archive account ID. */
+  IG_TOKEN?: string;
+  IG_USER_ID?: string;
   GITHUB_REPO: string;
   GITHUB_BRANCH: string;
   ACCESS_TEAM_DOMAIN: string;
@@ -73,6 +78,36 @@ async function route(req: Request, env: Env): Promise<Response> {
 
   if (pathname === '/api/admin/me' && req.method === 'GET') return json({ email });
   if (pathname === '/api/admin/stats' && req.method === 'GET') return json(await stats(env));
+
+  if (pathname.startsWith('/api/admin/ig/')) {
+    const ig = instagram({ ...env, FETCH: env.FETCH });
+    if (!ig.ready) return fail(503, 'NO_IG', 'IG_TOKEN secret or IG_USER_ID var is not set.');
+    const q = new URL(req.url).searchParams;
+    try {
+      if (pathname === '/api/admin/ig/status' && req.method === 'GET') return json(await ig.account());
+      if (pathname === '/api/admin/ig/image' && req.method === 'PUT') {
+        const len = Number(req.headers.get('Content-Length') ?? '');
+        if (!Number.isFinite(len) || len <= 0 || len > 8 * 1024 * 1024) return fail(413, 'TOO_LARGE', 'Photo too large (8 MB at most).');
+        return json({ url: await ig.stage(q.get('post') ?? '', Number(q.get('n')), new Uint8Array(await req.arrayBuffer())) });
+      }
+      if (pathname === '/api/admin/ig/items' && req.method === 'POST') {
+        const b = (await req.json().catch(() => null)) as { post: string; items: Item[]; caption: string } | null;
+        if (!b) return fail(400, 'BAD_JSON', 'Body is not JSON.');
+        return json(await ig.items(b.post, b.items, b.caption));
+      }
+      if (pathname === '/api/admin/ig/item' && req.method === 'GET') return json(await ig.item(q.get('id') ?? ''));
+      if (pathname === '/api/admin/ig/publish' && req.method === 'POST') {
+        const b = (await req.json().catch(() => null)) as { post: string; ids: string[]; caption: string; again?: boolean } | null;
+        if (!b) return fail(400, 'BAD_JSON', 'Body is not JSON.');
+        return json(await ig.publish(b.post, b.ids, b.caption, b.again === true));
+      }
+    } catch (e) {
+      if (e instanceof IgInput) return fail(400, 'INVALID', e.message);
+      if (e instanceof IgError) return fail(502, 'INSTAGRAM', `Instagram：${e.message}`);
+      throw e;
+    }
+    return fail(404, 'NOT_FOUND', 'Not found.');
+  }
 
   if (!env.GITHUB_TOKEN) return fail(503, 'NO_TOKEN', 'GITHUB_TOKEN secret is not set.');
   const gh = client({ token: env.GITHUB_TOKEN, repo: env.GITHUB_REPO, branch: env.GITHUB_BRANCH }, fetcher);

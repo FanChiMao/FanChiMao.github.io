@@ -33,7 +33,7 @@ async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 /** The "add" panels, opened from one 新增 menu (inline in the sidebar, a pop-up above the phone tab bar). */
 const ADD_PANELS = ['album', 'journey', 'ajie'];
-const PANELS = ['stats', 'deploys', ...ADD_PANELS];
+const PANELS = ['stats', 'deploys', 'ig', ...ADD_PANELS];
 const phone = matchMedia('(max-width: 899px)');
 const menuBtn = $<HTMLButtonElement>('.side__menu-btn');
 const menu = $('#add-menu');
@@ -63,6 +63,10 @@ document.addEventListener('keydown', (e) => {
   }
 });
 showTab(PANELS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'stats');
+
+// ---------------------------------------------------------------- Instagram
+
+import('./ig').then(({ initIg }) => initIg(api, (id) => document.querySelector(`[data-tab="${id}"]`)));
 
 // ---------------------------------------------------------------- dashboard
 

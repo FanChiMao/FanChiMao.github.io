@@ -19,9 +19,12 @@
     "ACCESS_TEAM_DOMAIN": "ancient-frost-0f65.cloudflareaccess.com",
     "ACCESS_AUD": "a39bd7f69a884591ac8f940178f97d22f8f5e0cf0453ecf85f039e666c5ed4d3",
     // The only identity allowed in (checked again here, on top of the Access policy).
-    "ADMIN_EMAIL": "qaz5517359@gmail.com"
+    "ADMIN_EMAIL": "qaz5517359@gmail.com",
+    // Instagram account (@ajie.archive) the admin posts to; its token is the IG_TOKEN secret.
+    "IG_USER_ID": ""
   }
   // Secret (Dashboard → Settings → Variables and Secrets):
   //   GITHUB_TOKEN  fine-grained token for this repo only: Contents read/write, Actions read/write
   //                 (write only for the "rebuild" button).
+  //   IG_TOKEN      Meta system user token (never expires) with instagram_basic + instagram_content_publish
 }
