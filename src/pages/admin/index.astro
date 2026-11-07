@@ -124,7 +124,8 @@ const MEDIA_NOTE = '照片縮到長邊 2400 px 並去除 EXIF / GPS；影片重�
           <fieldset class="block">
             <legend>1. 選一篇阿桔貼文</legend>
             <select id="ig-post"></select>
-            <p class="muted small">只列出網站上已經發布的貼文（新貼文要等網站部署完成）。已發過的會標 ✓。</p>
+            <p class="small good" id="ig-posted"></p>
+            <p class="muted small">只列出網站上已經發布的貼文（新貼文要等網站部署完成）。還沒發過的排前面、舊的在上；已發過的標 ✓。</p>
           </fieldset>
           <fieldset class="block">
             <legend>2. 照片與影片 <span id="ig-count" class="muted small"></span></legend>
@@ -138,13 +139,13 @@ const MEDIA_NOTE = '照片縮到長邊 2400 px 並去除 EXIF / GPS；影片重�
           </fieldset>
           <fieldset class="block">
             <legend>3. IG 文案 <span id="ig-chars" class="muted small"></span></legend>
-            <textarea id="ig-caption" rows="12"></textarea>
+            <textarea id="ig-caption" rows="12" autocapitalize="off"></textarea>
             <button type="button" class="ghost" id="ig-reset-caption">重新產生文案</button>
           </fieldset>
-          <div class="submit">
+          <div class="dock">
+            <div id="ig-progress"></div>
             <button type="submit" class="primary" id="ig-publish">發到 IG</button>
           </div>
-          <ol class="log" aria-live="polite" id="ig-log"></ol>
         </form>
       </section>
 
@@ -198,7 +199,13 @@ const MEDIA_NOTE = '照片縮到長邊 2400 px 並去除 EXIF / GPS；影片重�
                     <input type="file" accept=".json,application/json" data-json-file hidden />
                   </label>
                 </div>
-                <textarea data-json rows="16" spellcheck="false" placeholder={EXAMPLES[kind]} />
+                <div class="row json-tools">
+                  <button type="button" class="ghost" data-json-paste>📋 貼上（取代）</button>
+                  <button type="button" class="ghost" data-json-select>全選</button>
+                  <button type="button" class="ghost" data-json-clear>清空</button>
+                  <span class="muted small" data-draft-note hidden>已還原上次沒發布的草稿</span>
+                </div>
+                <textarea data-json rows="16" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder={EXAMPLES[kind]} />
                 <label class="id">
                   ID（檔名，取自 JSON 的 "id" 或 .json 檔名）
                   <input type="text" name="id" required pattern="[a-z0-9]+([_\-][a-z0-9]+)*" maxlength="80" autocomplete="off" />
@@ -207,10 +214,10 @@ const MEDIA_NOTE = '照片縮到長邊 2400 px 並去除 EXIF / GPS；影片重�
 
               <ul class="check" aria-live="polite" />
 
-              <div class="submit">
+              <div class="dock">
+                <div data-progress />
                 <button type="submit" class="primary">發布</button>
               </div>
-              <ol class="log" aria-live="polite" />
             </form>
           </section>
         ))
@@ -275,6 +282,18 @@ const MEDIA_NOTE = '照片縮到長邊 2400 px 並去除 EXIF / GPS；影片重�
     color: var(--text);
     padding: 0.45rem 0.85rem;
     cursor: pointer;
+  }
+  .admin a.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+  }
+  .admin .button.primary {
+    background: var(--accent);
+    border-color: transparent;
+    color: var(--accent-contrast);
+    font-weight: 600;
   }
   .admin button:disabled {
     opacity: 0.45;
@@ -491,7 +510,7 @@ const MEDIA_NOTE = '照片縮到長邊 2400 px 並去除 EXIF / GPS；影片重�
       z-index: 6;
       height: auto;
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 0;
       overflow: visible;
       padding: 0.3rem 0.25rem calc(0.3rem + env(safe-area-inset-bottom));
@@ -916,6 +935,180 @@ const MEDIA_NOTE = '照片縮到長邊 2400 px 並去除 EXIF / GPS；影片重�
     align-items: center;
     flex-wrap: wrap;
   }
+  /* ---- dock: the action button and the progress card; sticks to the bottom on phones */
+  .dock {
+    display: grid;
+    gap: 0.75rem;
+    justify-items: start;
+  }
+  .prog {
+    justify-self: stretch;
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--bg-elev);
+  }
+  .prog[hidden] {
+    display: none;
+  }
+  .prog {
+    position: relative;
+  }
+  /* Dismiss once finished (while running there is nothing to close). */
+  .admin .prog__close {
+    position: absolute;
+    top: 0.3rem;
+    right: 0.3rem;
+    display: none;
+    min-height: 0;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .prog[data-state='done'] .prog__close,
+  .prog[data-state='failed'] .prog__close {
+    display: grid;
+    place-items: center;
+  }
+  .prog[data-state='done'] .prog__text,
+  .prog[data-state='failed'] .prog__text {
+    padding-right: 2rem;
+  }
+  .prog__bar {
+    position: relative;
+    height: 8px;
+    border-radius: 99px;
+    overflow: hidden;
+    background: var(--surface-2);
+  }
+  .prog__bar span {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    transition: width 0.6s ease;
+  }
+  .prog.is-indeterminate .prog__bar span {
+    width: 35% !important;
+    animation: prog-slide 1.2s ease-in-out infinite;
+  }
+  @keyframes prog-slide {
+    from {
+      left: -35%;
+    }
+    to {
+      left: 100%;
+    }
+  }
+  .prog[data-state='done'] .prog__bar span {
+    background: var(--good);
+  }
+  .prog[data-state='failed'] .prog__bar span {
+    background: var(--bad);
+  }
+  .prog__text {
+    margin: 0.15rem 0 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .prog[data-state='done'] .prog__text {
+    color: var(--good);
+  }
+  .prog[data-state='failed'] .prog__text {
+    color: var(--bad);
+  }
+  .prog__sub {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+  }
+  .prog__sub[hidden] {
+    display: none;
+  }
+  .prog__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .prog__actions:empty {
+    display: none;
+  }
+  .prog__log summary {
+    font-size: 0.8rem;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .prog__log ol {
+    margin: 0.4rem 0 0;
+    padding-left: 1.2rem;
+    font-size: 0.82rem;
+    display: grid;
+    gap: 0.2rem;
+  }
+  .prog__log:not(:has(li)) {
+    display: none;
+  }
+  .json-tools {
+    gap: 0.4rem;
+  }
+  @media (max-width: 899px) {
+    /* iOS zooms into any field under 16 px: keep them at 16 px. */
+    .admin input:not([type='checkbox']):not([type='radio']):not([type='file']),
+    .admin textarea,
+    .admin select,
+    .admin textarea[data-json] {
+      font-size: 16px;
+    }
+    /* Thumb-sized targets. */
+    .admin .wrap button,
+    .admin .wrap .button {
+      min-height: 44px;
+    }
+    .admin .wrap button.link {
+      min-height: 0;
+    }
+    .card {
+      padding: 0.9rem 0.85rem;
+    }
+    .admin fieldset {
+      padding: 0.7rem 0.7rem 0.8rem;
+    }
+    /* The action button and the progress stay in reach, above the tab bar. */
+    .dock {
+      position: sticky;
+      bottom: calc(4.4rem + env(safe-area-inset-bottom));
+      z-index: 4;
+      justify-items: stretch;
+      margin: 0 -0.35rem;
+      padding: 0.6rem 0.35rem;
+      border-radius: var(--radius);
+      background: color-mix(in srgb, var(--bg-elev) 88%, transparent);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .dock button.primary {
+      width: 100%;
+      min-height: 50px;
+      font-size: 1rem;
+    }
+    .prog {
+      padding: 0.7rem 0.8rem;
+      max-height: 45vh;
+      overflow-y: auto;
+    }
+    .json-tools button {
+      flex: 1 1 auto;
+    }
+  }
+
   /* ---- Instagram */
   .ig select {
     width: 100%;

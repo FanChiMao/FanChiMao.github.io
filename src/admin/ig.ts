@@ -3,6 +3,8 @@
  * site-admin Worker (/api/admin/ig/*). Photos are re-framed to 4:5 here (Instagram refuses the
  * iPhone's 3:4), staged on R2, then Instagram builds the carousel and publishes it.
  */
+import { duration, Progress } from './progress';
+
 type Api = <T>(path: string, init?: RequestInit) => Promise<T>;
 type Slide = { type: 'image' | 'video'; src: string; thumb: string; ai?: boolean };
 type Post = { id: string; date: string; from?: string; title: string; caption: string; place: string; slides: Slide[] };
@@ -64,7 +66,8 @@ export function initIg(api: Api, tab: (id: string) => Element | null) {
   const select = $<HTMLSelectElement>('#ig-post');
   const slidesEl = $('#ig-slides');
   const caption = $<HTMLTextAreaElement>('#ig-caption');
-  const log = $('#ig-log');
+  const pr = new Progress($('#ig-progress'));
+  let note = ''; // "already posted" link, shown under the picker
   const btn = $<HTMLButtonElement>('#ig-publish');
   let posted: Record<string, string> = {};
   let ready = false;
@@ -75,13 +78,6 @@ export function initIg(api: Api, tab: (id: string) => Element | null) {
   const chosen = () => {
     const p = post();
     return p ? [...slidesEl.querySelectorAll<HTMLInputElement>('input[type=checkbox]')].filter((i) => i.checked).map((i) => p.slides[Number(i.value)]) : [];
-  };
-  const say = (msg: string, tone = '') => {
-    const li = document.createElement('li');
-    li.className = tone;
-    li.innerHTML = msg;
-    log.append(li);
-    return li;
   };
   const update = () => {
     const n = chosen().length;
@@ -108,7 +104,7 @@ export function initIg(api: Api, tab: (id: string) => Element | null) {
   };
   const renderPost = () => {
     const p = post();
-    log.innerHTML = '';
+    if (!busy) pr.hide();
     if (!p) return update();
     slidesEl.innerHTML = p.slides
       .map(
@@ -117,7 +113,8 @@ export function initIg(api: Api, tab: (id: string) => Element | null) {
       )
       .join('');
     caption.value = defaultCaption(p);
-    if (posted[p.id]) say(`這篇已經發過：<a href="${esc(posted[p.id])}" target="_blank" rel="noopener">在 IG 上看</a>`, 'good');
+    note = posted[p.id] ? `這篇已經發過：<a href="${esc(posted[p.id])}" target="_blank" rel="noopener">在 IG 上看</a>` : '';
+    $('#ig-posted').innerHTML = note;
     update();
   };
 
@@ -149,45 +146,55 @@ export function initIg(api: Api, tab: (id: string) => Element | null) {
     if (again && !confirm('這篇已經發到 IG 過了，確定要再發一次？')) return;
     busy = true;
     update();
-    log.innerHTML = '';
+    pr.start('準備照片…');
+    const t0 = Date.now();
     try {
+      // Photos: the first 35% of the bar; Instagram processing up to 90%; publishing the rest.
       const sent: { type: 'image' | 'video'; url: string }[] = [];
       for (const [i, s] of items.entries()) {
+        pr.set(0.35 * (i / items.length), `準備第 ${i + 1} / ${items.length} 個`, s.type === 'video' ? '影片（已在 R2）' : '照片轉成 4:5 並上傳');
         if (s.type === 'video') {
           sent.push({ type: 'video', url: s.src });
           continue;
         }
-        const line = say(`準備第 ${i + 1} 張照片（4:5）…`);
         const jpeg = await frame(s.src, mode());
         const { url } = await api<{ url: string }>(`ig/image?${new URLSearchParams({ post: p.id, n: String(i) })}`, { method: 'PUT', body: jpeg, headers: { 'Content-Type': 'image/jpeg' } });
         sent.push({ type: 'image', url });
-        line.textContent += ' 完成';
+        pr.log(`第 ${i + 1} 張照片已上傳`);
       }
-      const made = say('交給 Instagram 處理…');
+      pr.set(0.38, '交給 Instagram…');
       const { ids } = await api<{ ids: string[] }>('ig/items', { method: 'POST', body: JSON.stringify({ post: p.id, items: sent, caption: caption.value }), headers: { 'Content-Type': 'application/json' } });
       // Clips take Instagram a while (up to a few minutes); photos are quick.
       const started = Date.now();
+      const hasVideo = items.some((s) => s.type === 'video');
       for (const [i, id] of ids.entries()) {
         for (;;) {
           const s = await api<{ status: string; detail: string }>(`ig/item?id=${id}`);
           if (s.status === 'FINISHED' || s.status === 'PUBLISHED') break;
-          if (s.status === 'ERROR' || s.status === 'EXPIRED') throw new Error(`第 ${i + 1} 個項目被 IG 拒絕：${s.detail || s.status}（還沒發出任何東西）`);
+          if (s.status === 'ERROR' || s.status === 'EXPIRED') throw new Error(`第 ${i + 1} 個項目被 IG 拒絕：${s.detail || s.status}（還沒發出任何東西，取消勾選它再試）`);
           if (Date.now() - started > 8 * 60_000) throw new Error('IG 處理太久，請稍後再試（還沒發出任何東西）');
-          made.textContent = `交給 Instagram 處理…（${i + 1} / ${ids.length}，${Math.round((Date.now() - started) / 1000)} 秒）`;
+          pr.set(0.4 + 0.5 * (i / ids.length), `Instagram 處理中 ${i + 1} / ${ids.length}`, `${duration(Date.now() - started)}${hasVideo ? '・影片通常要 1–3 分鐘' : ''}`);
           await wait(3000);
         }
+        pr.set(0.4 + 0.5 * ((i + 1) / ids.length), `Instagram 處理中 ${Math.min(i + 2, ids.length)} / ${ids.length}`, duration(Date.now() - started));
       }
-      made.textContent = `Instagram 處理完成（${ids.length} 個）`;
-      say('發佈中…');
+      pr.log(`Instagram 處理完成（${ids.length} 個）`);
+      pr.set(0.93, '發佈中…');
       const res = await api<{ permalink: string }>('ig/publish', { method: 'POST', body: JSON.stringify({ post: p.id, ids, caption: caption.value, again }), headers: { 'Content-Type': 'application/json' } });
       posted[p.id] = res.permalink;
-      // Move on to the next one still to post (oldest first), keeping the result on screen.
+      const title = p.title || p.id;
+      // Move on to the next one still to post (oldest first); the result stays in the card.
+      busy = false;
       fillSelect();
       renderPost();
-      say(`「${esc(p.title || p.id)}」已發到 IG 🎉 ${res.permalink ? `<a href="${esc(res.permalink)}" target="_blank" rel="noopener">打開貼文</a>` : ''}`, 'good');
-      if (posted[select.value] === undefined) say(`下一篇：${esc(select.selectedOptions[0]?.textContent ?? '')}`, 'muted');
+      const next = posted[select.value] === undefined ? select.selectedOptions[0]?.textContent ?? '' : '';
+      pr.done(
+        `「${title}」已發到 IG 🎉`,
+        res.permalink ? `<a class="button" href="${esc(res.permalink)}" target="_blank" rel="noopener">打開 IG 貼文</a>` : '',
+        `花了 ${duration(Date.now() - t0)}${next ? `・下一篇已選好：${next}` : '・全部都發完了'}`,
+      );
     } catch (e) {
-      say(esc((e as Error).message), 'bad');
+      pr.fail((e as Error).message);
     } finally {
       busy = false;
       update();

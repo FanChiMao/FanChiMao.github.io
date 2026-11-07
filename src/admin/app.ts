@@ -5,6 +5,7 @@
 import { bars, columns } from './charts';
 import { base64Of, formatBytes, MAX_VIDEO_BYTES, posterOf, prepareVideo, preparePhoto, shotOf, type Shot } from './media';
 import { checkPost, contentPath, fileName, formatGuide, posterName, refName, type Checked, type Kind } from '@/lib/admin-post';
+import { duration, Progress } from './progress';
 
 if (import.meta.env.DEV && new URLSearchParams(location.search).has('mock')) (await import('./dev-mock')).installMock();
 
@@ -202,12 +203,38 @@ class PostForm {
   json: HTMLTextAreaElement;
   idField: HTMLInputElement;
   checked: (Checked & { input: unknown }) | null = null;
+  progress: Progress;
 
   constructor(public form: HTMLFormElement) {
     this.kind = form.dataset.kind as Kind;
     this.list = $('.files', form);
     this.json = $<HTMLTextAreaElement>('[data-json]', form);
     this.idField = $<HTMLInputElement>('[name=id]', form);
+    this.progress = new Progress($('[data-progress]', form));
+
+    // JSON helpers for phones: replace from the clipboard, select all, clear.
+    $('[data-json-paste]', form).addEventListener('click', async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (!text.trim()) return alertBox('剪貼簿是空的');
+        this.json.value = text;
+        this.update();
+        this.saveDraft();
+      } catch {
+        alertBox('無法讀取剪貼簿：請長按文字框選「貼上」');
+      }
+    });
+    $('[data-json-select]', form).addEventListener('click', () => {
+      this.json.focus();
+      this.json.setSelectionRange(0, this.json.value.length);
+    });
+    $('[data-json-clear]', form).addEventListener('click', () => {
+      if (this.json.value.trim() && !confirm('清空 JSON？')) return;
+      this.json.value = '';
+      this.update();
+      this.saveDraft();
+    });
+    this.restoreDraft();
 
     $<HTMLInputElement>('[data-add-files]', form).addEventListener('change', (e) => {
       const input = e.currentTarget as HTMLInputElement;
@@ -231,7 +258,10 @@ class PostForm {
       btn.textContent = '已複製 ✓';
       setTimeout(() => (btn.textContent = '複製格式說明（給 agent）'), 2000);
     });
-    form.addEventListener('input', () => this.update());
+    form.addEventListener('input', () => {
+      this.update();
+      this.saveDraft();
+    });
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       this.publish();
@@ -504,12 +534,34 @@ class PostForm {
     btn.disabled = this.busy || working || broken.length > 0 || !this.checked || this.checked.errors.length > 0;
   }
 
-  log(msg: string, tone = '') {
-    const li = document.createElement('li');
-    li.className = tone;
-    li.innerHTML = msg;
-    $('.log', this.form).append(li);
-    return li;
+  /** The JSON and ID survive a closed tab (iOS often drops background tabs); photos must be picked again. */
+  private get draftKey() {
+    return `admin:draft:${this.kind}`;
+  }
+  saveDraft() {
+    try {
+      const json = this.json.value;
+      if (json.trim()) localStorage.setItem(this.draftKey, JSON.stringify({ json, id: this.idTouched ? this.idField.value : '' }));
+      else localStorage.removeItem(this.draftKey);
+    } catch {}
+  }
+  restoreDraft() {
+    try {
+      const d = JSON.parse(localStorage.getItem(this.draftKey) ?? 'null') as { json: string; id: string } | null;
+      if (!d?.json) return;
+      this.json.value = d.json;
+      if (d.id) {
+        this.idField.value = d.id;
+        this.idTouched = true;
+      }
+      $('[data-draft-note]', this.form).hidden = false;
+    } catch {}
+  }
+  clearDraft() {
+    try {
+      localStorage.removeItem(this.draftKey);
+    } catch {}
+    $('[data-draft-note]', this.form).hidden = true;
   }
 
   async publish() {
@@ -518,13 +570,17 @@ class PostForm {
     const id = this.idField.value.trim();
     this.busy = true;
     this.update();
-    $('.log', this.form).innerHTML = '';
+    const pr = this.progress;
+    pr.start('準備上傳…');
     try {
       const toSend = c.used.map((name) => this.uploads.find((u) => u.name === name)!);
       const files: { name: string; sha?: string }[] = [];
+      // Uploads are the first 60% of the bar (by size), the commit a little, the deploy the rest.
+      const total = toSend.reduce((a, u) => a + (u.blob?.size ?? 0), 0) || 1;
+      let sent = 0;
       for (const [i, u] of toSend.entries()) {
         if (u.blob!.size > MAX_VIDEO_BYTES + 1) throw new Error(`${u.name} 太大`);
-        const line = this.log(`上傳 ${escHtml(u.name)}（${formatBytes(u.blob!.size)}，${i + 1}/${toSend.length}）…`);
+        pr.set(0.6 * (sent / total), `上傳中 ${i + 1} / ${toSend.length}`, `${u.name}（${formatBytes(u.blob!.size)}）`);
         if (u.type === 'video') {
           // Clips go to the R2 bucket (media.52hzfan.com), not into git.
           const q = new URLSearchParams({ kind: this.kind, id, name: u.name });
@@ -534,19 +590,21 @@ class PostForm {
           const { sha } = await api<{ sha: string }>('blob', { method: 'POST', body: await base64Of(u.blob!), headers: { 'Content-Type': 'text/plain' } });
           files.push({ name: u.name, sha });
         }
-        line.textContent += ' 完成';
+        sent += u.blob!.size;
+        pr.log(`上傳 ${escHtml(u.name)}（${formatBytes(u.blob!.size)}）`);
       }
-      this.log('建立 commit…');
+      pr.set(0.62, '建立 commit…');
       const res = await api<{ id: string; commit: { sha: string; url: string } }>('publish', {
         method: 'POST',
         body: JSON.stringify({ kind: this.kind, id, post: c.input, files }),
         headers: { 'Content-Type': 'application/json' },
       });
-      this.log(`已 commit 到 main：<a href="${res.commit.url}" target="_blank" rel="noopener">${res.commit.sha.slice(0, 7)}</a>`, 'good');
+      pr.log(`已 commit 到 main：<a href="${res.commit.url}" target="_blank" rel="noopener">${res.commit.sha.slice(0, 7)}</a>`, 'good');
       this.reset();
+      this.clearDraft();
       await this.follow(res.commit.sha, id);
     } catch (e) {
-      this.log(escHtml((e as Error).message).replace(/\n/g, '<br>'), 'bad');
+      pr.fail((e as Error).message);
     } finally {
       this.busy = false;
       this.update();
@@ -563,32 +621,46 @@ class PostForm {
 
   /** Watch the deploy run for this commit until the site is live (about 2-4 minutes). */
   async follow(sha: string, id: string) {
-    const line = this.log('等待網站部署開始…');
+    const pr = this.progress;
     const started = Date.now();
-    while (Date.now() - started < 20 * 60_000) {
-      await new Promise((r) => setTimeout(r, 10_000));
-      const run = (await loadDeploys()).find((r) => r.sha === sha);
-      if (!run) continue;
-      const [label] = runLabel(run);
-      const secs = Math.round((Date.now() - started) / 1000);
-      if (run.status !== 'completed') {
-        line.innerHTML = `網站${label}（${secs} 秒）… <a href="${run.url}" target="_blank" rel="noopener">看 Actions</a>`;
-        continue;
+    const TYPICAL = 180_000; // a deploy usually takes 2-4 minutes: the bar moves on that guess, never quite to the end
+    let phase = '等待網站部署開始…';
+    const tick = () => {
+      const t = Date.now() - started;
+      pr.set(0.65 + 0.32 * Math.min(1, t / TYPICAL), phase, `${duration(t)}（通常 2–4 分鐘）・內容已存到 GitHub，離開這頁網站也會自己更新`);
+    };
+    tick();
+    const timer = setInterval(tick, 1000);
+    try {
+      while (Date.now() - started < 20 * 60_000) {
+        await new Promise((r) => setTimeout(r, 8_000));
+        const run = (await loadDeploys()).find((r) => r.sha === sha);
+        if (!run) continue;
+        const [label] = runLabel(run);
+        if (run.status !== 'completed') {
+          phase = '網站部署中…';
+          pr.setActions(`<a class="button ghost" href="${run.url}" target="_blank" rel="noopener">看 Actions</a>`);
+          continue;
+        }
+        clearInterval(timer);
+        if (run.conclusion === 'success') {
+          const page = { ajie: '/zh-tw/personal/companion/', journey: '/zh-tw/personal/journey/', album: `/zh-tw/personal/gallery/${id}/` }[this.kind];
+          const name = { ajie: '阿桔頁面', journey: '旅程頁面', album: '這本相簿' }[this.kind];
+          pr.done(
+            '網站已更新 🎉',
+            `<a class="button" href="${page}" target="_blank" rel="noopener">打開${name}</a>${this.kind === 'ajie' ? `<a class="button primary" href="/admin/?${new URLSearchParams({ ig: id })}#ig">接著發到 IG →</a>` : ''}`,
+            `花了 ${duration(Date.now() - started)}・瀏覽器可能要強制重新整理${this.kind === 'album' ? '・draft 的相簿不會公開' : ''}`,
+          );
+        } else {
+          pr.fail(`部署${label}。內容已在 main，修好後可到「網站部署」按「重新部署」。`);
+          pr.setActions(`<a class="button" href="${run.url}" target="_blank" rel="noopener">看錯誤訊息</a>`);
+        }
+        return;
       }
-      if (run.conclusion === 'success') {
-        const page = { ajie: '/zh-tw/personal/companion/', journey: '/zh-tw/personal/journey/', album: `/zh-tw/personal/gallery/${id}/` }[this.kind];
-        const label = { ajie: '阿桔頁面', journey: '旅程頁面', album: '這本相簿（draft 的相簿不會公開）' }[this.kind];
-        line.innerHTML = `網站已更新 🎉 <a href="${page}" target="_blank" rel="noopener">打開${label}</a>（瀏覽器可能要強制重新整理）${
-          this.kind === 'ajie' ? `　<a class="button primary" href="/admin/?${new URLSearchParams({ ig: id })}#ig">接著發到 IG →</a>` : ''
-        }`;
-        line.className = 'good';
-      } else {
-        line.innerHTML = `部署${label}：<a href="${run.url}" target="_blank" rel="noopener">看錯誤訊息</a>（內容已在 main，修好後可按「重新部署」）`;
-        line.className = 'bad';
-      }
-      return;
+      pr.fail('等很久都沒看到部署結果，請到「網站部署」確認');
+    } finally {
+      clearInterval(timer);
     }
-    line.textContent = '等很久都沒看到部署結果，請到左邊「網站部署」確認';
   }
 }
 
