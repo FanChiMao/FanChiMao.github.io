@@ -1,0 +1,88 @@
+{
+  "date": "2023-11-12",
+  "category": "run",
+  "title": {
+    "en": "First City Half Marathon | Standard Chartered Taipei",
+    "zh-tw": "第一次跑城市半馬｜渣打臺北公益馬拉松",
+    "zh-cn": "第一次跑城市半马｜渣打台北公益马拉松",
+    "ja": "初めての都市ハーフマラソン｜スタンダードチャータード台北"
+  },
+  "short": {
+    "en": "First Standard Chartered Half Marathon",
+    "zh-tw": "第一次完成渣打半馬",
+    "zh-cn": "第一次完成渣打半马",
+    "ja": "初めてのスタンダードチャータードハーフ完走"
+  },
+  "place": {
+    "en": "Taipei, Taiwan",
+    "zh-tw": "台北・凱達格蘭大道",
+    "zh-cn": "台北・凯达格兰大道",
+    "ja": "台湾・台北・ケタガラン大通り"
+  },
+  "coords": {
+    "lat": 25.040082,
+    "lng": 121.51195
+  },
+  "stat": "21.0975 km",
+  "media": [
+    {
+      "type": "image",
+      "src": "journey/2023-11-12-standard-chartered-half-marathon/img-0886.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-12-standard-chartered-half-marathon/img-0888.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-12-standard-chartered-half-marathon/img-0891.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-12-standard-chartered-half-marathon/img-0893.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-12-standard-chartered-half-marathon/img-0899.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-12-standard-chartered-half-marathon/img-0900.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-12-standard-chartered-half-marathon/img-0903.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-12-standard-chartered-half-marathon/img-0901.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-12-standard-chartered-half-marathon/img-0904.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-12-standard-chartered-half-marathon/img-0906.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-12-standard-chartered-half-marathon/img-0908.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-12-standard-chartered-half-marathon/img-0912.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2023-11-12-standard-chartered-half-marathon/img-0907.jpg"
+    }
+  ],
+  "story": {
+    "en": "First time running a half marathon through the city at the Standard Chartered Taipei Charity Marathon. I had only finished the Taroko half marathon a week earlier, but this one somehow felt even more exhausting because I had to wake up at 3 a.m. just to get ready for the race. Running through Taipei was a completely different experience. There were people cheering along the streets, and I got to run across roads and bridges that I would normally only pass through by car. Seeing familiar parts of the city turn into a race course for a morning made the whole experience surprisingly special.",
+    "zh-tw": "第一次跑城市半馬，參加渣打臺北公益馬拉松。才剛在一個禮拜前跑完太魯閣半馬，結果這次光是凌晨三點起床準備，就覺得好像比太魯閣還累。和在山谷裡跑步的感覺很不一樣，這次一路穿過台北市區，沿途不時有人幫跑者加油。平常都是坐在車裡經過的道路和橋，這天卻可以直接跑在上面。看著熟悉的城市暫時變成賽道，是一種滿特別的體驗。",
+    "zh-cn": "第一次跑城市半马，参加渣打台北公益马拉松。才刚在一个星期前跑完太鲁阁半马，结果这次光是凌晨三点起床准备，就觉得好像比太鲁阁还累。和在山谷里跑步的感觉很不一样，这次一路穿过台北市区，沿途不时有人帮跑者加油。平常都是坐在车里经过的道路和桥，这天却可以直接跑在上面。看着熟悉的城市暂时变成赛道，是一种很特别的体验。",
+    "ja": "初めて都市の中を走るハーフマラソンとして、スタンダードチャータード台北チャリティーマラソンに参加した。わずか1週間前に太魯閣のハーフマラソンを走り終えたばかりだったが、今回は午前3時に起きて準備するだけで、なぜか太魯閣よりも疲れた気がした。渓谷を走るのとはまったく違い、台北の街中を走っていると沿道から何度も応援の声が聞こえてきた。普段なら車で通る道路や橋を自分の足で走り、見慣れた街が一時的にコースへ変わる感覚は、とても特別だった。"
+  },
+  "draft": false
+}
