@@ -1,0 +1,56 @@
+{
+  "date": "2025-11-19",
+  "from": "2025-11-13",
+  "title": {
+    "en": "Slowly Getting Back to Normal",
+    "zh-tw": "逐漸恢復的日常",
+    "zh-cn": "逐渐恢复的日常",
+    "ja": "少しずつ戻る日常"
+  },
+  "location": {
+    "en": "Home",
+    "zh-tw": "家裡",
+    "zh-cn": "家里",
+    "ja": "自宅"
+  },
+  "cover": {
+    "src": "ajie/2025-11-19-back-to-normal/2b25070b-3e24-4f88-b2ac-02fcda5b49d9.jpg",
+    "alt": {
+      "en": "Illustration: Ajie, an orange tabby wearing a cone, curls up on my laptop keyboard to keep warm. His right eye is gradually recovering.",
+      "zh-tw": "插畫：橘色虎斑貓阿桔戴著頭套，窩在我的筆電鍵盤上取暖，右眼也逐漸恢復",
+      "zh-cn": "插画：橘色虎斑猫阿桔戴着头套，窝在我的笔记本电脑键盘上取暖，右眼也逐渐恢复",
+      "ja": "イラスト：エリザベスカラーをつけた茶トラのアジエが、ノートパソコンのキーボードの上で暖を取っている。右目も少しずつ回復している"
+    }
+  },
+  "media": [
+    {
+      "type": "image",
+      "src": "ajie/2025-11-19-back-to-normal/img-6151.jpg"
+    },
+    {
+      "type": "image",
+      "src": "ajie/2025-11-19-back-to-normal/img-6176.jpg"
+    },
+    {
+      "type": "video",
+      "src": "/media/ajie/2025-11-19-back-to-normal-img-6181.mp4",
+      "poster": "ajie/2025-11-19-back-to-normal/img-6181-poster.jpg"
+    },
+    {
+      "type": "video",
+      "src": "/media/ajie/2025-11-19-back-to-normal-img-6198.mp4",
+      "poster": "ajie/2025-11-19-back-to-normal/img-6198-poster.jpg"
+    },
+    {
+      "type": "video",
+      "src": "/media/ajie/2025-11-19-back-to-normal-img-6200.mp4",
+      "poster": "ajie/2025-11-19-back-to-normal/img-6200-poster.jpg"
+    }
+  ],
+  "caption": {
+    "en": "Following the vet's advice, I continued giving Ajie his medication and eye drops, with weekly follow-up appointments to monitor his recovery.\n\nI'd used up most of my days off over the past few weeks caring for him, and I was almost out of WFH days too. Thankfully, his eye was finally starting to improve, which helped me feel a little more relieved. I could finally start going back to the office again.\n\nMeanwhile, he was still undergoing treatment for his intestinal parasites.\n\nAlso, as the weather started getting colder, I noticed that Ajie had become increasingly fond of climbing onto my laptop to keep warm. He'd often take over the entire keyboard, making it impossible for me to get anything done XD\n\nHe wasn't fully recovered yet, but at least life was finally starting to get back to normal.",
+    "zh-tw": "按照醫生的建議，繼續幫阿桔點眼藥水、餵藥，並安排每週回診追蹤眼睛的恢復狀況。\n\n前幾個禮拜為了照顧阿桔，假也請得差不多了，WFH 的額度也快用完。好在阿桔的眼睛終於開始往好的方向發展，讓我稍微放心了一些，也終於能慢慢回到辦公室上班。\n\n這段期間，毛滴蟲的治療也還在持續進行。\n\n另外，隨著天氣慢慢轉涼，我發現阿桔越來越喜歡跑到我的筆電上取暖，常常直接霸佔鍵盤，害我沒辦法好好用電腦 XD\n\n雖然還沒完全康復，但生活總算開始慢慢回到正軌了。",
+    "zh-cn": "按照医生的建议，继续帮阿桔滴眼药水、喂药，并安排每周复诊追踪眼睛的恢复状况。\n\n前几个礼拜为了照顾阿桔，假也请得差不多了，WFH 的额度也快用完。好在阿桔的眼睛终于开始往好的方向发展，让我稍微放心了一些，也终于能慢慢回到办公室上班。\n\n这段期间，毛滴虫的治疗也还在持续进行。\n\n另外，随着天气慢慢转凉，我发现阿桔越来越喜欢跑到我的笔记本电脑上取暖，常常直接霸占键盘，害我没办法好好用电脑 XD\n\n虽然还没完全康复，但生活总算开始慢慢回到正轨了。",
+    "ja": "先生の指示に従って、引き続きアジエに薬を飲ませたり、目薬をさしたりしながら、毎週通院して目の回復具合を確認することになった。\n\nここ数週間、アジエの看病のために有給休暇もほとんど使ってしまい、在宅勤務（WFH）の枠も残りわずか。幸い、アジエの目はようやく良い方向に向かい始めていて、少し安心できるようになった。僕もやっと少しずつオフィスに戻って仕事ができるようになった。\n\nその間も、トリコモナスの治療は引き続き続けていた。\n\nそれから、だんだん寒くなってきたせいか、アジエが僕のノートパソコンの上で暖を取るのを気に入ったみたい。しょっちゅうキーボードを占領するので、パソコンが全然使えない XD\n\nまだ完全に治ったわけではないけど、ようやく日常が少しずつ戻ってきた気がする。"
+  }
+}
