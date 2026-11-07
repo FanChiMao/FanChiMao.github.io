@@ -20,7 +20,7 @@
   "media": [
     {
       "type": "image",
-      "src": "journey/2023-icip-kuala-lumpur/01.jpg",
+      "src": "/media/journey/2023-10-icip-kuala-lumpur-01.jpg",
       "alt": {
         "en": "At the ICIP 2023 venue",
         "zh-tw": "ICIP 2023 會場",
@@ -30,7 +30,7 @@
     },
     {
       "type": "image",
-      "src": "journey/2023-icip-kuala-lumpur/02.jpg",
+      "src": "/media/journey/2023-10-icip-kuala-lumpur-02.jpg",
       "alt": {
         "en": "Holding the conference certificate at ICIP 2023",
         "zh-tw": "在 ICIP 2023 拿著會議證書",
@@ -40,7 +40,7 @@
     },
     {
       "type": "image",
-      "src": "journey/2023-icip-kuala-lumpur/03.jpg",
+      "src": "/media/journey/2023-10-icip-kuala-lumpur-03.jpg",
       "alt": {
         "en": "Petronas Twin Towers",
         "zh-tw": "雙子星塔",
@@ -50,7 +50,7 @@
     },
     {
       "type": "image",
-      "src": "journey/2023-icip-kuala-lumpur/04.jpg",
+      "src": "/media/journey/2023-10-icip-kuala-lumpur-04.jpg",
       "alt": {
         "en": "Batu Caves, the rainbow stairs",
         "zh-tw": "黑風洞的彩虹階梯",
@@ -60,7 +60,7 @@
     },
     {
       "type": "image",
-      "src": "journey/2023-icip-kuala-lumpur/05.jpg",
+      "src": "/media/journey/2023-10-icip-kuala-lumpur-05.jpg",
       "alt": {
         "en": "Inside Batu Caves",
         "zh-tw": "黑風洞內部",
@@ -70,7 +70,7 @@
     },
     {
       "type": "image",
-      "src": "journey/2023-icip-kuala-lumpur/06.jpg",
+      "src": "/media/journey/2023-10-icip-kuala-lumpur-06.jpg",
       "alt": {
         "en": "National Mosque of Malaysia",
         "zh-tw": "馬來西亞國家清真寺",
@@ -80,7 +80,7 @@
     },
     {
       "type": "image",
-      "src": "journey/2023-icip-kuala-lumpur/07.jpg",
+      "src": "/media/journey/2023-10-icip-kuala-lumpur-07.jpg",
       "alt": {
         "en": "The National Mosque minaret",
         "zh-tw": "國家清真寺的宣禮塔",
@@ -90,7 +90,7 @@
     },
     {
       "type": "image",
-      "src": "journey/2023-icip-kuala-lumpur/08.jpg",
+      "src": "/media/journey/2023-10-icip-kuala-lumpur-08.jpg",
       "alt": {
         "en": "National Mosque entrance",
         "zh-tw": "國家清真寺入口",
@@ -100,7 +100,7 @@
     },
     {
       "type": "image",
-      "src": "journey/2023-icip-kuala-lumpur/09.jpg",
+      "src": "/media/journey/2023-10-icip-kuala-lumpur-09.jpg",
       "alt": {
         "en": "Masjid Jamek",
         "zh-tw": "占美清真寺",
@@ -110,7 +110,7 @@
     },
     {
       "type": "image",
-      "src": "journey/2023-icip-kuala-lumpur/10.jpg",
+      "src": "/media/journey/2023-10-icip-kuala-lumpur-10.jpg",
       "alt": {
         "en": "Sultan Abdul Samad Building",
         "zh-tw": "蘇丹阿都沙末大廈",
@@ -120,7 +120,7 @@
     },
     {
       "type": "image",
-      "src": "journey/2023-icip-kuala-lumpur/11.jpg",
+      "src": "/media/journey/2023-10-icip-kuala-lumpur-11.jpg",
       "alt": {
         "en": "A painted mosque dome",
         "zh-tw": "清真寺的圓頂",
@@ -130,7 +130,7 @@
     },
     {
       "type": "image",
-      "src": "journey/2023-icip-kuala-lumpur/12.jpg",
+      "src": "/media/journey/2023-10-icip-kuala-lumpur-12.jpg",
       "alt": {
         "en": "Asam laksa",
         "zh-tw": "亞參叻沙",
@@ -140,7 +140,7 @@
     },
     {
       "type": "image",
-      "src": "journey/2023-icip-kuala-lumpur/13.jpg",
+      "src": "/media/journey/2023-10-icip-kuala-lumpur-13.jpg",
       "alt": {
         "en": "A bowl of noodles",
         "zh-tw": "一碗麵",
@@ -150,7 +150,7 @@
     },
     {
       "type": "image",
-      "src": "journey/2023-icip-kuala-lumpur/14.jpg",
+      "src": "/media/journey/2023-10-icip-kuala-lumpur-14.jpg",
       "alt": {
         "en": "Petaling Street",
         "zh-tw": "茨廠街",
@@ -160,7 +160,7 @@
     },
     {
       "type": "image",
-      "src": "journey/2023-icip-kuala-lumpur/15.jpg",
+      "src": "/media/journey/2023-10-icip-kuala-lumpur-15.jpg",
       "alt": {
         "en": "Above the clouds on the flight",
         "zh-tw": "飛機上的雲海",
@@ -170,7 +170,7 @@
     },
     {
       "type": "image",
-      "src": "journey/2023-icip-kuala-lumpur/16.jpg",
+      "src": "/media/journey/2023-10-icip-kuala-lumpur-16.jpg",
       "alt": {
         "en": "The wing over the sea of clouds",
         "zh-tw": "機翼與雲海",

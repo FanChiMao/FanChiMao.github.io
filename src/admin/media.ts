@@ -1,5 +1,5 @@
 /**
- * Prepares files in the browser before they go to GitHub, so nothing private or oversized
+ * Prepares files in the browser before they are uploaded (R2 or GitHub), so nothing private or oversized
  * is ever uploaded:
  *  - photos: re-drawn on a canvas (long side <= 2400 px, JPEG). Re-drawing drops every bit of
  *    EXIF, including GPS.
@@ -33,6 +33,31 @@ export async function preparePhoto(file: Blob): Promise<Blob> {
   ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
   bmp.close();
   return canvasBlob(canvas);
+}
+
+/**
+ * Smaller copies of a prepared photo, one per width (never wider than the photo itself), for
+ * the site's srcset: posts' photos are in R2, so nothing resizes them at build time.
+ */
+export async function photoVariants(photo: Blob, widths: readonly number[]): Promise<{ w: number; blob: Blob }[]> {
+  const bmp = await createImageBitmap(photo);
+  try {
+    const out: { w: number; blob: Blob }[] = [];
+    for (const w of widths) {
+      const scale = Math.min(1, w / bmp.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(bmp.width * scale);
+      canvas.height = Math.round(bmp.height * scale);
+      const ctx = canvas.getContext('2d')!;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+      out.push({ w, blob: await canvasBlob(canvas, 0.8) });
+      canvas.width = canvas.height = 0; // free the memory now (iOS keeps a tight canvas budget)
+    }
+    return out;
+  } finally {
+    bmp.close();
+  }
 }
 
 const even = (n: number) => Math.max(2, Math.round(n / 2) * 2);

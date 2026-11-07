@@ -9,7 +9,7 @@ import { getCollection } from 'astro:content';
 import { getImage } from 'astro:assets';
 import { personalUi } from '@/i18n/personal';
 import { asset } from '@/lib/assets';
-import { clipUrl } from '@/lib/media';
+import { clipUrl, isMedia, photoUrl } from '@/lib/media';
 
 const ui = personalUi['zh-tw'];
 const pick = (v: string | Record<string, string> | undefined) => (v == null ? undefined : typeof v === 'string' ? v : v['zh-tw']);
@@ -32,8 +32,13 @@ const FORMS = {
   journey: { title: '新增旅程里程碑', files: '1. 上傳照片與影片（選填）', accept: 'image/*,video/*', note: '' },
   ajie: { title: '新增阿桔貼文', files: '1. 上傳照片與影片', accept: 'image/*,video/*', note: '' },
 } as const;
-/** Ajie posts as Instagram would get them: big JPEGs of every slide (AI cover first) and the clips on R2. */
-const jpg = async (src: string) => (await getImage({ src: asset(src), width: 1440, format: 'jpg', quality: 90 })).src;
+/**
+ * Ajie posts as Instagram would get them: big JPEGs of every slide (AI cover first) and the clips,
+ * all on R2 (the bucket allows this page to read them, for the 4:5 re-framing); older photos still
+ * under src/assets are made here.
+ */
+const jpg = async (src: string) => (isMedia(src) ? photoUrl(src) : (await getImage({ src: asset(src), width: 1440, format: 'jpg', quality: 90 })).src);
+const thumb = async (src: string) => (isMedia(src) ? photoUrl(src, 480) : jpg(src));
 const igPosts = await Promise.all(
   posts
     .filter((p) => !p.data.draft)
@@ -41,19 +46,17 @@ const igPosts = await Promise.all(
     .map(async (p) => {
       const slides: { type: 'image' | 'video'; src: string; thumb: string; ai?: boolean }[] = [];
       if (p.data.cover) {
-        const s = await jpg(p.data.cover.src);
-        slides.push({ type: 'image', src: s, thumb: s, ai: true });
+        slides.push({ type: 'image', src: await jpg(p.data.cover.src), thumb: await thumb(p.data.cover.src), ai: true });
       }
       for (const m of p.data.media) {
         if (m.type === 'image') {
-          const s = await jpg(m.src);
-          slides.push({ type: 'image', src: s, thumb: s });
-        } else if (m.type === 'video') slides.push({ type: 'video', src: clipUrl(m.src), thumb: await jpg(m.poster) });
+          slides.push({ type: 'image', src: await jpg(m.src), thumb: await thumb(m.src) });
+        } else if (m.type === 'video') slides.push({ type: 'video', src: clipUrl(m.src), thumb: await thumb(m.poster) });
       }
       return { id: p.id, date: p.data.date, from: p.data.from, title: pick(p.data.title) ?? '', caption: pick(p.data.caption) ?? '', place: pick(p.data.location) ?? '', slides };
     }),
 );
-const MEDIA_NOTE = '照片縮到長邊 2400 px 並去除 EXIF / GPS；影片重新壓縮成 720p MP4（同時去除位置資訊），並自動產生「檔名-poster.jpg」封面。右邊的檔名就是 JSON 裡要寫的名字（點一下複製），按住 ⠿ 拖曳排序。';
+const MEDIA_NOTE = '照片縮到長邊 2400 px 並去除 EXIF / GPS（阿桔、旅程的照片連同縮圖一起放 R2，相簿照片進 git）；影片重新壓縮成 720p MP4（同時去除位置資訊），並自動產生「檔名-poster.jpg」封面。右邊的檔名就是 JSON 裡要寫的名字（點一下複製），按住 ⠿ 拖曳排序。';
 ---
 
 <!doctype html>

@@ -1,0 +1,37 @@
+---
+/**
+ * A responsive photo from either place photos live:
+ *  - "/media/..." (Ajie posts, Journey milestones): in R2, with the copies made at upload;
+ *  - anything else: a path under src/assets, optimised by Astro at build time.
+ * `widths` picks the Astro sizes; R2 photos always offer 480 / 800 / 1200 and the browser
+ * picks with `sizes`.
+ */
+import { Image } from 'astro:assets';
+import { asset } from '@/lib/assets';
+import { isMedia, PHOTO_WIDTHS, photoSrcset, photoUrl } from '@/lib/media';
+
+interface Props {
+  src: string;
+  alt: string;
+  widths: number[];
+  sizes: string;
+  quality?: number;
+  loading?: 'eager' | 'lazy';
+  class?: string;
+  [attr: string]: unknown;
+}
+// `rest` carries the caller's scoped-style attribute (data-astro-cid-*), like <Image> does.
+const { src, alt, widths, sizes, quality, loading = 'lazy', class: cls, ...rest } = Astro.props;
+const remote = isMedia(src);
+const max = Math.max(...widths);
+// The smallest R2 copy that covers the largest requested width, for browsers without srcset.
+const fallback = PHOTO_WIDTHS.find((w) => w >= max) ?? PHOTO_WIDTHS.at(-1)!;
+---
+
+{
+  remote ? (
+    <img class={cls} src={photoUrl(src, fallback)} srcset={photoSrcset(src)} {sizes} {alt} {loading} decoding="async" {...rest} />
+  ) : (
+    <Image class={cls} src={asset(src)} {alt} width={max} {widths} {sizes} {quality} {loading} {...rest} />
+  )
+}

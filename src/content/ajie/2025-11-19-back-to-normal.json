@@ -14,7 +14,7 @@
     "ja": "自宅"
   },
   "cover": {
-    "src": "ajie/2025-11-19-back-to-normal/2b25070b-3e24-4f88-b2ac-02fcda5b49d9.jpg",
+    "src": "/media/ajie/2025-11-19-back-to-normal-2b25070b-3e24-4f88-b2ac-02fcda5b49d9.jpg",
     "alt": {
       "en": "Illustration: Ajie, an orange tabby wearing a cone, curls up on my laptop keyboard to keep warm. His right eye is gradually recovering.",
       "zh-tw": "插畫：橘色虎斑貓阿桔戴著頭套，窩在我的筆電鍵盤上取暖，右眼也逐漸恢復",
@@ -25,26 +25,26 @@
   "media": [
     {
       "type": "image",
-      "src": "ajie/2025-11-19-back-to-normal/img-6151.jpg"
+      "src": "/media/ajie/2025-11-19-back-to-normal-img-6151.jpg"
     },
     {
       "type": "image",
-      "src": "ajie/2025-11-19-back-to-normal/img-6176.jpg"
+      "src": "/media/ajie/2025-11-19-back-to-normal-img-6176.jpg"
     },
     {
       "type": "video",
       "src": "/media/ajie/2025-11-19-back-to-normal-img-6181.mp4",
-      "poster": "ajie/2025-11-19-back-to-normal/img-6181-poster.jpg"
+      "poster": "/media/ajie/2025-11-19-back-to-normal-img-6181-poster.jpg"
     },
     {
       "type": "video",
       "src": "/media/ajie/2025-11-19-back-to-normal-img-6198.mp4",
-      "poster": "ajie/2025-11-19-back-to-normal/img-6198-poster.jpg"
+      "poster": "/media/ajie/2025-11-19-back-to-normal-img-6198-poster.jpg"
     },
     {
       "type": "video",
       "src": "/media/ajie/2025-11-19-back-to-normal-img-6200.mp4",
-      "poster": "ajie/2025-11-19-back-to-normal/img-6200-poster.jpg"
+      "poster": "/media/ajie/2025-11-19-back-to-normal-img-6200-poster.jpg"
     }
   ],
   "caption": {

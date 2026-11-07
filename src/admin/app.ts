@@ -3,8 +3,8 @@
  * /api/admin/* on this origin (the site-admin Worker, behind Cloudflare Access).
  */
 import { bars, columns } from './charts';
-import { base64Of, formatBytes, MAX_VIDEO_BYTES, posterOf, prepareVideo, preparePhoto, shotOf, type Shot } from './media';
-import { checkPost, contentPath, fileName, formatGuide, posterName, refName, type Checked, type Kind } from '@/lib/admin-post';
+import { base64Of, formatBytes, MAX_VIDEO_BYTES, photoVariants, posterOf, prepareVideo, preparePhoto, shotOf, type Shot } from './media';
+import { checkPost, contentPath, fileName, formatGuide, inR2, PHOTO_WIDTHS, posterName, refName, variantName, type Checked, type Kind } from '@/lib/admin-post';
 import { duration, Progress } from './progress';
 
 if (import.meta.env.DEV && new URLSearchParams(location.search).has('mock')) (await import('./dev-mock')).installMock();
@@ -612,13 +612,19 @@ class PostForm {
       // Uploads are the first 60% of the bar (by size), the commit a little, the deploy the rest.
       const total = toSend.reduce((a, u) => a + (u.blob?.size ?? 0), 0) || 1;
       let sent = 0;
+      const put = (name: string, body: Blob, type: string) =>
+        api<{ key: string }>(`media?${new URLSearchParams({ kind: this.kind, id, name })}`, { method: 'PUT', body, headers: { 'Content-Type': type } });
       for (const [i, u] of toSend.entries()) {
         if (u.blob!.size > MAX_VIDEO_BYTES + 1) throw new Error(`${u.name} 太大`);
         pr.set(0.6 * (sent / total), `上傳中 ${i + 1} / ${toSend.length}`, `${u.name}（${formatBytes(u.blob!.size)}）`);
-        if (u.type === 'video') {
-          // Clips go to the R2 bucket (media.52hzfan.com), not into git.
-          const q = new URLSearchParams({ kind: this.kind, id, name: u.name });
-          await api<{ key: string }>(`media?${q}`, { method: 'PUT', body: u.blob!, headers: { 'Content-Type': 'video/mp4' } });
+        if (inR2(this.kind)) {
+          // Ajie posts and Journey milestones: everything goes to the R2 bucket (media.52hzfan.com),
+          // photos with their smaller copies (-480 / -800 / -1200) for the site's srcset.
+          if (u.type === 'video') await put(u.name, u.blob!, 'video/mp4');
+          else {
+            await put(u.name, u.blob!, 'image/jpeg');
+            for (const v of await photoVariants(u.blob!, PHOTO_WIDTHS)) await put(variantName(u.name, v.w), v.blob, 'image/jpeg');
+          }
           files.push({ name: u.name });
         } else {
           const { sha } = await api<{ sha: string }>('blob', { method: 'POST', body: await base64Of(u.blob!), headers: { 'Content-Type': 'text/plain' } });

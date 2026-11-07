@@ -1,6 +1,6 @@
 {
   "date": "2023-12-15",
-  "category": "other",
+  "category": "sky",
   "title": {
     "en": "First Meteor Shower | Geminids at Qingtiangang",
     "zh-tw": "第一次看流星｜擎天岡雙子座流星雨",
@@ -28,15 +28,15 @@
       "type": "video",
       "src": "/media/journey/2023-12-15-first-geminids-meteor-shower-dji-export-20231215-030155-1702580515852-editor.mp4",
       "loop": false,
-      "poster": "journey/2023-12-15-first-geminids-meteor-shower/dji-export-20231215-030155-1702580515852-editor-poster.jpg"
+      "poster": "/media/journey/2023-12-15-first-geminids-meteor-shower-dji-export-20231215-030155-1702580515852-editor-poster.jpg"
     },
     {
       "type": "image",
-      "src": "journey/2023-12-15-first-geminids-meteor-shower/img-1639.jpg"
+      "src": "/media/journey/2023-12-15-first-geminids-meteor-shower-img-1639.jpg"
     },
     {
       "type": "image",
-      "src": "journey/2023-12-15-first-geminids-meteor-shower/img-1635.jpg"
+      "src": "/media/journey/2023-12-15-first-geminids-meteor-shower-img-1635.jpg"
     }
   ],
   "story": {

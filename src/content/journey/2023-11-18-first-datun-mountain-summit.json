@@ -27,57 +27,57 @@
   "media": [
     {
       "type": "image",
-      "src": "journey/2023-11-18-first-datun-mountain-summit/img-1008.jpg"
+      "src": "/media/journey/2023-11-18-first-datun-mountain-summit-img-1008.jpg"
     },
     {
       "type": "image",
-      "src": "journey/2023-11-18-first-datun-mountain-summit/img-1002.jpg"
+      "src": "/media/journey/2023-11-18-first-datun-mountain-summit-img-1002.jpg"
     },
     {
       "type": "image",
-      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0997.jpg"
+      "src": "/media/journey/2023-11-18-first-datun-mountain-summit-img-0997.jpg"
     },
     {
       "type": "image",
-      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0993.jpg"
+      "src": "/media/journey/2023-11-18-first-datun-mountain-summit-img-0993.jpg"
     },
     {
       "type": "image",
-      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0990.jpg"
+      "src": "/media/journey/2023-11-18-first-datun-mountain-summit-img-0990.jpg"
     },
     {
       "type": "image",
-      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0981.jpg"
+      "src": "/media/journey/2023-11-18-first-datun-mountain-summit-img-0981.jpg"
     },
     {
       "type": "image",
-      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0970.jpg"
+      "src": "/media/journey/2023-11-18-first-datun-mountain-summit-img-0970.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2023-11-18-first-datun-mountain-summit-img-0958.mp4",
       "loop": false,
-      "poster": "journey/2023-11-18-first-datun-mountain-summit/img-0958-poster.jpg"
+      "poster": "/media/journey/2023-11-18-first-datun-mountain-summit-img-0958-poster.jpg"
     },
     {
       "type": "image",
-      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0961.jpg"
+      "src": "/media/journey/2023-11-18-first-datun-mountain-summit-img-0961.jpg"
     },
     {
       "type": "image",
-      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0928.jpg"
+      "src": "/media/journey/2023-11-18-first-datun-mountain-summit-img-0928.jpg"
     },
     {
       "type": "image",
-      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0926.jpg"
+      "src": "/media/journey/2023-11-18-first-datun-mountain-summit-img-0926.jpg"
     },
     {
       "type": "image",
-      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0925.jpg"
+      "src": "/media/journey/2023-11-18-first-datun-mountain-summit-img-0925.jpg"
     },
     {
       "type": "image",
-      "src": "journey/2023-11-18-first-datun-mountain-summit/img-0924.jpg"
+      "src": "/media/journey/2023-11-18-first-datun-mountain-summit-img-0924.jpg"
     }
   ],
   "story": {

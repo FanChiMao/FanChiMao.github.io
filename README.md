@@ -75,9 +75,9 @@ Every build runs `npm run photos:check` first and fails if any image under `src/
 
 Each post is one JSON file. Text fields take a plain string (used for every language) or `{ "en", "zh-tw", "zh-cn", "ja" }`.
 
-- **Ajie** (`/personal/ajie/`, IG-style grid; the old `/personal/companion/` redirects): `src/content/ajie/<date>-<slug>.json`, photos in `src/assets/ajie/`.
+- **Ajie** (`/personal/ajie/`, IG-style grid; the old `/personal/companion/` redirects): `src/content/ajie/<date>-<slug>.json`, photos and clips in R2 (see below).
   Profile facts (adoption date, birthday, bio) live in `src/data/ajie.ts`.
-- **Journey** (`/personal/journey/`, timeline): `src/content/journey/<date>-<slug>.json`, photos in `src/assets/journey/`.
+- **Journey** (`/personal/journey/`, timeline): `src/content/journey/<date>-<slug>.json`, photos and clips in R2 (see below); search by title, filter by year and category, and "Play" flies through the milestones on the globe.
   `category` is one of `run`, `dive`, `jump`, `hike`, `ride`, `travel`, `other`.
 
 ```json
@@ -98,7 +98,7 @@ Second paragraph."
 }
 ```
 
-An Ajie post has `date`, `media`, `caption`, and optionally `location` and `pinned`. Short clips (H.264 MP4, a few MB; they loop muted like an IG clip, or set `"loop": false` for controls and sound) are not in git: they live in the Cloudflare R2 bucket `52hzfan-media`, served at `https://media.52hzfan.com`. The JSON keeps the site path `/media/<ajie|journey>/<id>-<name>.mp4` and the bucket key is the same path without `/media/`. The admin page uploads them there (re-encoded, metadata removed); by hand, check the file with `npm run photos:check` while it is still in `public/media/` (MP4s there are gitignored), then `npx wrangler r2 object put 52hzfan-media/ajie/<id>-<name>.mp4 --file <file> --content-type video/mp4 --cache-control "public, max-age=604800" --remote` from `workers/site-admin`. Long clips are better on YouTube. A chapter with no posts yet stays noindex and out of the sitemap.
+An Ajie post has `date`, `media`, `caption`, and optionally `location` and `pinned`. Photos of Ajie posts and Journey milestones (and clip posters) are not in git either: they sit in the same bucket as the clips below, as `<kind>/<id>-<name>.jpg` (long side 2400 px, no metadata) plus `-480.jpg`, `-800.jpg` and `-1200.jpg` copies for `srcset`; the admin page makes and uploads all four. Album photos stay in `src/assets/gallery/` (optimised at build time). Short clips (H.264 MP4, a few MB; they loop muted like an IG clip, or set `"loop": false` for controls and sound) are not in git: they live in the Cloudflare R2 bucket `52hzfan-media`, served at `https://media.52hzfan.com`. The JSON keeps the site path `/media/<ajie|journey>/<id>-<name>.mp4` and the bucket key is the same path without `/media/`. The admin page uploads them there (re-encoded, metadata removed); by hand, check the file with `npm run photos:check` while it is still in `public/media/` (MP4s there are gitignored), then `npx wrangler r2 object put 52hzfan-media/ajie/<id>-<name>.mp4 --file <file> --content-type video/mp4 --cache-control "public, max-age=604800" --remote` from `workers/site-admin`. Long clips are better on YouTube. A chapter with no posts yet stays noindex and out of the sitemap.
 
 ### Explorer Passport (achievements)
 

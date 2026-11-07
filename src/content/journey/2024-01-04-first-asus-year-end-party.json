@@ -1,6 +1,6 @@
 {
   "date": "2024-01-04",
-  "category": "other",
+  "category": "work",
   "title": {
     "en": "First ASUS Year-End Party | Back After Three Years",
     "zh-tw": "第一次參加華碩尾牙｜睽違三年的回歸",
@@ -26,33 +26,33 @@
   "media": [
     {
       "type": "image",
-      "src": "journey/2024-01-04-first-asus-year-end-party/img-1845.jpg"
+      "src": "/media/journey/2024-01-04-first-asus-year-end-party-img-1845.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2024-01-04-first-asus-year-end-party-img-1829.mp4",
       "loop": false,
-      "poster": "journey/2024-01-04-first-asus-year-end-party/img-1829-poster.jpg"
+      "poster": "/media/journey/2024-01-04-first-asus-year-end-party-img-1829-poster.jpg"
     },
     {
       "type": "image",
-      "src": "journey/2024-01-04-first-asus-year-end-party/img-1846.jpg"
+      "src": "/media/journey/2024-01-04-first-asus-year-end-party-img-1846.jpg"
     },
     {
       "type": "image",
-      "src": "journey/2024-01-04-first-asus-year-end-party/img-1860.jpg"
+      "src": "/media/journey/2024-01-04-first-asus-year-end-party-img-1860.jpg"
     },
     {
       "type": "image",
-      "src": "journey/2024-01-04-first-asus-year-end-party/img-1854.jpg"
+      "src": "/media/journey/2024-01-04-first-asus-year-end-party-img-1854.jpg"
     },
     {
       "type": "image",
-      "src": "journey/2024-01-04-first-asus-year-end-party/img-1879.jpg"
+      "src": "/media/journey/2024-01-04-first-asus-year-end-party-img-1879.jpg"
     },
     {
       "type": "image",
-      "src": "journey/2024-01-04-first-asus-year-end-party/img-1902.jpg"
+      "src": "/media/journey/2024-01-04-first-asus-year-end-party-img-1902.jpg"
     }
   ],
   "story": {

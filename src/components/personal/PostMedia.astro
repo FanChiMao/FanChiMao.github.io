@@ -7,12 +7,13 @@
  * - youtube: poster with a play button; opens in the shared media dialog (Base.astro)
  */
 import type { CollectionEntry } from 'astro:content';
-import { Image, getImage } from 'astro:assets';
+import { getImage } from 'astro:assets';
 import { Icon } from 'astro-icon/components';
 import { ui, type Locale } from '@/i18n/ui';
 import { personalUi } from '@/i18n/personal';
 import { asset } from '@/lib/assets';
-import { clipUrl } from '@/lib/media';
+import { clipUrl, isMedia, photoUrl } from '@/lib/media';
+import Photo from '@/components/Photo.astro';
 
 /** `fit: 'contain'` shows the whole picture (e.g. a square illustration) instead of cropping it. */
 type Media = CollectionEntry<'ajie'>['data']['media'][number] & { fit?: 'contain' };
@@ -36,9 +37,10 @@ const pick = (v: string | Record<Locale, string> | undefined) => (typeof v === '
 const items = await Promise.all(
   media.map(async (m, i) => {
     const alt = pick(m.alt) ?? (media.length > 1 ? `${label} (${i + 1}/${media.length})` : label);
-    if (m.type === 'image') return { ...m, alt, img: asset(m.src) };
-    const poster = m.poster ? await getImage({ src: asset(m.poster), width: 1080, format: 'webp', quality: 78 }) : null;
-    return { ...m, alt, posterSrc: poster?.src, ...(m.type === 'video' ? { src: clipUrl(m.src) } : {}) };
+    if (m.type === 'image') return { ...m, alt };
+    // Posters of posts are in R2 (with smaller copies); older ones may still be under src/assets.
+    const posterSrc = !m.poster ? undefined : isMedia(m.poster) ? photoUrl(m.poster, 1200) : (await getImage({ src: asset(m.poster), width: 1080, format: 'webp', quality: 78 })).src;
+    return { ...m, alt, posterSrc, ...(m.type === 'video' ? { src: clipUrl(m.src) } : {}) };
   }),
 );
 ---
@@ -48,7 +50,7 @@ const items = await Promise.all(
     {
       items.map((m, i) => (
         <li class="pmedia__slide" data-ai-cover={firstIsAi && i === 0 ? '' : undefined} aria-label={items.length > 1 ? `${i + 1} / ${items.length}` : undefined}>
-          {m.type === 'image' && <Image class:list={{ 'pmedia__contain': m.fit === 'contain' }} src={m.img} alt={m.alt} width={1200} widths={[480, 800, 1200]} {sizes} quality={80} loading={eager && i === 0 ? 'eager' : 'lazy'} />}
+          {m.type === 'image' && <Photo class:list={{ 'pmedia__contain': m.fit === 'contain' }} src={m.src} alt={m.alt} widths={[480, 800, 1200]} {sizes} quality={80} loading={eager && i === 0 ? 'eager' : 'lazy'} />}
           {m.type === 'video' &&
             (m.loop ? (
               <>
@@ -157,6 +159,26 @@ const items = await Promise.all(
     );
 
     const current = () => Math.min(Math.max(0, slides().length - 1), Math.round(track.scrollLeft / track.clientWidth));
+    /**
+     * Like Instagram: at most DOT_WINDOW dots show, sliding with the current photo; the ones at an
+     * edge with more photos beyond it get smaller. Long posts no longer wrap into rows of dots.
+     */
+    const DOT_WINDOW = 7;
+    const dotsBox = root.querySelector<HTMLElement>('.pmedia__dots');
+    const windowDots = (list: HTMLButtonElement[], i: number) => {
+      if (!dotsBox) return;
+      const n = list.length;
+      const from = n <= DOT_WINDOW ? 0 : Math.min(Math.max(0, i - Math.floor(DOT_WINDOW / 2)), n - DOT_WINDOW);
+      const to = Math.min(n, from + DOT_WINDOW) - 1;
+      dotsBox.style.setProperty('--shown', String(Math.min(n, DOT_WINDOW)));
+      dotsBox.style.setProperty('--from', String(from));
+      list.forEach((d, k) => {
+        const fromEdge = Math.min(from > 0 ? k - from : Infinity, to < n - 1 ? to - k : Infinity);
+        d.classList.toggle('is-xs', fromEdge === 0);
+        d.classList.toggle('is-sm', fromEdge === 1);
+        d.tabIndex = k < from || k > to ? -1 : 0;
+      });
+    };
     const paint = () => {
       const shownSlides = slides();
       const shownDots = dots();
@@ -168,6 +190,7 @@ const items = await Promise.all(
       const active = shownDots[i];
       active?.classList.add('is-on');
       active?.setAttribute('aria-current', 'true');
+      windowDots(shownDots, i);
       allSlides.forEach((s) => s !== shownSlides[i] && s.querySelector('video')?.pause());
       // Warm up the clip on this slide and the next one.
       for (const s of [shownSlides[i], shownSlides[i + 1]]) {
@@ -361,18 +384,38 @@ const items = await Promise.all(
   .pmedia__btn--next {
     right: 0.6rem;
   }
+  /* A window of at most 7 dots (set by the script) that slides along with the current photo. */
   .pmedia__dots {
+    --dot: 16px;
     position: absolute;
     left: 50%;
     bottom: 0.4rem;
     translate: -50% 0;
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-wrap: nowrap;
+    width: calc(var(--shown, 7) * var(--dot));
     max-width: calc(100% - 6rem);
+    overflow: hidden;
     padding: 0.15rem 0.3rem;
     border-radius: 999px;
     background: rgb(0 0 0 / 0.25);
+    box-sizing: content-box;
+  }
+  .pmedia__dots button {
+    flex: none;
+    translate: calc(var(--from, 0) * var(--dot) * -1) 0;
+    transition: translate 0.3s ease;
+  }
+  .pmedia__dots button.is-sm::before {
+    transform: scale(0.75);
+  }
+  .pmedia__dots button.is-xs::before {
+    transform: scale(0.5);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pmedia__dots button {
+      transition: none;
+    }
   }
   /* Each dot is a button with a comfortable hit area around the visible 6px dot. */
   .pmedia__dots button {

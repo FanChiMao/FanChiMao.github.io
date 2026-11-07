@@ -1,8 +1,9 @@
 ---
 /**
  * /personal/journey/: first times and journeys worth remembering, newest first on a timeline, or
- * as cards pinned to a 3D globe (switch top left, remembered in this browser). Category filter
- * top right. Milestones come from src/content/journey/*.json; nothing here is invented.
+ * as cards pinned to a 3D globe (switch top left, remembered in this browser). Search by title,
+ * filter by year and category; on the globe, "Play" flies through what is shown, oldest first.
+ * Milestones come from src/content/journey/*.json; nothing here is invented.
  */
 import { Icon } from 'astro-icon/components';
 import { getCollection } from 'astro:content';
@@ -23,7 +24,19 @@ const fmt = new Intl.DateTimeFormat(localeMeta[lang].htmlLang, { year: 'numeric'
 const dayMonth = new Intl.DateTimeFormat(localeMeta[lang].htmlLang, { month: 'short', day: 'numeric', timeZone: 'UTC' });
 const asDate = (iso: string) => new Date(`${iso}T00:00:00Z`);
 
-const ICON = { run: 'footprints', dive: 'waves', jump: 'mountain-snow', hike: 'mountain', ride: 'bike', travel: 'plane', other: 'flag' } as const;
+const ICON = {
+  run: 'footprints',
+  dive: 'waves',
+  jump: 'mountain-snow',
+  hike: 'mountain',
+  ride: 'bike',
+  travel: 'plane',
+  music: 'music',
+  sky: 'sparkles',
+  work: 'briefcase',
+  life: 'heart',
+  other: 'flag',
+} as const;
 const items = (await getCollection('journey', ({ data }) => !data.draft)).sort((a, b) => b.data.date.localeCompare(a.data.date));
 // Group by year, keeping the newest-first order.
 const years = [...new Set(items.map((x) => x.data.date.slice(0, 4)))].map((y) => ({ year: y, items: items.filter((x) => x.data.date.startsWith(y)) }));
@@ -64,6 +77,49 @@ const unplaced = items.filter((x) => !x.data.coords).length;
                 <Icon name="lucide:list" />
               </button>
             </div>
+            <div class="journey__find">
+              <label class="journey__search">
+                <Icon name="lucide:search" />
+                <input type="search" data-search placeholder={p.journey.search} aria-label={p.journey.search} enterkeyhint="search" autocomplete="off" />
+              </label>
+              {years.length > 1 && (
+                <div class="journey__year" data-year>
+                  <button type="button" class="journey__year-btn" data-year-btn aria-haspopup="menu" aria-expanded="false" aria-label={p.journey.year}>
+                    <Icon name="lucide:calendar" />
+                    {/* One label per choice, the picked one shown: a language switch leaves them in step. */}
+                    <span class="journey__year-label" data-year-label="all">
+                      {p.journey.allYears}
+                    </span>
+                    {years.map(({ year }) => (
+                      <span class="journey__year-label" data-year-label={year} hidden>
+                        {year}
+                      </span>
+                    ))}
+                    <span class="journey__year-chev" aria-hidden="true">
+                      <Icon name="lucide:chevron-down" />
+                    </span>
+                  </button>
+                  <div class="journey__year-menu" role="menu" aria-label={p.journey.year} data-year-menu hidden>
+                    <button type="button" role="menuitemradio" aria-checked="true" data-year-opt="all">
+                      <span class="journey__year-check" aria-hidden="true">
+                        <Icon name="lucide:check" />
+                      </span>
+                      <span class="journey__year-name">{p.journey.allYears}</span>
+                      <span class="journey__year-n">{items.length}</span>
+                    </button>
+                    {years.map(({ year, items: list }) => (
+                      <button type="button" role="menuitemradio" aria-checked="false" data-year-opt={year}>
+                        <span class="journey__year-check" aria-hidden="true">
+                          <Icon name="lucide:check" />
+                        </span>
+                        <span class="journey__year-name">{year}</span>
+                        <span class="journey__year-n">{list.length}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
             {used.length > 0 && (
               <div class="journey__filter" role="group" aria-label={p.journey.filter}>
                 <button type="button" data-filter="all" aria-pressed="true">
@@ -78,6 +134,9 @@ const unplaced = items.filter((x) => !x.data.coords).length;
               </div>
             )}
           </div>
+          <p class="journey__none" data-none hidden>
+            {p.journey.noMatch}
+          </p>
           <ol class="milestones">
             {years.map(({ year, items: list }) => (
               <li class="milestones__year">
@@ -157,6 +216,16 @@ const unplaced = items.filter((x) => !x.data.coords).length;
               {p.journey.globeUnsupported}
             </p>
             <div class="jglobe__tools">
+              <button type="button" class="jglobe__tool" data-globe-play aria-pressed="false" title={p.journey.playHint}>
+                <span class="jglobe__when-off">
+                  <Icon name="lucide:play" />
+                  {p.journey.play}
+                </span>
+                <span class="jglobe__when-on">
+                  <Icon name="lucide:pause" />
+                  {p.journey.pause}
+                </span>
+              </button>
               <button type="button" class="jglobe__tool" data-globe-spin aria-pressed="false">
                 <Icon name="lucide:rotate-3d" />
                 {p.journey.spin}
@@ -213,6 +282,12 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     const milestones = Array.from(root.querySelectorAll<HTMLElement>('.milestone'));
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let filter = 'all';
+    let year = 'all';
+    let query = '';
+    // Play (the tour): declared up here, since closing the panel or switching views stops it.
+    const playBtn = globeEl.querySelector<HTMLButtonElement>('[data-globe-play]')!;
+    let touring = false;
+    let tourTimer = 0;
     let globe: GlobeView | null = null;
     let loading: Promise<void> | null = null;
     let current: string | null = null;
@@ -233,10 +308,14 @@ const unplaced = items.filter((x) => !x.data.coords).length;
 
     const byId = (id: string) => milestones.find((m) => m.dataset.id === id);
     const text = (m: HTMLElement, sel: string) => m.querySelector(sel)?.textContent?.trim() ?? '';
+    /** Category, year and title search (in the page language) together. */
+    const fold = (s: string) => s.normalize('NFKC').toLowerCase().replace(/\s+/g, ' ');
+    const shown = (m: HTMLElement) =>
+      (filter === 'all' || m.dataset.category === filter) &&
+      (year === 'all' || (m.dataset.date ?? '').startsWith(year)) &&
+      (!query || fold(`${text(m, '.milestone__title')} ${text(m, '.milestone__short')}`).includes(query));
     const pins = (): Pin[] =>
-      milestones
-        .filter((m) => m.dataset.lat && m.dataset.lng && (filter === 'all' || m.dataset.category === filter))
-        .map((m) => ({ id: m.dataset.id!, lat: Number(m.dataset.lat), lng: Number(m.dataset.lng) }));
+      milestones.filter((m) => m.dataset.lat && m.dataset.lng && shown(m)).map((m) => ({ id: m.dataset.id!, lat: Number(m.dataset.lat), lng: Number(m.dataset.lng) }));
 
     /**
      * A map pin whose tip sits on the exact coordinates, with the milestone's category icon (the
@@ -370,9 +449,10 @@ const unplaced = items.filter((x) => !x.data.coords).length;
       if (fly) globe.flyToAll(group);
     }
 
-    function pick(id: string, fromList = false) {
+    function pick(id: string, fromList = false, auto = false) {
       const pin = pins().find((p) => p.id === id);
       if (!pin || !globe) return;
+      if (!auto) stopTour(); // a pin picked by hand ends the tour
       if (!fromList) list = null;
       current = id;
       fillPanel(id);
@@ -383,9 +463,10 @@ const unplaced = items.filter((x) => !x.data.coords).length;
       peek(null);
       globe.setPins(pins(), id); // the picked one is never grouped
       globe.flyTo(pin);
-      track('milestone', id);
+      if (!auto) track('milestone', id);
     }
     const closePanel = () => {
+      stopTour();
       panel.hidden = true;
       current = null;
       list = null;
@@ -408,9 +489,15 @@ const unplaced = items.filter((x) => !x.data.coords).length;
           globe.setPins(pins());
           globe.reset(true);
           const spinBtn = globeEl.querySelector<HTMLButtonElement>('[data-globe-spin]')!;
-          globe.onSpin((on) => spinBtn.setAttribute('aria-pressed', String(on)));
+          globe.onSpin((on) => {
+            spinBtn.setAttribute('aria-pressed', String(on));
+            if (on) stopTour();
+          });
           // Turning the globe away from the picked pin (or the group) closes its card.
-          globe.onUserMove(() => !panel.hidden && closePanel());
+          globe.onUserMove(() => {
+            stopTour();
+            if (!panel.hidden) closePanel();
+          });
           spinBtn.addEventListener('click', () => globe?.setSpin(spinBtn.getAttribute('aria-pressed') !== 'true'));
           status.hidden = true;
           globeEl.classList.add('is-ready');
@@ -436,7 +523,10 @@ const unplaced = items.filter((x) => !x.data.coords).length;
       if (root.dataset.view === 'globe') {
         ensureGlobe();
         globe?.resume();
-      } else globe?.pause();
+      } else {
+        stopTour();
+        globe?.pause();
+      }
     };
     viewBtns.forEach((b) =>
       b.addEventListener('click', () => {
@@ -449,12 +539,25 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     );
     paintView();
 
-    // ---- Category filter (timeline and globe).
+    // ---- Search, year and category (timeline and globe).
     const filterBtns = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-filter]'));
+    const searchEl = root.querySelector<HTMLInputElement>('[data-search]');
+    const yearBtn = root.querySelector<HTMLButtonElement>('[data-year-btn]');
+    const yearMenu = root.querySelector<HTMLElement>('[data-year-menu]');
+    const yearOpts = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-year-opt]'));
+    const noneEl = root.querySelector<HTMLElement>('[data-none]')!;
+    const paintYear = () => {
+      root.querySelectorAll<HTMLElement>('[data-year-label]').forEach((l) => (l.hidden = l.dataset.yearLabel !== year));
+      yearOpts.forEach((o) => o.setAttribute('aria-checked', String(o.dataset.yearOpt === year)));
+      yearBtn?.classList.toggle('is-set', year !== 'all');
+    };
     const applyFilter = () => {
+      stopTour();
+      paintYear();
       filterBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === filter)));
-      milestones.forEach((m) => (m.hidden = filter !== 'all' && m.dataset.category !== filter));
+      milestones.forEach((m) => (m.hidden = !shown(m)));
       root.querySelectorAll<HTMLElement>('.milestones__year').forEach((y) => (y.hidden = !y.querySelector('.milestone:not([hidden])')));
+      noneEl.hidden = milestones.some((m) => !m.hidden);
       if (list || (current && !pins().some((p) => p.id === current))) closePanel();
       globe?.setPins(pins(), current);
     };
@@ -464,8 +567,115 @@ const unplaced = items.filter((x) => !x.data.coords).length;
         applyFilter();
       }),
     );
+    // Year menu: a small glass list under the button (keyboard: arrows, Enter, Escape).
+    const yearOpen = () => !!yearMenu && !yearMenu.hidden;
+    const closeYear = (focusBtn = false) => {
+      if (!yearMenu || yearMenu.hidden) return;
+      yearMenu.hidden = true;
+      yearBtn!.setAttribute('aria-expanded', 'false');
+      if (focusBtn) yearBtn!.focus();
+    };
+    const openYear = () => {
+      if (!yearMenu) return;
+      yearMenu.hidden = false;
+      yearBtn!.setAttribute('aria-expanded', 'true');
+      (yearOpts.find((o) => o.dataset.yearOpt === year) ?? yearOpts[0])?.focus({ preventScroll: true });
+    };
+    yearBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (yearOpen()) closeYear();
+      else openYear();
+    });
+    yearBtn?.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        openYear();
+      }
+    });
+    yearOpts.forEach((o) =>
+      o.addEventListener('click', () => {
+        year = o.dataset.yearOpt ?? 'all';
+        closeYear(true);
+        applyFilter();
+      }),
+    );
+    yearMenu?.addEventListener('keydown', (e) => {
+      const i = yearOpts.indexOf(document.activeElement as HTMLButtonElement);
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        yearOpts[(i + (e.key === 'ArrowDown' ? 1 : -1) + yearOpts.length) % yearOpts.length]?.focus();
+      } else if (e.key === 'Home' || e.key === 'End') {
+        e.preventDefault();
+        yearOpts[e.key === 'Home' ? 0 : yearOpts.length - 1]?.focus();
+      } else if (e.key === 'Escape') {
+        e.stopPropagation();
+        closeYear(true);
+      } else if (e.key === 'Tab') closeYear();
+    });
+    document.addEventListener('click', (e) => {
+      if (yearOpen() && !(e.target as Element).closest('[data-year]')) closeYear();
+    });
+    let typing = 0;
+    searchEl?.addEventListener('input', () => {
+      clearTimeout(typing);
+      typing = window.setTimeout(() => {
+        query = fold(searchEl.value.trim());
+        applyFilter();
+      }, 120);
+    });
+    // Enter on a phone keyboard: put the keyboard away so the results show.
+    searchEl?.addEventListener('keydown', (e) => e.key === 'Enter' && searchEl.blur());
 
-    globeEl.querySelector('[data-globe-reset]')!.addEventListener('click', () => globe?.reset());
+    // ---- Play: fly through the milestones shown on the globe, oldest first, one card at a time.
+    function stopTour() {
+      if (!touring) return;
+      touring = false;
+      clearTimeout(tourTimer);
+      playBtn.setAttribute('aria-pressed', 'false');
+    }
+    /** Rough distance in degrees, to zoom out first between far-apart places. */
+    const apart = (a: Pin, b: Pin) => Math.hypot(a.lat - b.lat, (a.lng - b.lng) * Math.cos(((a.lat + b.lat) / 2) * (Math.PI / 180)));
+    async function startTour() {
+      await ensureGlobe();
+      if (!globe) return;
+      const date = (p: Pin) => byId(p.id)?.dataset.date ?? '';
+      const order = pins().sort((a, b) => date(a).localeCompare(date(b)) || a.id.localeCompare(b.id));
+      if (!order.length) return;
+      globe.setSpin(false);
+      touring = true;
+      playBtn.setAttribute('aria-pressed', 'true');
+      const dwell = 1800; // the card stays this long after the camera arrives
+      const fly = reduce ? 0 : 1700;
+      let prev: Pin | null = current ? (order.find((p) => p.id === current) ?? null) : null;
+      let i = 0;
+      const step = () => {
+        if (!touring || !globe) return;
+        if (i >= order.length) {
+          stopTour();
+          return;
+        }
+        const next = order[i++];
+        const go = () => {
+          if (!touring) return;
+          pick(next.id, false, true);
+          tourTimer = window.setTimeout(step, fly + dwell);
+        };
+        // Far apart (another city or country): pull back over both places first, then dive in.
+        if (prev && !reduce && apart(prev, next) > 3) {
+          panel.hidden = true;
+          globe.flyToAll([prev, next]);
+          tourTimer = window.setTimeout(go, 1100);
+        } else go();
+        prev = next;
+      };
+      step();
+    }
+    playBtn.addEventListener('click', () => (touring ? stopTour() : startTour()));
+
+    globeEl.querySelector('[data-globe-reset]')!.addEventListener('click', () => {
+      stopTour();
+      globe?.reset();
+    });
     // Long-press on a phone: no context menu (save image / select) over the globe.
     stage.addEventListener('contextmenu', (e) => e.preventDefault());
     globeEl.querySelector('[data-globe-close]')!.addEventListener('click', closePanel);
@@ -473,6 +683,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     globeEl.querySelector('[data-globe-read]')!.addEventListener('click', () => {
       const m = current ? byId(current) : null;
       if (!m) return;
+      stopTour();
       root.dataset.view = 'timeline'; // just this once: the page still opens on the globe next time
       paintView();
       const d = m.querySelector('details')!;
@@ -725,7 +936,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     white-space: pre-line;
   }
 
-  /* ---- Display settings: timeline / globe on the left, category filter on the right. */
+  /* ---- Display settings: views + search + year on one line, categories on the next. */
   .journey__bar {
     display: flex;
     flex-wrap: wrap;
@@ -765,12 +976,216 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     width: 1.15rem;
     height: 1.15rem;
   }
+  .journey__find {
+    display: flex;
+    flex: 1 1 16rem;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+  .journey__search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+  }
+  .journey__search :global(svg) {
+    position: absolute;
+    left: 0.75rem;
+    width: 1rem;
+    height: 1rem;
+    color: var(--muted);
+    pointer-events: none;
+  }
+  .journey__search input,
+  .journey__year-btn {
+    height: 2.3rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: var(--bg-elev);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.9rem;
+  }
+  .journey__search input {
+    width: 100%;
+    min-width: 0;
+    padding: 0 0.9rem 0 2.2rem;
+  }
+  .journey__search input:focus-visible,
+  .journey__year-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+    border-color: var(--accent);
+  }
+  /* 16px on phones, or iOS zooms into the field. */
+  @media (max-width: 640px) {
+    .journey__search input {
+      font-size: 1rem;
+    }
+  }
+
+  /* Year: a pill button and a glass menu under it. */
+  .journey__year {
+    position: relative;
+    flex: none;
+    z-index: 6;
+  }
+  .journey__year-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0 0.7rem 0 0.8rem;
+    color: var(--text-2);
+    cursor: pointer;
+    transition:
+      border-color 0.2s,
+      background-color 0.2s,
+      color 0.2s;
+  }
+  .journey__year-btn:hover,
+  .journey__year-btn[aria-expanded='true'] {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+  .journey__year-btn.is-set {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--text);
+    font-weight: 600;
+  }
+  .journey__year-btn :global(svg) {
+    width: 1rem;
+    height: 1rem;
+    color: var(--accent);
+  }
+  .journey__year-label[hidden] {
+    display: none;
+  }
+  .journey__year-chev {
+    display: inline-grid;
+    transition: rotate 0.25s var(--ease-out);
+  }
+  .journey__year-chev :global(svg) {
+    width: 0.9rem;
+    height: 0.9rem;
+    color: var(--muted);
+  }
+  .journey__year-btn[aria-expanded='true'] .journey__year-chev {
+    rotate: 180deg;
+  }
+  .journey__year-menu {
+    position: absolute;
+    top: calc(100% + 0.45rem);
+    right: 0;
+    display: grid;
+    gap: 0.1rem;
+    min-width: 11rem;
+    max-height: min(22rem, 60vh);
+    overflow-y: auto;
+    padding: 0.35rem;
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--bg-elev) 82%, transparent);
+    backdrop-filter: blur(18px) saturate(1.6);
+    -webkit-backdrop-filter: blur(18px) saturate(1.6);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.12),
+      0 18px 40px -16px rgb(0 0 0 / 0.45);
+    transform-origin: 85% 0;
+    animation: year-pop 0.18s var(--ease-out);
+  }
+  .journey__year-menu[hidden] {
+    display: none;
+  }
+  @keyframes year-pop {
+    from {
+      opacity: 0;
+      scale: 0.95;
+      translate: 0 -4px;
+    }
+  }
+  .journey__year-menu button {
+    display: grid;
+    grid-template-columns: 1rem 1fr auto;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 2.5rem;
+    padding: 0.35rem 0.7rem 0.35rem 0.6rem;
+    border: 0;
+    border-radius: 0.7rem;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    font-size: 0.92rem;
+    text-align: left;
+    cursor: pointer;
+  }
+  .journey__year-menu button:hover,
+  .journey__year-menu button:focus-visible {
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    outline: none;
+  }
+  .journey__year-menu button[aria-checked='true'] {
+    background: var(--accent-soft);
+    font-weight: 600;
+  }
+  .journey__year-check {
+    display: inline-grid;
+    visibility: hidden;
+  }
+  .journey__year-check :global(svg) {
+    width: 1rem;
+    height: 1rem;
+    color: var(--accent);
+  }
+  .journey__year-menu button[aria-checked='true'] .journey__year-check {
+    visibility: visible;
+  }
+  .journey__year-n {
+    min-width: 1.6rem;
+    padding: 0.05rem 0.45rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--text) 8%, transparent);
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .journey__year-menu {
+      animation: none;
+    }
+  }
   .journey__filter {
     display: flex;
+    flex-basis: 100%;
     gap: 0.35rem;
     overflow-x: auto;
     scrollbar-width: none;
     max-width: 100%;
+  }
+  .journey__none {
+    margin: 0 0 1rem;
+    padding: 1.5rem 1rem;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+    color: var(--muted);
+    text-align: center;
+  }
+  .journey__none[hidden] {
+    display: none;
+  }
+  /* Play / Pause: both labels are in the page (so a language switch keeps them), one shows. */
+  [data-globe-play] .jglobe__when-on,
+  [data-globe-play][aria-pressed='true'] .jglobe__when-off {
+    display: none;
+  }
+  [data-globe-play][aria-pressed='true'] .jglobe__when-on {
+    display: contents;
+  }
+  [data-globe-play] .jglobe__when-off {
+    display: contents;
   }
   .journey__filter button {
     display: inline-flex;
@@ -847,6 +1262,14 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     --cat-ride-2: #c27a05;
     --cat-jump: #b4245a;
     --cat-jump-2: #d03b78;
+    --cat-music: #a3249f;
+    --cat-music-2: #c23fb8;
+    --cat-sky: #3f3aa6;
+    --cat-sky-2: #5b55c9;
+    --cat-work: #4a5b70;
+    --cat-work-2: #63768d;
+    --cat-life: #8f4a2a;
+    --cat-life-2: #ab6239;
     --cat-other: #2d57b8;
     --cat-other-2: #4371d6;
   }
@@ -863,6 +1286,14 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     --cat-ride-2: #ffd873;
     --cat-jump: #ff6fa3;
     --cat-jump-2: #ff9cc4;
+    --cat-music: #f07ce8;
+    --cat-music-2: #f8a8f0;
+    --cat-sky: #9d98ff;
+    --cat-sky-2: #c3bfff;
+    --cat-work: #a9bbd0;
+    --cat-work-2: #ccd8e6;
+    --cat-life: #f0a57c;
+    --cat-life-2: #f7c6a6;
     --cat-other: #6ea2ff;
     --cat-other-2: #9cc0ff;
   }

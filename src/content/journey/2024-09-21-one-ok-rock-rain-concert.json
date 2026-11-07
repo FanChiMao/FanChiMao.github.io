@@ -1,6 +1,6 @@
 {
   "date": "2024-09-21",
-  "category": "other",
+  "category": "music",
   "title": {
     "en": "First Concert in Heavy Rain | ONE OK ROCK",
     "zh-tw": "第一次大雨中聽演唱會｜ONE OK ROCK",
@@ -26,47 +26,47 @@
   "media": [
     {
       "type": "image",
-      "src": "journey/2024-09-21-one-ok-rock-rain-concert/img-3409.jpg"
+      "src": "/media/journey/2024-09-21-one-ok-rock-rain-concert-img-3409.jpg"
     },
     {
       "type": "image",
-      "src": "journey/2024-09-21-one-ok-rock-rain-concert/img-3411.jpg"
+      "src": "/media/journey/2024-09-21-one-ok-rock-rain-concert-img-3411.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2024-09-21-one-ok-rock-rain-concert-img-3415.mp4",
       "loop": false,
-      "poster": "journey/2024-09-21-one-ok-rock-rain-concert/img-3415-poster.jpg"
+      "poster": "/media/journey/2024-09-21-one-ok-rock-rain-concert-img-3415-poster.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2024-09-21-one-ok-rock-rain-concert-img-3422.mp4",
       "loop": false,
-      "poster": "journey/2024-09-21-one-ok-rock-rain-concert/img-3422-poster.jpg"
+      "poster": "/media/journey/2024-09-21-one-ok-rock-rain-concert-img-3422-poster.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2024-09-21-one-ok-rock-rain-concert-img-3423.mp4",
       "loop": false,
-      "poster": "journey/2024-09-21-one-ok-rock-rain-concert/img-3423-poster.jpg"
+      "poster": "/media/journey/2024-09-21-one-ok-rock-rain-concert-img-3423-poster.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2024-09-21-one-ok-rock-rain-concert-img-3424.mp4",
       "loop": false,
-      "poster": "journey/2024-09-21-one-ok-rock-rain-concert/img-3424-poster.jpg"
+      "poster": "/media/journey/2024-09-21-one-ok-rock-rain-concert-img-3424-poster.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2024-09-21-one-ok-rock-rain-concert-img-3420.mp4",
       "loop": false,
-      "poster": "journey/2024-09-21-one-ok-rock-rain-concert/img-3420-poster.jpg"
+      "poster": "/media/journey/2024-09-21-one-ok-rock-rain-concert-img-3420-poster.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2024-09-21-one-ok-rock-rain-concert-img-3417.mp4",
       "loop": false,
-      "poster": "journey/2024-09-21-one-ok-rock-rain-concert/img-3417-poster.jpg"
+      "poster": "/media/journey/2024-09-21-one-ok-rock-rain-concert-img-3417-poster.jpg"
     }
   ],
   "story": {

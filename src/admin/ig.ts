@@ -32,7 +32,12 @@ export const defaultCaption = (p: Post) =>
 
 /** A photo as a 1080 x 1350 JPEG: blurred fill behind the whole picture ("pad"), or cropped to fill ("crop"). */
 async function frame(src: string, mode: 'pad' | 'crop'): Promise<Blob> {
-  const bmp = await createImageBitmap(await (await fetch(src)).blob());
+  // Photos on media.52hzfan.com are read cross-origin (the bucket's CORS allows this site). The
+  // query gives them their own cache entry, so a copy cached for an <img> (no CORS headers) is never reused.
+  const url = src.startsWith('https://media.52hzfan.com/') ? `${src}?cors=1` : src;
+  const res = await fetch(url, { mode: 'cors' });
+  if (!res.ok) throw new Error(`讀不到照片（${res.status}）：${src.split('/').pop()}`);
+  const bmp = await createImageBitmap(await res.blob());
   const c = document.createElement('canvas');
   c.width = W;
   c.height = H;

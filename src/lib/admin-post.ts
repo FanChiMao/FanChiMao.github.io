@@ -9,7 +9,7 @@
  */
 
 export const LOCALES = ['en', 'zh-tw', 'zh-cn', 'ja'] as const;
-export const JOURNEY_CATEGORIES = ['run', 'dive', 'jump', 'hike', 'ride', 'travel', 'other'] as const;
+export const JOURNEY_CATEGORIES = ['run', 'dive', 'jump', 'hike', 'ride', 'travel', 'music', 'sky', 'work', 'life', 'other'] as const;
 export const ALBUM_CATEGORIES = ['astro', 'drone', 'landscape', 'city', 'everyday'] as const;
 export type Kind = 'album' | 'journey' | 'ajie';
 export const KINDS: readonly Kind[] = ['album', 'journey', 'ajie'];
@@ -18,7 +18,20 @@ const LABEL: Record<Kind, string> = { album: '相簿', journey: '旅程', ajie: 
 /** IDs: the JSON file name (and photo folder), e.g. 2025-11-02-new-toy or starry_sky. */
 export const ID = /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/;
 
-/** Photo folder under src/assets. */
+/**
+ * Where a post's files live: album photos are in git (src/assets/gallery/<id>/, optimised at
+ * build time); everything of an Ajie post or a Journey milestone (photos, posters, clips) is in
+ * the R2 bucket behind https://media.52hzfan.com, so the site build stays small.
+ */
+export const inR2 = (kind: Kind) => kind !== 'album';
+/**
+ * Every photo in R2 has smaller copies next to it, made when it is uploaded:
+ * "<name>.jpg" (long side <= 2400 px) + "<name>-480.jpg", "-800.jpg", "-1200.jpg" (by width).
+ */
+export const PHOTO_WIDTHS = [480, 800, 1200] as const;
+export const variantName = (name: string, w: number) => name.replace(/\.jpg$/, `-${w}.jpg`);
+
+/** Photo folder under src/assets (albums). */
 const assetDir = (kind: Kind, id: string) => (kind === 'album' ? `gallery/${id}` : `${kind}/${id}`);
 /** The JSON file in the repo. */
 export const contentPath = (kind: Kind, id: string) => `src/content/${kind === 'album' ? 'albums' : kind}/${id}.json`;
@@ -114,7 +127,11 @@ export function checkPost(kind: Kind, id: string, input: unknown, uploaded: Read
     return name;
   };
   const assetPath = (name: string) => `${assetDir(kind, id)}/${name}`; // under src/assets
-  const mediaUrl = (name: string) => `/media/${kind}/${id}-${name}`; // under public/
+  const mediaUrl = (name: string) => `/media/${kind}/${id}-${name}`; // R2: media.52hzfan.com/<kind>/<id>-<name>
+  /** Where a photo of this post is referenced from: R2 for posts, src/assets for albums. */
+  const photoPath = (name: string) => (inR2(kind) ? mediaUrl(name) : assetPath(name));
+  // A photo's smaller copies sit next to it (x.jpg -> x-480.jpg ...): no upload may take one of those names.
+  if (inR2(kind)) for (const n of uploaded) for (const w of PHOTO_WIDTHS) if (n.endsWith('.jpg') && uploaded.has(variantName(n, w))) err(`檔名「${variantName(n, w)}」和「${n}」的縮圖同名，請換個檔名`);
 
   if (kind === 'album') {
     if (typeof post.order !== 'number' || !Number.isFinite(post.order)) err('「order」要是數字（相簿的排列順序）');
@@ -166,7 +183,7 @@ export function checkPost(kind: Kind, id: string, input: unknown, uploaded: Read
       else {
         const name = file('cover', post.cover.src, false);
         text('cover.alt', post.cover.alt, false);
-        if (name) post.cover = { ...post.cover, src: assetPath(name) };
+        if (name) post.cover = { ...post.cover, src: photoPath(name) };
       }
     }
   } else {
@@ -192,19 +209,19 @@ export function checkPost(kind: Kind, id: string, input: unknown, uploaded: Read
       text(`${where} alt`, m.alt, false);
       if (m.type === 'image') {
         const name = file(where, m.src, false);
-        return name ? { ...m, src: assetPath(name) } : m;
+        return name ? { ...m, src: photoPath(name) } : m;
       }
       if (m.type === 'video') {
         bool(`${where} loop`, m.loop);
         const name = file(where, m.src, true);
         if (!name) return m;
         const poster = m.poster === undefined ? (uploaded.has(posterName(name)) ? file(`${where} poster`, posterName(name), false) : void err(`${where}：影片需要封面圖（poster）`)) : file(`${where} poster`, m.poster, false);
-        return { ...m, src: mediaUrl(name), ...(poster ? { poster: assetPath(poster) } : {}) };
+        return { ...m, src: mediaUrl(name), ...(poster ? { poster: photoPath(poster) } : {}) };
       }
       if (m.type === 'youtube') {
         if (typeof m.id !== 'string' || !/^[A-Za-z0-9_-]{6,20}$/.test(m.id)) err(`${where}：YouTube id 不正確`);
         const poster = m.poster === undefined ? undefined : file(`${where} poster`, m.poster, false);
-        return poster ? { ...m, poster: assetPath(poster) } : m;
+        return poster ? { ...m, poster: photoPath(poster) } : m;
       }
       err(`${where}：type 要是 image、video 或 youtube`);
       return m;
@@ -213,12 +230,12 @@ export function checkPost(kind: Kind, id: string, input: unknown, uploaded: Read
   return { post, used, errors };
 }
 
-/** Where a photo goes in the repo (clips are not in the repo, see mediaKey). */
+/** Where an album photo goes in the repo (posts are in R2, see mediaKey). */
 export const repoPath = (kind: Kind, id: string, name: string) => `src/assets/${assetDir(kind, id)}/${name}`;
 
 /**
- * Clips live in the R2 bucket behind https://media.52hzfan.com, not in git. The JSON keeps the
- * site path "/media/ajie/<id>-<name>.mp4"; the object key is that path without "/media/".
+ * Files of posts live in the R2 bucket behind https://media.52hzfan.com, not in git. The JSON
+ * keeps the site path "/media/ajie/<id>-<name>"; the object key is that path without "/media/".
  */
 export const mediaKey = (kind: Kind, id: string, name: string) => `${kind}/${id}-${name}`;
 export const isClip = (name: string) => name.endsWith('.mp4');
@@ -312,7 +329,7 @@ ${common}
 欄位（? 為選填）：
 - id
 - date
-- category：${JOURNEY_CATEGORIES.join(' / ')}（跑步 / 潛水 / 跳傘 / 登山 / 騎車 / 旅行 / 其他）
+- category：${JOURNEY_CATEGORIES.join(' / ')}（跑步 / 潛水 / 跳傘 / 登山 / 騎車 / 旅行 / 演唱會·音樂現場 / 星空 / 職場 / 人生大事·生活體驗 / 其他）
 - title：標題
 - short?：地球小卡上的短標題（標題太長時用，例如「第一次完成半馬」）
 - place?：地點

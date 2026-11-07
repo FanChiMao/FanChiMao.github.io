@@ -5,14 +5,13 @@ import { AJIE_POST_IDS } from '@/data/ajie-posts';
  * square thumbnails, and one dialog per post (photos / clips, caption, date, place).
  * Posts come from src/content/ajie/*.json; nothing here is invented.
  */
-import { Image } from 'astro:assets';
+import Photo from '@/components/Photo.astro';
 import { Icon } from 'astro-icon/components';
 import { getCollection } from 'astro:content';
 import PersonalLayout from '@/layouts/PersonalLayout.astro';
 import PostMedia from '@/components/personal/PostMedia.astro';
 import { localeMeta, type Locale } from '@/i18n/ui';
 import { personalUi } from '@/i18n/personal';
-import { asset } from '@/lib/assets';
 import { ajieProfile } from '@/data/ajie';
 import { statsEnabled } from '@/lib/passport-stats';
 
@@ -193,8 +192,8 @@ if (span) {
               return (
                 <li data-reveal style={`--i:${i % 3}`}>
                   <button class="ajie__tile" type="button" data-open={i} aria-label={`${p.ajie.open}: ${pick(post.data.title) ?? caption.slice(0, 60)}, ${when(post.data)}`}>
-                    {post.data.cover && <Image class="ajie__thumb ajie__thumb--ai" src={asset(post.data.cover.src)} alt="" widths={[320, 480, 720]} sizes="(min-width: 900px) 33vw, 50vw" quality={74} loading={i < 6 ? 'eager' : 'lazy'} />}
-                    <Image class:list={['ajie__thumb', 'ajie__thumb--real', { 'ajie__thumb--behind-ai': post.data.cover }]} src={asset(thumbOf(first)!)} alt="" widths={[320, 480, 720]} sizes="(min-width: 900px) 33vw, 50vw" quality={74} loading={i < 6 ? 'eager' : 'lazy'} />
+                    {post.data.cover && <Photo class="ajie__thumb ajie__thumb--ai" src={post.data.cover.src} alt="" widths={[320, 480, 720]} sizes="(min-width: 900px) 33vw, 50vw" quality={74} loading={i < 6 ? 'eager' : 'lazy'} />}
+                    <Photo class:list={['ajie__thumb', 'ajie__thumb--real', { 'ajie__thumb--behind-ai': post.data.cover }]} src={thumbOf(first)!} alt="" widths={[320, 480, 720]} sizes="(min-width: 900px) 33vw, 50vw" quality={74} loading={i < 6 ? 'eager' : 'lazy'} />
                     {post.data.cover && <span class="ajie__badge ajie__badge--ai" aria-hidden="true"><Icon name="lucide:copy" /></span>}
                     {realBadge && <span class:list={['ajie__badge', 'ajie__badge--real', { 'ajie__badge--behind-ai': post.data.cover }]} aria-hidden="true"><Icon name={realBadge} /></span>}
                     <span class="ajie__hover" aria-hidden="true">
@@ -250,8 +249,8 @@ if (span) {
                     return (
                       <li class:list={cls} style={lead}>
                         <button class="ajie__day-btn" type="button" data-open={cell.post} aria-label={`${p.ajie.open}: ${pick(post.data.title) ?? when(post.data)}, ${when(post.data)}`}>
-                          {cell.end && post.data.cover && <Image class="ajie__thumb ajie__thumb--ai" src={asset(post.data.cover.src)} alt="" widths={[160, 320]} sizes="(min-width: 900px) 90px, 14vw" quality={70} loading="lazy" />}
-                          {cell.end && <Image class:list={['ajie__thumb', 'ajie__thumb--real', { 'ajie__thumb--behind-ai': post.data.cover }]} src={asset(thumbOf(first)!)} alt="" widths={[160, 320]} sizes="(min-width: 900px) 90px, 14vw" quality={70} loading="lazy" />}
+                          {cell.end && post.data.cover && <Photo class="ajie__thumb ajie__thumb--ai" src={post.data.cover.src} alt="" widths={[160, 320]} sizes="(min-width: 900px) 90px, 14vw" quality={70} loading="lazy" />}
+                          {cell.end && <Photo class:list={['ajie__thumb', 'ajie__thumb--real', { 'ajie__thumb--behind-ai': post.data.cover }]} src={thumbOf(first)!} alt="" widths={[160, 320]} sizes="(min-width: 900px) 90px, 14vw" quality={70} loading="lazy" />}
                           <span class="ajie__day-num" aria-hidden="true">{cell.day}</span>
                           {cell.more > 0 && (
                             <span class="ajie__day-more" aria-hidden="true">

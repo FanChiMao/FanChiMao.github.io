@@ -13,7 +13,7 @@
     "ja": "東憲動物病院"
   },
   "cover": {
-    "src": "ajie/2025-10-27-the-decision/cover.jpg",
+    "src": "/media/ajie/2025-10-27-the-decision-cover.jpg",
     "alt": {
       "en": "Illustration: Ajie in his cone on the exam table, his sore eye shut and teary, while I sit with my head buried in my arms, crying over three choices: surgery, removing the eye, or more eye drops",
       "zh-tw": "插畫：阿桔戴著頭套趴在診療台上，發炎的眼睛閉著流淚；我抱頭痛哭，腦中是三個選擇：手術、摘除眼睛、繼續點眼藥水",
@@ -24,7 +24,7 @@
   "media": [
     {
       "type": "image",
-      "src": "ajie/2025-10-27-the-decision/01-eye-close-up.jpg",
+      "src": "/media/ajie/2025-10-27-the-decision-01-eye-close-up.jpg",
       "alt": {
         "en": "Close-up of Ajie in his cone, his right eye still sore and half closed",
         "zh-tw": "阿桔戴著頭套的特寫，右眼仍然發炎、半閉著",
@@ -34,7 +34,7 @@
     },
     {
       "type": "image",
-      "src": "ajie/2025-10-27-the-decision/02-hiding-on-the-table.jpg",
+      "src": "/media/ajie/2025-10-27-the-decision-02-hiding-on-the-table.jpg",
       "alt": {
         "en": "Ajie on the clinic exam table, pressing his cone into the corner to hide",
         "zh-tw": "阿桔在診療台上，把頭套塞進角落躲起來",

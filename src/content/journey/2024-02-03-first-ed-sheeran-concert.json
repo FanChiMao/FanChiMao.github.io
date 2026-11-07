@@ -1,6 +1,6 @@
 {
   "date": "2024-02-03",
-  "category": "other",
+  "category": "music",
   "title": {
     "en": "First Ed Sheeran Concert | Kaohsiung National Stadium",
     "zh-tw": "第一次聽 Ed Sheeran 演唱會｜高雄國家體育場",
@@ -28,43 +28,43 @@
       "type": "video",
       "src": "/media/journey/2024-02-03-first-ed-sheeran-concert-img-2056.mp4",
       "loop": false,
-      "poster": "journey/2024-02-03-first-ed-sheeran-concert/img-2056-poster.jpg"
+      "poster": "/media/journey/2024-02-03-first-ed-sheeran-concert-img-2056-poster.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2024-02-03-first-ed-sheeran-concert-img-2064.mp4",
       "loop": false,
-      "poster": "journey/2024-02-03-first-ed-sheeran-concert/img-2064-poster.jpg"
+      "poster": "/media/journey/2024-02-03-first-ed-sheeran-concert-img-2064-poster.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2024-02-03-first-ed-sheeran-concert-img-2059.mp4",
       "loop": false,
-      "poster": "journey/2024-02-03-first-ed-sheeran-concert/img-2059-poster.jpg"
+      "poster": "/media/journey/2024-02-03-first-ed-sheeran-concert-img-2059-poster.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2024-02-03-first-ed-sheeran-concert-img-2075.mp4",
       "loop": false,
-      "poster": "journey/2024-02-03-first-ed-sheeran-concert/img-2075-poster.jpg"
+      "poster": "/media/journey/2024-02-03-first-ed-sheeran-concert-img-2075-poster.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2024-02-03-first-ed-sheeran-concert-img-2091.mp4",
       "loop": false,
-      "poster": "journey/2024-02-03-first-ed-sheeran-concert/img-2091-poster.jpg"
+      "poster": "/media/journey/2024-02-03-first-ed-sheeran-concert-img-2091-poster.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2024-02-03-first-ed-sheeran-concert-img-2092.mp4",
       "loop": false,
-      "poster": "journey/2024-02-03-first-ed-sheeran-concert/img-2092-poster.jpg"
+      "poster": "/media/journey/2024-02-03-first-ed-sheeran-concert-img-2092-poster.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2024-02-03-first-ed-sheeran-concert-img-2097.mp4",
       "loop": false,
-      "poster": "journey/2024-02-03-first-ed-sheeran-concert/img-2097-poster.jpg"
+      "poster": "/media/journey/2024-02-03-first-ed-sheeran-concert-img-2097-poster.jpg"
     }
   ],
   "story": {

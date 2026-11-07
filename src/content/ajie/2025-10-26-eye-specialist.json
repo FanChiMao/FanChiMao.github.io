@@ -14,7 +14,7 @@
     "ja": "東憲動物病院"
   },
   "cover": {
-    "src": "ajie/2025-10-26-eye-specialist/cover.jpg",
+    "src": "/media/ajie/2025-10-26-eye-specialist-cover.jpg",
     "alt": {
       "en": "Illustration: Ajie loafing on the bed in his cone, glaring with a teary, squinting right eye, while I hide behind the blanket clutching the eye drops",
       "zh-tw": "插畫：阿桔戴著頭套趴在床上，右眼瞇著含淚、一臉鬱悶；我拿著眼藥水躲在被子後面，滿臉為難",
@@ -25,7 +25,7 @@
   "media": [
     {
       "type": "image",
-      "src": "ajie/2025-10-26-eye-specialist/02-lap-blep.jpg",
+      "src": "/media/ajie/2025-10-26-eye-specialist-02-lap-blep.jpg",
       "alt": {
         "en": "Ajie asleep on my lap in his cone, the tip of his tongue poking out",
         "zh-tw": "阿桔戴著頭套在我腿上睡著，舌尖露在外面",
@@ -35,7 +35,7 @@
     },
     {
       "type": "image",
-      "src": "ajie/2025-10-26-eye-specialist/01-cone-close-up.jpg",
+      "src": "/media/ajie/2025-10-26-eye-specialist-01-cone-close-up.jpg",
       "alt": {
         "en": "Ajie dozing in his cone on a plaid blanket",
         "zh-tw": "阿桔戴著頭套，在格紋被上打盹",
@@ -45,7 +45,7 @@
     },
     {
       "type": "image",
-      "src": "ajie/2025-10-26-eye-specialist/03-lap-sprawl.jpg",
+      "src": "/media/ajie/2025-10-26-eye-specialist-03-lap-sprawl.jpg",
       "alt": {
         "en": "Ajie sprawled across my lap in his cone, front paws stretched out",
         "zh-tw": "阿桔戴著頭套攤在我腿上，兩隻前腳往前伸",
@@ -55,7 +55,7 @@
     },
     {
       "type": "image",
-      "src": "ajie/2025-10-26-eye-specialist/04-chin-on-cone.jpg",
+      "src": "/media/ajie/2025-10-26-eye-specialist-04-chin-on-cone.jpg",
       "alt": {
         "en": "Ajie napping with his chin resting on the rim of his cone",
         "zh-tw": "阿桔把下巴靠在頭套邊緣睡覺",
@@ -65,7 +65,7 @@
     },
     {
       "type": "image",
-      "src": "ajie/2025-10-26-eye-specialist/05-bed-rest.jpg",
+      "src": "/media/ajie/2025-10-26-eye-specialist-05-bed-rest.jpg",
       "alt": {
         "en": "Ajie lying on the bed in his cone beside a green blanket",
         "zh-tw": "阿桔戴著頭套躺在床上，旁邊是綠色毯子",
@@ -76,7 +76,7 @@
     {
       "type": "video",
       "src": "/media/ajie/2025-10-26-cone-nap.mp4",
-      "poster": "ajie/2025-10-26-eye-specialist/cone-nap-poster.jpg",
+      "poster": "/media/ajie/2025-10-26-eye-specialist-cone-nap-poster.jpg",
       "alt": {
         "en": "Ajie dozing in his cone, eyes closed",
         "zh-tw": "阿桔戴著頭套閉眼打盹",

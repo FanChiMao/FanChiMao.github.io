@@ -6,7 +6,9 @@
  * The land (Natural Earth via world-atlas, public domain) is painted once onto a canvas: a faint
  * fill, glowing coastlines and a dot matrix, plus a graticule. That texture is the globe's
  * surface, so nothing heavy runs per frame and there is no polygon triangulation (which froze the
- * page for tens of seconds with detailed coastlines).
+ * page for tens of seconds with detailed coastlines). Zoomed in, a second canvas is painted for
+ * just the region in view (with the 1:10m coastline, loaded then) and laid over the globe, so the
+ * coast stays sharp at any zoom; it is repainted once the camera rests somewhere else.
  *
  * Colours come from CSS custom properties on the stage (--globe-ocean, --globe-dot, ...), so the
  * globe follows the light / dark theme.
@@ -15,10 +17,11 @@
  * camera moves, so a cluster like northern Taiwan never piles up into unreadable labels.
  */
 import Globe, { type GlobeInstance } from 'globe.gl';
-import { CanvasTexture, Color, MeshPhongMaterial, SRGBColorSpace } from 'three';
+import { BufferGeometry, CanvasTexture, Color, DoubleSide, Float32BufferAttribute, Mesh, MeshPhongMaterial, SRGBColorSpace } from 'three';
 import { feature } from 'topojson-client';
 import type { Topology } from 'topojson-specification';
 import landUrl from 'world-atlas/land-50m.json?url';
+import landDetailUrl from 'world-atlas/land-10m.json?url';
 
 export type Pin = { id: string; lat: number; lng: number };
 
@@ -62,40 +65,85 @@ export function canDrawGlobe(): boolean {
 }
 
 const RADIUS = 100; // globe.gl's globe radius in scene units
-type Ring = [number, number][];
 type Palette = { oceanTop: string; ocean: string; oceanBottom: string; land: string; coast: string; dot: string; grid: string; glow: string };
+/** A land ring in [lng, lat], made continuous across the date line, with its bounding box. */
+type Ring = { pts: [number, number][]; lng0: number; lng1: number; lat0: number; lat1: number };
+/** What a canvas covers (degrees; lng may run past +-180) and its size in px. */
+type View = { lng0: number; lng1: number; lat0: number; lat1: number; W: number; H: number; detail: boolean };
 
-/** Land as polygons (outer ring first), in [lng, lat]. */
-async function loadLand(): Promise<Ring[][]> {
-  const topo = (await (await fetch(landUrl)).json()) as Topology;
+/**
+ * Land rings, ready to paint. Natural Earth cuts some rings at the date line (Chukotka, Fiji,
+ * Antarctica): drawn as they are, they jump from +180 to -180 and streak across the whole map,
+ * which on the sphere shows as rings around the poles. Each ring is unwrapped instead (no jump
+ * over 180 degrees), painted again 360 degrees to each side, and a ring that goes all the way
+ * round (Antarctica) is closed over its pole.
+ */
+function prepare(topo: Topology): Ring[] {
   const geo = feature(topo, topo.objects.land) as unknown as { features?: { geometry: { type: string; coordinates: unknown } }[]; geometry?: { type: string; coordinates: unknown } };
   const geoms = geo.features ? geo.features.map((f) => f.geometry) : geo.geometry ? [geo.geometry] : [];
-  const out: Ring[][] = [];
+  const raw: [number, number][][] = [];
   for (const g of geoms) {
-    if (g.type === 'Polygon') out.push(g.coordinates as Ring[]);
-    if (g.type === 'MultiPolygon') out.push(...(g.coordinates as Ring[][]));
+    if (g.type === 'Polygon') raw.push(...(g.coordinates as [number, number][][]));
+    if (g.type === 'MultiPolygon') for (const p of g.coordinates as [number, number][][][]) raw.push(...p);
+  }
+  const out: Ring[] = [];
+  for (const r of raw) {
+    if (r.length < 3) continue;
+    const pts: [number, number][] = [[r[0][0], r[0][1]]];
+    for (let i = 1; i < r.length; i++) {
+      let lng = r[i][0];
+      const prev = pts[i - 1][0];
+      while (lng - prev > 180) lng -= 360;
+      while (lng - prev < -180) lng += 360;
+      pts.push([lng, r[i][1]]);
+    }
+    const lats = pts.map((p) => p[1]);
+    const first = pts[0], last = pts[pts.length - 1];
+    if (Math.abs(last[0] - first[0]) > 180) {
+      // Round the whole Earth: close it over the pole it surrounds.
+      const pole = lats.reduce((a, b) => a + b, 0) / lats.length > 0 ? 90 : -90;
+      pts.push([last[0], pole], [first[0], pole]);
+    }
+    const lngs = pts.map((p) => p[0]);
+    out.push({ pts, lng0: Math.min(...lngs), lng1: Math.max(...lngs), lat0: Math.min(...pts.map((p) => p[1])), lat1: Math.max(...pts.map((p) => p[1])) });
   }
   return out;
 }
 
-/** Paints the surface: ocean gradient, graticule, land fill, coastline glow and a dot matrix. */
-function paint(land: Ring[][], c: Palette, W: number): HTMLCanvasElement {
-  const H = W / 2;
-  const x = (lng: number) => ((lng + 180) / 360) * W;
-  const y = (lat: number) => ((90 - lat) / 180) * H;
+async function loadLand(url: string): Promise<Ring[]> {
+  return prepare((await (await fetch(url)).json()) as Topology);
+}
+
+/** Spacing of the dot matrix on the whole globe, in degrees. */
+const DOT_STEP = 360 / 520;
+
+/**
+ * Paints a piece of the surface (or all of it): ocean gradient, graticule, land fill, coastline
+ * glow and a dot matrix. The dots sit on the same grid at every scale (halved when zoomed in
+ * close), so a detail canvas lines up with the globe's own texture.
+ */
+function paint(rings: Ring[], c: Palette, v: View): HTMLCanvasElement {
+  const { W, H } = v;
+  const sx = W / (v.lng1 - v.lng0);
+  const sy = H / (v.lat1 - v.lat0);
+  const x = (lng: number) => (lng - v.lng0) * sx;
+  const y = (lat: number) => (v.lat1 - lat) * sy;
+  // Rings (and their copies one turn to either side) that reach into this view.
+  const shown: [Ring, number][] = [];
+  for (const r of rings)
+    for (const o of [-360, 0, 360]) if (r.lng1 + o >= v.lng0 && r.lng0 + o <= v.lng1 && r.lat1 >= v.lat0 && r.lat0 <= v.lat1) shown.push([r, o]);
   const path = (ctx: CanvasRenderingContext2D, k = 1) => {
     ctx.beginPath();
-    for (const poly of land)
-      for (const ring of poly) {
-        ring.forEach(([lng, lat], i) => (i ? ctx.lineTo(x(lng) * k, y(lat) * k) : ctx.moveTo(x(lng) * k, y(lat) * k)));
-        ctx.closePath();
-      }
+    for (const [r, o] of shown) {
+      r.pts.forEach(([lng, lat], i) => (i ? ctx.lineTo(x(lng + o) * k, y(lat) * k) : ctx.moveTo(x(lng + o) * k, y(lat) * k)));
+      ctx.closePath();
+    }
   };
 
-  // Land mask at a fixed small size (cheap to read back), to know where the dots go.
-  const MW = 2048;
-  const MH = MW / 2;
-  const k = MW / W;
+  // Land mask at a small size (cheap to read back), to know where the dots go.
+  const k = Math.min(1, 2048 / W);
+  const MW = Math.round(W * k);
+  const MH = Math.max(1, Math.round(H * k));
   const mask = document.createElement('canvas');
   mask.width = MW;
   mask.height = MH;
@@ -104,13 +152,16 @@ function paint(land: Ring[][], c: Palette, W: number): HTMLCanvasElement {
   path(m, k);
   m.fill('evenodd');
   const alpha = m.getImageData(0, 0, MW, MH).data;
-  const onLand = (px: number, py: number) => alpha[(Math.min(MH - 1, Math.floor(py * k)) * MW + Math.min(MW - 1, Math.floor(px * k))) * 4 + 3] >= 128;
+  const onLand = (px: number, py: number) => {
+    const ix = Math.floor(px * k), iy = Math.floor(py * k);
+    return ix >= 0 && iy >= 0 && ix < MW && iy < MH && alpha[(iy * MW + ix) * 4 + 3] >= 128;
+  };
 
   const canvas = document.createElement('canvas');
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext('2d')!;
-  const sea = ctx.createLinearGradient(0, 0, 0, H);
+  const sea = ctx.createLinearGradient(0, y(90), 0, y(-90));
   sea.addColorStop(0, c.oceanTop);
   sea.addColorStop(0.5, c.ocean);
   sea.addColorStop(1, c.oceanBottom);
@@ -119,47 +170,102 @@ function paint(land: Ring[][], c: Palette, W: number): HTMLCanvasElement {
 
   // Graticule every 15 degrees.
   ctx.strokeStyle = c.grid;
-  ctx.lineWidth = W / 4096;
+  ctx.lineWidth = v.detail ? 1.2 : W / 4096;
   ctx.beginPath();
-  for (let lng = -180; lng <= 180; lng += 15) {
+  for (let lng = Math.ceil(v.lng0 / 15) * 15; lng <= v.lng1; lng += 15) {
     ctx.moveTo(x(lng), 0);
     ctx.lineTo(x(lng), H);
   }
   for (let lat = -75; lat <= 75; lat += 15) {
+    if (lat < v.lat0 || lat > v.lat1) continue;
     ctx.moveTo(0, y(lat));
     ctx.lineTo(W, y(lat));
   }
   ctx.stroke();
 
-  // Land: a faint fill and a soft glowing coastline.
+  // Land: a faint fill and a soft glowing coastline (thin on screen when zoomed in).
   path(ctx);
   ctx.fillStyle = c.land;
   ctx.fill('evenodd');
   ctx.strokeStyle = c.coast;
   ctx.globalAlpha = 0.25;
-  ctx.lineWidth = W / 900; // soft halo
+  ctx.lineWidth = v.detail ? 7 : W / 900; // soft halo
   ctx.stroke();
   ctx.globalAlpha = 1;
-  ctx.lineWidth = W / 3000; // crisp line
+  ctx.lineWidth = v.detail ? 2 : W / 3000; // crisp line
   ctx.stroke();
 
   // Dot matrix on land, spaced evenly on the sphere (wider apart in pixels towards the poles).
-  const step = W / 520;
-  const r = step * 0.3;
+  let step = DOT_STEP;
+  if (v.detail) while (step * sx > 36) step /= 2; // close up: denser, not just bigger
+  const rx = step * 0.3 * sx;
+  const ry = step * 0.3 * sy;
   ctx.fillStyle = c.dot;
   ctx.beginPath();
-  for (let py = step / 2; py < H; py += step) {
-    const lat = 90 - (py / H) * 180;
+  for (let row = Math.max(0, Math.floor((90 - v.lat1) / step) - 1); ; row++) {
+    const lat = 90 - (row + 0.5) * step;
+    if (lat < Math.max(-90, v.lat0 - step)) break;
     const dx = step / Math.max(0.12, Math.cos((lat * Math.PI) / 180));
-    const offset = (Math.round(py / step) % 2) * (dx / 2);
-    for (let px = offset; px < W; px += dx) {
+    const offset = (Math.round(row + 0.5) % 2) * (dx / 2);
+    const west = -180 + offset;
+    for (let j = Math.ceil((v.lng0 - west) / dx); west + j * dx <= v.lng1; j++) {
+      const px = x(west + j * dx), py = y(lat);
       if (!onLand(px, py)) continue;
-      ctx.moveTo(px + r, py);
-      ctx.arc(px, py, r, 0, Math.PI * 2);
+      ctx.moveTo(px + rx, py);
+      ctx.ellipse(px, py, rx, ry, 0, 0, Math.PI * 2);
     }
   }
   ctx.fill();
+
+  // A detail canvas fades out at its edges into the globe's own texture underneath.
+  if (v.detail) {
+    ctx.globalCompositeOperation = 'destination-in';
+    const e = 0.12;
+    for (const [x0, y0, x1, y1] of [
+      [0, 0, W, 0],
+      [0, 0, 0, H],
+    ]) {
+      const fade = ctx.createLinearGradient(x0, y0, x1, y1);
+      fade.addColorStop(0, 'rgba(0,0,0,0)');
+      fade.addColorStop(e, 'rgba(0,0,0,1)');
+      fade.addColorStop(1 - e, 'rgba(0,0,0,1)');
+      fade.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = fade;
+      ctx.fillRect(0, 0, W, H);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  }
   return canvas;
+}
+
+/** A piece of sphere just above the globe, covering a View, for a detail canvas. */
+function patchGeometry(v: View): BufferGeometry {
+  const N = 48;
+  const r = RADIUS * 1.0006;
+  const pos: number[] = [], nrm: number[] = [], uv: number[] = [], idx: number[] = [];
+  for (let i = 0; i <= N; i++) {
+    const lat = Math.max(-89.9, Math.min(89.9, v.lat0 + ((v.lat1 - v.lat0) * i) / N));
+    for (let j = 0; j <= N; j++) {
+      const lng = v.lng0 + ((v.lng1 - v.lng0) * j) / N;
+      // globe.gl's own mapping of lat / lng to the scene.
+      const phi = (90 - lat) * toRad, theta = (90 - lng) * toRad;
+      const nx = Math.sin(phi) * Math.cos(theta), ny = Math.cos(phi), nz = Math.sin(phi) * Math.sin(theta);
+      pos.push(nx * r, ny * r, nz * r);
+      nrm.push(nx, ny, nz);
+      uv.push(j / N, (lat - v.lat0) / (v.lat1 - v.lat0));
+    }
+  }
+  for (let i = 0; i < N; i++)
+    for (let j = 0; j < N; j++) {
+      const a = i * (N + 1) + j, b = a + 1, c2 = a + N + 1, d = c2 + 1;
+      idx.push(a, c2, b, b, c2, d);
+    }
+  const geo = new BufferGeometry();
+  geo.setAttribute('position', new Float32BufferAttribute(pos, 3));
+  geo.setAttribute('normal', new Float32BufferAttribute(nrm, 3));
+  geo.setAttribute('uv', new Float32BufferAttribute(uv, 2));
+  geo.setIndex(idx);
+  return geo;
 }
 
 /** Pins closer than this on screen (px) are drawn as one group. */
@@ -185,7 +291,7 @@ function arc(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
 }
 
 export async function createGlobe(stage: HTMLElement, draw: (m: Mark) => HTMLElement, reduceMotion: boolean): Promise<GlobeView> {
-  const land = await loadLand();
+  const land = await loadLand(landUrl);
   const css = (): Palette => {
     const s = getComputedStyle(stage);
     const v = (name: string, fallback: string) => s.getPropertyValue(name).trim() || fallback;
@@ -222,10 +328,82 @@ export async function createGlobe(stage: HTMLElement, draw: (m: Mark) => HTMLEle
   const surface = new MeshPhongMaterial({ map: texture, shininess: 10, specular: new Color('#1d2b3c'), emissive: new Color('#0a1a2c'), emissiveIntensity: 0.35 });
   const repaint = () => {
     const c = css();
-    texture.image = paint(land, c, W);
+    texture.image = paint(land, c, { lng0: -180, lng1: 180, lat0: -90, lat1: 90, W, H: W / 2, detail: false });
     texture.needsUpdate = true;
     g.atmosphereColor(c.glow);
+    detail.invalidate();
   };
+
+  // ---- Detail: zoomed in, the region in view gets its own sharp canvas over the globe.
+  const DETAIL_BELOW = 0.8; // camera altitude (in Earth radii) under which it is used
+  const DW = matchMedia('(min-width: 900px)').matches ? 2048 : 1536;
+  const detail = (() => {
+    let fine: Ring[] | null = null;
+    let loadingFine = false;
+    let at: { lat: number; lng: number; altitude: number; halfLat: number; halfLng: number } | null = null;
+    const mat = new MeshPhongMaterial({ shininess: 10, specular: new Color('#1d2b3c'), emissive: new Color('#0a1a2c'), emissiveIntensity: 0.35, transparent: true, depthWrite: false, side: DoubleSide });
+    const mesh = new Mesh(new BufferGeometry(), mat);
+    mesh.renderOrder = 1;
+    mesh.visible = false;
+    g.scene().add(mesh);
+    const paintAt = (lat: number, lng: number, altitude: number) => {
+      if (!fine && !loadingFine) {
+        loadingFine = true;
+        loadLand(landDetailUrl)
+          .then((r) => {
+            fine = r;
+            at = null; // repaint with the finer coastline
+          })
+          .catch(() => {});
+      }
+      const aspect = Math.max(1, stage.clientWidth / Math.max(1, stage.clientHeight));
+      const cos = Math.max(0.2, Math.cos(lat * toRad));
+      const halfLat = Math.min(40, Math.max(1.5, altitude * 42));
+      const halfLng = Math.min(90, (halfLat * aspect) / cos);
+      const v: View = {
+        lat0: Math.max(-90, lat - halfLat),
+        lat1: Math.min(90, lat + halfLat),
+        lng0: lng - halfLng,
+        lng1: lng + halfLng,
+        W: DW,
+        H: Math.round(Math.min(DW, Math.max(256, (DW * (2 * halfLat)) / (2 * halfLng * cos)))),
+        detail: true,
+      };
+      const tex = new CanvasTexture(paint(fine ?? land, css(), v));
+      tex.colorSpace = SRGBColorSpace;
+      tex.anisotropy = texture.anisotropy;
+      mat.map?.dispose();
+      mat.map = tex;
+      mat.needsUpdate = true;
+      mesh.geometry.dispose();
+      mesh.geometry = patchGeometry(v);
+      mesh.visible = true;
+      at = { lat, lng, altitude, halfLat, halfLng };
+    };
+    return {
+      /** Every frame: hide it when zoomed out; repaint once the camera rests outside the painted part. */
+      update(resting: boolean) {
+        const { lat, lng, altitude } = g.pointOfView();
+        if (altitude > DETAIL_BELOW) {
+          mesh.visible = false;
+          return;
+        }
+        if (at) {
+          const dLng = ((((lng - at.lng) % 360) + 540) % 360) - 180;
+          const fresh = altitude > at.altitude / 1.6 && altitude < at.altitude * 1.6 && Math.abs(lat - at.lat) < at.halfLat * 0.35 && Math.abs(dLng) < at.halfLng * 0.35;
+          if (fresh) {
+            mesh.visible = true;
+            return;
+          }
+        }
+        if (resting) paintAt(lat, lng, altitude);
+      },
+      invalidate() {
+        at = null;
+      },
+    };
+  })();
+
   repaint();
   g.globeMaterial(surface);
 
@@ -328,14 +506,19 @@ export async function createGlobe(stage: HTMLElement, draw: (m: Mark) => HTMLEle
   // the pins are only redrawn when the grouping really changes.
   let last = '';
   let looping = true;
+  let movedAt = 0;
   const loop = () => {
     if (!looping) return;
     const c = camera.position;
     const now = `${c.x.toFixed(2)},${c.y.toFixed(2)},${c.z.toFixed(2)},${stage.clientWidth}x${stage.clientHeight}`;
+    const t = performance.now();
     if (now !== last) {
       last = now;
+      movedAt = t;
       regroup();
     }
+    // The detail canvas is painted only once the camera has rested a moment (not mid-flight).
+    detail.update(t - movedAt > 160);
     requestAnimationFrame(loop);
   };
   requestAnimationFrame(loop);

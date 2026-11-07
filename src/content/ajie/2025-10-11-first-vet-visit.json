@@ -14,7 +14,7 @@
     "ja": "毛孩子動物病院"
   },
   "cover": {
-    "src": "ajie/2025-10-11-first-vet-visit/cover.jpg",
+    "src": "/media/ajie/2025-10-11-first-vet-visit-cover.jpg",
     "alt": {
       "en": "Illustration: Ajie loafing on the vet's exam table with a sore, squinting right eye and a parasite on his mind, while I fret beside the carrier",
       "zh-tw": "插畫：阿桔趴在診療台上，右眼發炎瞇著，腦中想著毛滴蟲；我在外出籠旁緊張冒汗",
@@ -25,7 +25,7 @@
   "media": [
     {
       "type": "image",
-      "src": "ajie/2025-10-11-first-vet-visit/04-litter-box.jpg",
+      "src": "/media/ajie/2025-10-11-first-vet-visit-04-litter-box.jpg",
       "alt": {
         "en": "Ajie sitting in the litter box with a squinty right eye",
         "zh-tw": "阿桔坐在貓砂盆裡，右眼微微瞇著",
@@ -35,7 +35,7 @@
     },
     {
       "type": "image",
-      "src": "ajie/2025-10-11-first-vet-visit/01-lap-rest.jpg",
+      "src": "/media/ajie/2025-10-11-first-vet-visit-01-lap-rest.jpg",
       "alt": {
         "en": "Ajie resting on my lap, eyes half closed",
         "zh-tw": "阿桔趴在我腿上休息，眼睛半閉",
@@ -45,7 +45,7 @@
     },
     {
       "type": "image",
-      "src": "ajie/2025-10-11-first-vet-visit/02-cubby-nap.jpg",
+      "src": "/media/ajie/2025-10-11-first-vet-visit-02-cubby-nap.jpg",
       "alt": {
         "en": "Ajie curled up asleep in a wooden cubby",
         "zh-tw": "阿桔蜷在木櫃裡睡覺",
@@ -55,7 +55,7 @@
     },
     {
       "type": "image",
-      "src": "ajie/2025-10-11-first-vet-visit/03-cubby-nap.jpg",
+      "src": "/media/ajie/2025-10-11-first-vet-visit-03-cubby-nap.jpg",
       "alt": {
         "en": "Ajie napping peacefully in the cubby",
         "zh-tw": "阿桔在木櫃裡安心午睡",
@@ -65,7 +65,7 @@
     },
     {
       "type": "image",
-      "src": "ajie/2025-10-11-first-vet-visit/05-litter-box.jpg",
+      "src": "/media/ajie/2025-10-11-first-vet-visit-05-litter-box.jpg",
       "alt": {
         "en": "Ajie sitting sideways in the litter box",
         "zh-tw": "阿桔側身坐在貓砂盆裡",
@@ -75,7 +75,7 @@
     },
     {
       "type": "image",
-      "src": "ajie/2025-10-11-first-vet-visit/06-by-food-bowl.jpg",
+      "src": "/media/ajie/2025-10-11-first-vet-visit-06-by-food-bowl.jpg",
       "alt": {
         "en": "Ajie sitting beside the food bowl",
         "zh-tw": "阿桔坐在飯碗旁邊",
@@ -86,7 +86,7 @@
     {
       "type": "video",
       "src": "/media/ajie/2025-10-11-at-home.mp4",
-      "poster": "ajie/2025-10-11-first-vet-visit/video-poster.jpg",
+      "poster": "/media/ajie/2025-10-11-first-vet-visit-video-poster.jpg",
       "alt": {
         "en": "Ajie sitting in the room at home",
         "zh-tw": "阿桔坐在房間裡",
@@ -96,7 +96,7 @@
     },
     {
       "type": "image",
-      "src": "ajie/2025-10-11-first-vet-visit/07-chair-nap.jpg",
+      "src": "/media/ajie/2025-10-11-first-vet-visit-07-chair-nap.jpg",
       "alt": {
         "en": "Ajie curled up asleep on an office chair",
         "zh-tw": "阿桔蜷在辦公椅上睡覺",
@@ -106,7 +106,7 @@
     },
     {
       "type": "image",
-      "src": "ajie/2025-10-11-first-vet-visit/08-carrier-nap.jpg",
+      "src": "/media/ajie/2025-10-11-first-vet-visit-08-carrier-nap.jpg",
       "alt": {
         "en": "Ajie sleeping inside a beige carrier",
         "zh-tw": "阿桔睡在米色外出籠裡",

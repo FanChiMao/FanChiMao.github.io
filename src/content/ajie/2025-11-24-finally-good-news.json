@@ -8,7 +8,7 @@
     "ja": "ついに届いた嬉しい知らせ"
   },
   "cover": {
-    "src": "ajie/2025-11-24-finally-good-news/413d8687-929c-4c99-91fa-98b19cb5aed1.jpg",
+    "src": "/media/ajie/2025-11-24-finally-good-news-413d8687-929c-4c99-91fa-98b19cb5aed1.jpg",
     "alt": {
       "en": "Illustration: Ajie, an orange tabby, happily rests without his cone for the first time in over a month. The removed cone lies beside him, while a tiny figure labeled 'Me' cries tears of joy.",
       "zh-tw": "插畫：橘色虎斑貓阿桔終於拆下戴了一個多月的頭套，開心地趴著休息；拆下的頭套放在旁邊，小小的「我」感動得流下眼淚",
@@ -19,19 +19,19 @@
   "media": [
     {
       "type": "image",
-      "src": "ajie/2025-11-24-finally-good-news/img-6218.jpg"
+      "src": "/media/ajie/2025-11-24-finally-good-news-img-6218.jpg"
     },
     {
       "type": "image",
-      "src": "ajie/2025-11-24-finally-good-news/img-6233.jpg"
+      "src": "/media/ajie/2025-11-24-finally-good-news-img-6233.jpg"
     },
     {
       "type": "image",
-      "src": "ajie/2025-11-24-finally-good-news/img-6240.jpg"
+      "src": "/media/ajie/2025-11-24-finally-good-news-img-6240.jpg"
     },
     {
       "type": "image",
-      "src": "ajie/2025-11-24-finally-good-news/img-9896.jpg"
+      "src": "/media/ajie/2025-11-24-finally-good-news-img-9896.jpg"
     }
   ],
   "caption": {

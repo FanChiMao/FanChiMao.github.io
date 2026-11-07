@@ -1,6 +1,6 @@
 {
   "date": "2023-12-23",
-  "category": "other",
+  "category": "music",
   "title": {
     "en": "First Concert | MC HotDog at Taipei Arena",
     "zh-tw": "第一次聽演唱會｜MC HotDog 熱狗",
@@ -26,43 +26,43 @@
   "media": [
     {
       "type": "image",
-      "src": "journey/2023-12-23-first-concert-mc-hotdog/img-1711.jpg"
+      "src": "/media/journey/2023-12-23-first-concert-mc-hotdog-img-1711.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2023-12-23-first-concert-mc-hotdog-img-1709.mp4",
       "loop": false,
-      "poster": "journey/2023-12-23-first-concert-mc-hotdog/img-1709-poster.jpg"
+      "poster": "/media/journey/2023-12-23-first-concert-mc-hotdog-img-1709-poster.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2023-12-23-first-concert-mc-hotdog-img-1713.mp4",
       "loop": false,
-      "poster": "journey/2023-12-23-first-concert-mc-hotdog/img-1713-poster.jpg"
+      "poster": "/media/journey/2023-12-23-first-concert-mc-hotdog-img-1713-poster.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2023-12-23-first-concert-mc-hotdog-img-1718.mp4",
       "loop": false,
-      "poster": "journey/2023-12-23-first-concert-mc-hotdog/img-1718-poster.jpg"
+      "poster": "/media/journey/2023-12-23-first-concert-mc-hotdog-img-1718-poster.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2023-12-23-first-concert-mc-hotdog-img-1736.mp4",
       "loop": false,
-      "poster": "journey/2023-12-23-first-concert-mc-hotdog/img-1736-poster.jpg"
+      "poster": "/media/journey/2023-12-23-first-concert-mc-hotdog-img-1736-poster.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2023-12-23-first-concert-mc-hotdog-img-1778.mp4",
       "loop": false,
-      "poster": "journey/2023-12-23-first-concert-mc-hotdog/img-1778-poster.jpg"
+      "poster": "/media/journey/2023-12-23-first-concert-mc-hotdog-img-1778-poster.jpg"
     },
     {
       "type": "video",
       "src": "/media/journey/2023-12-23-first-concert-mc-hotdog-img-1783.mp4",
       "loop": false,
-      "poster": "journey/2023-12-23-first-concert-mc-hotdog/img-1783-poster.jpg"
+      "poster": "/media/journey/2023-12-23-first-concert-mc-hotdog-img-1783-poster.jpg"
     }
   ],
   "story": {

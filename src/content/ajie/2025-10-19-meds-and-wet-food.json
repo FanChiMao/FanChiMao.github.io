@@ -14,7 +14,7 @@
     "ja": "毛孩子動物病院"
   },
   "cover": {
-    "src": "ajie/2025-10-19-meds-and-wet-food/cover.jpg",
+    "src": "/media/ajie/2025-10-19-meds-and-wet-food-cover.jpg",
     "alt": {
       "en": "Illustration: Ajie happily eating from a can, an arrow pointing away from the untouched dry food in the automatic feeder, while he thinks about his runny stools, the parasite and his sore eye",
       "zh-tw": "插畫：阿桔開心地吃著罐頭，箭頭從自動餵食器裡沒動過的乾飼料指向罐頭；牠腦中想著水便、毛滴蟲和發炎的眼睛",
@@ -25,7 +25,7 @@
   "media": [
     {
       "type": "image",
-      "src": "ajie/2025-10-19-meds-and-wet-food/01-held-close.jpg",
+      "src": "/media/ajie/2025-10-19-meds-and-wet-food-01-held-close.jpg",
       "alt": {
         "en": "Ajie dozing in my arms, eyes closed",
         "zh-tw": "阿桔窩在我懷裡閉眼打盹",
@@ -35,7 +35,7 @@
     },
     {
       "type": "image",
-      "src": "ajie/2025-10-19-meds-and-wet-food/02-eyes-closed.jpg",
+      "src": "/media/ajie/2025-10-19-meds-and-wet-food-02-eyes-closed.jpg",
       "alt": {
         "en": "Close-up of Ajie with his eyes shut, front paws tucked",
         "zh-tw": "阿桔閉著眼睛的特寫，前腳收在胸前",
@@ -45,7 +45,7 @@
     },
     {
       "type": "image",
-      "src": "ajie/2025-10-19-meds-and-wet-food/03-lap-curl.jpg",
+      "src": "/media/ajie/2025-10-19-meds-and-wet-food-03-lap-curl.jpg",
       "alt": {
         "en": "Ajie curled up asleep on my lap, my hand on his back",
         "zh-tw": "阿桔蜷在我腿上睡著，我的手放在牠背上",
@@ -56,7 +56,7 @@
     {
       "type": "video",
       "src": "/media/ajie/2025-10-19-lap-pets.mp4",
-      "poster": "ajie/2025-10-19-meds-and-wet-food/lap-pets-poster.jpg",
+      "poster": "/media/ajie/2025-10-19-meds-and-wet-food-lap-pets-poster.jpg",
       "alt": {
         "en": "Petting Ajie as he lies on my lap",
         "zh-tw": "阿桔趴在我腿上讓我摸",
@@ -66,7 +66,7 @@
     },
     {
       "type": "image",
-      "src": "ajie/2025-10-19-meds-and-wet-food/04-bed-nap.jpg",
+      "src": "/media/ajie/2025-10-19-meds-and-wet-food-04-bed-nap.jpg",
       "alt": {
         "en": "Ajie asleep on a plaid duvet",
         "zh-tw": "阿桔在格紋被上睡覺",
@@ -76,7 +76,7 @@
     },
     {
       "type": "image",
-      "src": "ajie/2025-10-19-meds-and-wet-food/05-bed-sprawl.jpg",
+      "src": "/media/ajie/2025-10-19-meds-and-wet-food-05-bed-sprawl.jpg",
       "alt": {
         "en": "Ajie stretched out asleep on the duvet, paws reaching forward",
         "zh-tw": "阿桔攤在被子上睡，前腳往前伸",
@@ -86,7 +86,7 @@
     },
     {
       "type": "image",
-      "src": "ajie/2025-10-19-meds-and-wet-food/06-bed-curl.jpg",
+      "src": "/media/ajie/2025-10-19-meds-and-wet-food-06-bed-curl.jpg",
       "alt": {
         "en": "Ajie curled up on the bed",
         "zh-tw": "阿桔蜷在床上",
@@ -96,7 +96,7 @@
     },
     {
       "type": "image",
-      "src": "ajie/2025-10-19-meds-and-wet-food/07-lap-stretch.jpg",
+      "src": "/media/ajie/2025-10-19-meds-and-wet-food-07-lap-stretch.jpg",
       "alt": {
         "en": "Ajie lying across my lap with his legs stretched out",
         "zh-tw": "阿桔橫躺在我腿上，腳伸得長長的",
@@ -107,7 +107,7 @@
     {
       "type": "video",
       "src": "/media/ajie/2025-10-19-sitting.mp4",
-      "poster": "ajie/2025-10-19-meds-and-wet-food/sitting-poster.jpg",
+      "poster": "/media/ajie/2025-10-19-meds-and-wet-food-sitting-poster.jpg",
       "alt": {
         "en": "Ajie sitting on the floor, eyes half closed",
         "zh-tw": "阿桔坐在地板上，眼睛半瞇著",

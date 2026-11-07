@@ -14,7 +14,7 @@
     "ja": "東憲動物病院"
   },
   "cover": {
-    "src": "ajie/2025-11-12-unexpected-hope/4b63edb8-d758-49f8-85b6-5ad6b822b53f.jpg",
+    "src": "/media/ajie/2025-11-12-unexpected-hope-4b63edb8-d758-49f8-85b6-5ad6b822b53f.jpg",
     "alt": {
       "en": "Illustration: Ajie, an orange tabby, rests with his right eye still slightly squinted but showing signs of recovery. A tiny figure labeled 'Me' cries tears of relief beside him as a little spark of hope appears.",
       "zh-tw": "插畫：橘色虎斑貓阿桔安靜地趴著，右眼雖然還微微瞇著，卻有了好轉的希望；旁邊小小的「我」感動得流下眼淚",
@@ -25,15 +25,15 @@
   "media": [
     {
       "type": "image",
-      "src": "ajie/2025-11-12-unexpected-hope/img-6102.jpg"
+      "src": "/media/ajie/2025-11-12-unexpected-hope-img-6102.jpg"
     },
     {
       "type": "image",
-      "src": "ajie/2025-11-12-unexpected-hope/img-6106.jpg"
+      "src": "/media/ajie/2025-11-12-unexpected-hope-img-6106.jpg"
     },
     {
       "type": "image",
-      "src": "ajie/2025-11-12-unexpected-hope/img-6109.jpg"
+      "src": "/media/ajie/2025-11-12-unexpected-hope-img-6109.jpg"
     }
   ],
   "caption": {
