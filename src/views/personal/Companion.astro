@@ -65,6 +65,8 @@ const facts = [
   ajieProfile.sex && { label: p.ajie.sexLabel, value: p.ajie.sex[ajieProfile.sex], sex: ajieProfile.sex },
 ].filter(Boolean) as { label: string; value: string; sex?: 'male' | 'female' }[];
 const bio = pick(ajieProfile.bio);
+const archive = pick(ajieProfile.archive);
+const ig = ajieProfile.instagram;
 
 // Calendar view: one month at a time (switchable), from the first post's month to the last's.
 // Weeks start on Sunday; dates are plain calendar days (UTC, like the post dates). A post covers
@@ -120,7 +122,7 @@ if (span) {
     <div class="container ajie__inner">
       <!-- Same centred header as the other chapters, plus Ajie's facts. -->
       <header class="ajie__profile pw-head">
-        <p class="pw-kicker" data-reveal>{c.kind}</p>
+        <p class="pw-kicker" data-reveal>{archive ?? c.kind}</p>
         <h1 class="pw-head__title serif" data-reveal style="--i:1">{c.name}</h1>
         <p class="pw-head__lead" data-reveal style="--i:2">{bio ?? c.blurb}</p>
         <dl class="ajie__facts" data-reveal style="--i:3">
@@ -140,6 +142,15 @@ if (span) {
             ))
           }
         </dl>
+        {
+          ig && (
+            <a class="ajie__ig" href={`https://www.instagram.com/${ig}/`} target="_blank" rel="noopener" data-reveal style="--i:4" aria-label={`${p.ajie.instagram} @${ig}`}>
+              <Icon name="mdi:instagram" />
+              <span>@{ig}</span>
+              <Icon name="lucide:arrow-up-right" class="ajie__ig-out" />
+            </a>
+          )
+        }
       </header>
 
       {
@@ -537,6 +548,43 @@ if (span) {
     font-family: var(--font-display);
     font-size: 1.1rem;
     font-weight: 650;
+  }
+  /* Instagram: a pill under the facts, like the chapter actions elsewhere. */
+  .ajie__ig {
+    justify-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.6rem;
+    padding: 0.5rem 1rem 0.5rem 0.85rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: var(--bg-elev);
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s,
+      transform 0.2s var(--ease-out);
+  }
+  .ajie__ig:hover {
+    border-color: #e1306c;
+    box-shadow: 0 0 0 3px rgb(225 48 108 / 0.15);
+    transform: translateY(-1px);
+  }
+  .ajie__ig :global(svg) {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+  .ajie__ig > :global(svg:first-child) {
+    color: #e1306c;
+  }
+  .ajie__ig :global(.ajie__ig-out) {
+    width: 0.9rem;
+    height: 0.9rem;
+    color: var(--muted);
   }
   /* ---- Display settings bar: view switch on the left, AI illustrations on the right. */
   .ajie__bar {
