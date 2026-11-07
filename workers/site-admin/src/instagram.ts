@@ -9,6 +9,7 @@
  *   2. POST /api/admin/ig/items    create one container per photo / clip
  *   3. GET  /api/admin/ig/item     poll a container until Instagram has processed it
  *   4. POST /api/admin/ig/publish  (carousel container +) publish, remember the permalink
+ *   POST /api/admin/ig/cleanup     drop the staged photos (after a cancel)
  */
 import { ID } from '../../../src/lib/admin-post';
 
@@ -96,6 +97,13 @@ export function instagram(env: IgEnv) {
       if (!/^\d{5,30}$/.test(id)) throw new IgInput('Bad container id.');
       const s = await status(id);
       return { status: s.status_code ?? 'IN_PROGRESS', detail: s.status ?? '' };
+    },
+
+    async cleanup(post: string) {
+      checkPost(post);
+      const tmp = await env.MEDIA.list({ prefix: tmpPrefix(post) });
+      if (tmp.objects.length) await env.MEDIA.delete(tmp.objects.map((o) => o.key));
+      return { removed: tmp.objects.length };
     },
 
     async publish(post: string, ids: string[], caption: string, again: boolean) {

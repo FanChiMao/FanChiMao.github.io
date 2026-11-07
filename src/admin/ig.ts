@@ -72,6 +72,19 @@ export function initIg(api: Api, tab: (id: string) => Element | null) {
   let posted: Record<string, string> = {};
   let ready = false;
   let busy = false;
+  /** Set by 取消; checked between steps. Once publishing has been asked for, it can no longer stop. */
+  let cancelled = false;
+  let publishing = false;
+  class Cancelled extends Error {}
+  const checkpoint = () => {
+    if (cancelled) throw new Cancelled();
+  };
+  const cancelBtn = $<HTMLButtonElement>('#ig-cancel');
+  const paintCancel = () => {
+    cancelBtn.hidden = !busy;
+    cancelBtn.disabled = publishing || cancelled;
+    cancelBtn.textContent = publishing ? '發佈中，無法取消' : cancelled ? '取消中…' : '取消';
+  };
 
   const post = () => posts.find((p) => p.id === select.value);
   const mode = () => (form.querySelector<HTMLInputElement>('input[name="ig-frame"]:checked')?.value === 'crop' ? 'crop' : 'pad');
@@ -85,6 +98,7 @@ export function initIg(api: Api, tab: (id: string) => Element | null) {
     $('#ig-count').className = n > MAX ? 'bad small' : 'muted small';
     $('#ig-chars').textContent = `${caption.value.length} / 2200 字`;
     btn.disabled = busy || !ready || !post() || n === 0 || n > MAX || caption.value.length > 2200;
+    paintCancel();
     btn.textContent = post() && posted[select.value] !== undefined ? '再發一次到 IG' : '發到 IG';
   };
 
@@ -145,6 +159,8 @@ export function initIg(api: Api, tab: (id: string) => Element | null) {
     const again = posted[p.id] !== undefined;
     if (again && !confirm('這篇已經發到 IG 過了，確定要再發一次？')) return;
     busy = true;
+    cancelled = false;
+    publishing = false;
     update();
     pr.start('準備照片…');
     const t0 = Date.now();
@@ -152,6 +168,7 @@ export function initIg(api: Api, tab: (id: string) => Element | null) {
       // Photos: the first 35% of the bar; Instagram processing up to 90%; publishing the rest.
       const sent: { type: 'image' | 'video'; url: string }[] = [];
       for (const [i, s] of items.entries()) {
+        checkpoint();
         pr.set(0.35 * (i / items.length), `準備第 ${i + 1} / ${items.length} 個`, s.type === 'video' ? '影片（已在 R2）' : '照片轉成 4:5 並上傳');
         if (s.type === 'video') {
           sent.push({ type: 'video', url: s.src });
@@ -162,6 +179,7 @@ export function initIg(api: Api, tab: (id: string) => Element | null) {
         sent.push({ type: 'image', url });
         pr.log(`第 ${i + 1} 張照片已上傳`);
       }
+      checkpoint();
       pr.set(0.38, '交給 Instagram…');
       const { ids } = await api<{ ids: string[] }>('ig/items', { method: 'POST', body: JSON.stringify({ post: p.id, items: sent, caption: caption.value }), headers: { 'Content-Type': 'application/json' } });
       // Clips take Instagram a while (up to a few minutes); photos are quick.
@@ -175,10 +193,14 @@ export function initIg(api: Api, tab: (id: string) => Element | null) {
           if (Date.now() - started > 8 * 60_000) throw new Error('IG 處理太久，請稍後再試（還沒發出任何東西）');
           pr.set(0.4 + 0.5 * (i / ids.length), `Instagram 處理中 ${i + 1} / ${ids.length}`, `${duration(Date.now() - started)}${hasVideo ? '・影片通常要 1–3 分鐘' : ''}`);
           await wait(3000);
+          checkpoint();
         }
         pr.set(0.4 + 0.5 * ((i + 1) / ids.length), `Instagram 處理中 ${Math.min(i + 2, ids.length)} / ${ids.length}`, duration(Date.now() - started));
       }
       pr.log(`Instagram 處理完成（${ids.length} 個）`);
+      checkpoint();
+      publishing = true;
+      paintCancel();
       pr.set(0.93, '發佈中…');
       const res = await api<{ permalink: string }>('ig/publish', { method: 'POST', body: JSON.stringify({ post: p.id, ids, caption: caption.value, again }), headers: { 'Content-Type': 'application/json' } });
       posted[p.id] = res.permalink;
@@ -194,8 +216,13 @@ export function initIg(api: Api, tab: (id: string) => Element | null) {
         `花了 ${duration(Date.now() - t0)}${next ? `・下一篇已選好：${next}` : '・全部都發完了'}`,
       );
     } catch (e) {
-      pr.fail((e as Error).message);
+      if (e instanceof Cancelled) {
+        pr.stopped('已取消，沒有發出任何東西', '調整好照片或文案後，再按一次「發到 IG」');
+        // The staged photos are not needed any more (Instagram drops unused containers by itself).
+        api('ig/cleanup', { method: 'POST', body: JSON.stringify({ post: p.id }), headers: { 'Content-Type': 'application/json' } }).catch(() => {});
+      } else pr.fail((e as Error).message);
     } finally {
+      publishing = false;
       busy = false;
       update();
     }
@@ -211,6 +238,12 @@ export function initIg(api: Api, tab: (id: string) => Element | null) {
     const p = post();
     if (p) caption.value = defaultCaption(p);
     update();
+  });
+  cancelBtn.addEventListener('click', () => {
+    if (!busy || publishing) return;
+    cancelled = true;
+    paintCancel();
+    pr.set(null, '取消中…', '等目前這一步做完就停下來');
   });
   form.addEventListener('submit', (e) => {
     e.preventDefault();

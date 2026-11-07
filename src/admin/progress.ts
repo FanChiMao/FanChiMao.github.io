@@ -73,6 +73,17 @@ export class Progress {
     this.details.open = this.list.children.length > 0;
   }
 
+  /** Stopped on purpose (not an error). */
+  stopped(text: string, sub = '') {
+    this.el.hidden = false;
+    this.el.dataset.state = 'stopped';
+    this.el.classList.remove('is-indeterminate');
+    this.text.textContent = text;
+    this.sub.textContent = sub;
+    this.sub.hidden = !sub;
+    this.actions.innerHTML = '';
+  }
+
   /** Replace the actions row (links / buttons, HTML). */
   setActions(html: string) {
     this.actions.innerHTML = html;

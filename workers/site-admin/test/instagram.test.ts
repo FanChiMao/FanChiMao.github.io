@@ -77,6 +77,14 @@ describe('instagram', () => {
     await expect(ig().publish('p2', ids, '文案', true)).resolves.toBeTruthy();
   });
 
+  it('cleans up staged photos after a cancel', async () => {
+    await ig().stage('p4', 0, jpeg());
+    await ig().stage('p4', 1, jpeg());
+    expect((await ig().cleanup('p4')).removed).toBe(2);
+    expect((await env.MEDIA.list({ prefix: 'ig/tmp/p4/' })).objects).toHaveLength(0);
+    await expect(ig().cleanup('../x')).rejects.toThrow(IgInput);
+  });
+
   it("passes Instagram's own reason on", async () => {
     refuse = 'The aspect ratio is not supported.';
     await expect(ig().items('p3', [{ type: 'image', url: 'https://media.52hzfan.com/ig/tmp/p3/0.jpg' }], '')).rejects.toThrow(new IgError('The aspect ratio is not supported.'));

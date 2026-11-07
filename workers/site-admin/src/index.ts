@@ -96,6 +96,10 @@ async function route(req: Request, env: Env): Promise<Response> {
         return json(await ig.items(b.post, b.items, b.caption));
       }
       if (pathname === '/api/admin/ig/item' && req.method === 'GET') return json(await ig.item(q.get('id') ?? ''));
+      if (pathname === '/api/admin/ig/cleanup' && req.method === 'POST') {
+        const b = (await req.json().catch(() => null)) as { post: string } | null;
+        return json(await ig.cleanup(b?.post ?? ''));
+      }
       if (pathname === '/api/admin/ig/publish' && req.method === 'POST') {
         const b = (await req.json().catch(() => null)) as { post: string; ids: string[]; caption: string; again?: boolean } | null;
         if (!b) return fail(400, 'BAD_JSON', 'Body is not JSON.');

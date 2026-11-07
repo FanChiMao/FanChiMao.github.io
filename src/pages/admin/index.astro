@@ -144,7 +144,10 @@ const MEDIA_NOTE = '照片縮到長邊 2400 px 並去除 EXIF / GPS；影片重�
           </fieldset>
           <div class="dock">
             <div id="ig-progress"></div>
-            <button type="submit" class="primary" id="ig-publish">發到 IG</button>
+            <div class="dock__buttons">
+              <button type="submit" class="primary" id="ig-publish">發到 IG</button>
+              <button type="button" class="ghost" id="ig-cancel" hidden>取消</button>
+            </div>
           </div>
         </form>
       </section>
@@ -972,13 +975,26 @@ const MEDIA_NOTE = '照片縮到長邊 2400 px 並去除 EXIF / GPS；影片重�
     font-size: 0.9rem;
   }
   .prog[data-state='done'] .prog__close,
+  .prog[data-state='stopped'] .prog__close,
   .prog[data-state='failed'] .prog__close {
     display: grid;
     place-items: center;
   }
   .prog[data-state='done'] .prog__text,
-  .prog[data-state='failed'] .prog__text {
+  .prog[data-state='failed'] .prog__text,
+  .prog[data-state='stopped'] .prog__text {
     padding-right: 2rem;
+  }
+  .prog[data-state='stopped'] .prog__bar span {
+    background: var(--muted);
+  }
+  .dock__buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .dock__buttons [hidden] {
+    display: none;
   }
   .prog__bar {
     position: relative;
@@ -1098,6 +1114,17 @@ const MEDIA_NOTE = '照片縮到長邊 2400 px 並去除 EXIF / GPS；影片重�
       width: 100%;
       min-height: 50px;
       font-size: 1rem;
+    }
+    .dock__buttons {
+      flex-wrap: nowrap;
+    }
+    .dock__buttons button.primary {
+      flex: 1;
+      width: auto;
+    }
+    .dock__buttons button.ghost {
+      min-height: 50px;
+      padding-inline: 1.1rem;
     }
     .prog {
       padding: 0.7rem 0.8rem;
