@@ -1,0 +1,39 @@
+{
+  "date": "2024-03-08",
+  "category": "other",
+  "title": {
+    "en": "First Hookah Experience | Sofa sofar",
+    "zh-tw": "第一次抽水煙｜Sofa sofar",
+    "zh-cn": "第一次抽水烟｜Sofa sofar",
+    "ja": "初めての水タバコ｜Sofa sofar"
+  },
+  "short": {
+    "en": "First Hookah Experience",
+    "zh-tw": "第一次抽水煙",
+    "zh-cn": "第一次抽水烟",
+    "ja": "初めての水タバコ"
+  },
+  "place": {
+    "en": "Sofa sofar, Taipei",
+    "zh-tw": "台北・Sofa sofar",
+    "zh-cn": "台北・Sofa sofar",
+    "ja": "台湾・台北・Sofa sofar"
+  },
+  "coords": {
+    "lat": 25.04432,
+    "lng": 121.55337
+  },
+  "media": [
+    {
+      "type": "image",
+      "src": "journey/2024-03-08-first-hookah-sofa-sofar/img-2359.jpg"
+    }
+  ],
+  "story": {
+    "en": "First time trying hookah. After work, I went for drinks with my coworkers, and we continued the night at Sofa sofar in Taipei to try hookah. I had never really known what it would feel like before. Sitting around chatting and slowly smoking after drinking made everything feel a little hazy and floaty. It was one of those spontaneous after-work experiences that somehow became a small but memorable first.",
+    "zh-tw": "第一次抽水煙。下班後先和同事去喝酒，喝完之後又跑到台北的 Sofa sofar 續攤，也順便第一次試試看水煙。以前其實不知道抽起來會是什麼感覺，大家就坐著聊天慢慢抽，可能加上前面喝了酒，整個人有點麻麻昏昏、飄飄的。算是一個很臨時起意的下班行程，卻也因此留下了一個滿有記憶點的第一次。",
+    "zh-cn": "第一次抽水烟。下班后先和同事去喝酒，喝完之后又跑到台北的 Sofa sofar 续摊，也顺便第一次试试看水烟。以前其实不知道抽起来会是什么感觉，大家就坐着聊天慢慢抽，可能加上前面喝了酒，整个人有点麻麻晕晕、飘飘的。算是一个很临时起意的下班行程，却也因此留下了一个挺有记忆点的第一次。",
+    "ja": "初めて水タバコを体験した日。仕事終わりに同僚とお酒を飲み、そのまま台北のSofa sofarへ行って初めて水タバコを試してみた。それまでどんな感覚なのかよく知らなかったが、みんなで座って話しながらゆっくり吸っていると、先に飲んだお酒の影響もあってか、少しぼんやりしてふわふわした感覚になった。仕事帰りの思いつきで始まった夜だったけれど、意外と記憶に残る「初めて」になった。"
+  },
+  "draft": false
+}
