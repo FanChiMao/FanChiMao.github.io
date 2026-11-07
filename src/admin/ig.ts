@@ -17,13 +17,12 @@ const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const md = (iso: string) => `${Number(iso.slice(5, 7))}/${Number(iso.slice(8, 10))}`;
 const period = (p: Post) => (p.from && p.from !== p.date ? `${p.from.slice(0, 4)}/${md(p.from)}–${md(p.date)}` : `${p.date.slice(0, 4)}/${md(p.date)}`);
 
-/** Default caption: title and period, the post's text, a pointer to the site, hashtags. */
+/** Default caption: title and period, the post's text, the place, hashtags (blank line between each). */
 export const defaultCaption = (p: Post) =>
   [
     `${p.title ? `${p.title}｜` : ''}${period(p)}`,
     p.caption.trim(),
     p.place ? `📍 ${p.place}` : '',
-    '阿桔的完整故事在個人檔案的連結 🍊',
     '#阿桔 #橘貓 #橘色虎斑 #貓咪日常 #毛孩 #orangecat #catsofinstagram #tabbycat',
   ]
     .filter(Boolean)
