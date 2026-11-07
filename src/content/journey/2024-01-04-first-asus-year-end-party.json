@@ -1,0 +1,65 @@
+{
+  "date": "2024-01-04",
+  "category": "other",
+  "title": {
+    "en": "First ASUS Year-End Party | Back After Three Years",
+    "zh-tw": "第一次參加華碩尾牙｜睽違三年的回歸",
+    "zh-cn": "第一次参加华硕尾牙｜睽违三年的回归",
+    "ja": "初めてのASUS忘年会｜3年ぶりの開催"
+  },
+  "short": {
+    "en": "First ASUS Year-End Party",
+    "zh-tw": "第一次參加華碩尾牙",
+    "zh-cn": "第一次参加华硕尾牙",
+    "ja": "初めてのASUS忘年会"
+  },
+  "place": {
+    "en": "Taipei Nangang Exhibition Center, Taipei",
+    "zh-tw": "台北・南港展覽館",
+    "zh-cn": "台北・南港展览馆",
+    "ja": "台湾・台北・南港展覧館"
+  },
+  "coords": {
+    "lat": 25.0566,
+    "lng": 121.6181
+  },
+  "media": [
+    {
+      "type": "image",
+      "src": "journey/2024-01-04-first-asus-year-end-party/img-1845.jpg"
+    },
+    {
+      "type": "video",
+      "src": "/media/journey/2024-01-04-first-asus-year-end-party-img-1829.mp4",
+      "loop": false,
+      "poster": "journey/2024-01-04-first-asus-year-end-party/img-1829-poster.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2024-01-04-first-asus-year-end-party/img-1846.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2024-01-04-first-asus-year-end-party/img-1860.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2024-01-04-first-asus-year-end-party/img-1854.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2024-01-04-first-asus-year-end-party/img-1879.jpg"
+    },
+    {
+      "type": "image",
+      "src": "journey/2024-01-04-first-asus-year-end-party/img-1902.jpg"
+    }
+  ],
+  "story": {
+    "en": "First time attending the ASUS year-end party. Because of the pandemic, ASUS had not held a large in-person year-end gathering for three years, so this was also the first one after everything finally returned. Maybe everyone had been holding back for too long, because the whole night felt like one big release. By the end, I was already half-collapsed on the MRT ride home, but apparently I was still doing pretty well. Some coworkers had to be put in wheelchairs and escorted home by the others. That probably says enough about how thoroughly everyone enjoyed the first party back.",
+    "zh-tw": "第一次參加華碩尾牙。因為疫情的關係，華碩已經三年沒有舉辦大型實體尾牙，這次也是疫情後第一次重新舉辦。可能真的憋太久了，整個晚上有種大家集體解放的感覺。最後我已經幾乎是癱著搭捷運回去，但回頭看居然還算狀況不錯，因為其他同事甚至是坐在輪椅上被大家送回去的。只能說睽違三年的第一場尾牙，大家真的玩得非常徹底。",
+    "zh-cn": "第一次参加华硕尾牙。因为疫情的关系，华硕已经三年没有举办大型实体尾牙，这次也是疫情后第一次重新举办。可能真的憋太久了，整个晚上有种大家集体解放的感觉。最后我已经几乎是瘫着搭捷运回去，但回头看居然还算状况不错，因为其他同事甚至是坐在轮椅上被大家送回去的。只能说睽违三年的第一场尾牙，大家真的玩得非常彻底。",
+    "ja": "初めてASUSの忘年会に参加した。コロナ禍の影響でASUSでは3年間、大規模な対面の忘年会が開催されておらず、今回は久しぶりに復活した最初の回でもあった。みんな長い間我慢していた反動なのか、会場全体が一気に解放されたような雰囲気だった。最後には自分もほとんど倒れ込むような状態でMRTに乗って帰ったが、それでもまだましな方だったらしい。他の同僚の中には、車椅子に乗せられてみんなに送られて帰った人までいた。3年ぶりの忘年会を、みんな本当に全力で楽しんでいた。"
+  },
+  "draft": false
+}
