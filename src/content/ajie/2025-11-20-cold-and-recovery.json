@@ -1,0 +1,52 @@
+{
+  "date": "2025-11-20",
+  "title": {
+    "en": "A Cold on Top of Everything Else",
+    "zh-tw": "雪上加霜的感冒",
+    "zh-cn": "雪上加霜的感冒",
+    "ja": "追い打ちをかける風邪"
+  },
+  "location": {
+    "en": "Home",
+    "zh-tw": "家裡",
+    "zh-cn": "家里",
+    "ja": "自宅"
+  },
+  "cover": {
+    "src": "ajie/2025-11-20-cold-and-recovery/23500974-4551-4e9d-b392-ee2e98099cf3.jpg",
+    "alt": {
+      "en": "Illustration: Ajie, an orange tabby wearing a purple-rimmed cone, looks tired and sick while wrapped in a warm blanket. A tiny figure labeled 'Me' watches over him with a worried expression.",
+      "zh-tw": "插畫：橘色虎斑貓阿桔戴著紫色邊緣的頭套，感冒後精神不太好，被厚厚的毛毯包裹著取暖；旁邊小小的「我」一臉擔心地照顧牠",
+      "zh-cn": "插画：橘色虎斑猫阿桔戴着紫色边缘的头套，感冒后精神不太好，被厚厚的毛毯包裹着取暖；旁边小小的“我”一脸担心地照顾它",
+      "ja": "イラスト：紫色の縁がついたエリザベスカラーをつけた茶トラのアジエが、風邪でつらそうにしながら厚い毛布にくるまって暖を取っている。そばでは小さな「僕」が心配そうに見守っている"
+    }
+  },
+  "media": [
+    {
+      "type": "image",
+      "src": "ajie/2025-11-20-cold-and-recovery/img-6202.jpg"
+    },
+    {
+      "type": "image",
+      "src": "ajie/2025-11-20-cold-and-recovery/img-6203.jpg"
+    },
+    {
+      "type": "image",
+      "src": "ajie/2025-11-20-cold-and-recovery/img-6206.jpg"
+    },
+    {
+      "type": "image",
+      "src": "ajie/2025-11-20-cold-and-recovery/img-6211.jpg"
+    },
+    {
+      "type": "image",
+      "src": "ajie/2025-11-20-cold-and-recovery/img-6214.jpg"
+    }
+  ],
+  "caption": {
+    "en": "As the weather started getting colder, Ajie ended up catching a cold...\n\nHis eye was still recovering, and we were still dealing with the intestinal parasites. I had to keep giving him deworming medication and eye drops every day, and now there was a cold on top of everything else. It really felt like one thing after another.\n\nSeeing Ajie getting sick again and again honestly made me worry that his little body might not be able to handle it all.\n\nJust when I thought things were finally starting to get better, something else happened...",
+    "zh-tw": "隨著天氣逐漸轉涼，沒想到阿桔竟然感冒了……\n\n原本眼睛就還在恢復中，體內的毛滴蟲也還沒治好，每天都得繼續餵驅蟲藥、點眼藥水，現在又多了感冒，真的是雪上加霜。\n\n看著阿桔接連生病，心裡真的很擔心，深怕牠的身體撐不住。\n\n明明才剛覺得一切開始慢慢好轉，沒想到又遇到新的狀況……",
+    "zh-cn": "随着天气逐渐转凉，没想到阿桔竟然感冒了……\n\n原本眼睛就还在恢复中，体内的毛滴虫也还没治好，每天都得继续喂驱虫药、滴眼药水，现在又多了感冒，真的是雪上加霜。\n\n看着阿桔接连生病，心里真的很担心，生怕它的身体撑不住。\n\n明明才刚觉得一切开始慢慢好转，没想到又遇到了新的状况……",
+    "ja": "だんだん寒くなってきたと思ったら、なんとアジエが風邪をひいてしまった……。\n\n目はまだ回復途中だし、お腹のトリコモナスも治っていない。毎日駆虫薬を飲ませて、目薬もさし続けなければならないのに、今度は風邪まで。本当に踏んだり蹴ったりだった。\n\n次から次へと体調を崩すアジエを見ていると、この小さな体が全部に耐えられるのか、本当に心配になった。\n\nようやく少しずつ良くなってきたと思っていたのに、また新しい問題が起きてしまった……。"
+  }
+}
