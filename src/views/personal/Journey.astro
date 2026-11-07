@@ -93,7 +93,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
                       <li
                         class="milestone"
                         data-reveal="right"
-                        style={`--i:${i}`}
+                        style={`--i:${i}; --c1: var(--cat-${m.data.category}); --c2: var(--cat-${m.data.category}-2)`}
                         data-id={m.id}
                         data-category={m.data.category}
                         data-date={m.data.date}
@@ -218,6 +218,18 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     let current: string | null = null;
     /** The group whose list is in the panel (or the list a picked milestone came from). */
     let list: Pin[] | null = null;
+    /** Milestone whose real pin is shown over its group (pointed at in the list). */
+    let peekId: string | null = null;
+    const colours = (el: HTMLElement, cat: string | undefined) => {
+      el.style.setProperty('--c1', `var(--cat-${cat ?? 'other'})`);
+      el.style.setProperty('--c2', `var(--cat-${cat ?? 'other'}-2)`);
+    };
+    /** Point at a milestone of a group: its bubble steps aside, the real pin drops in (or back). */
+    const peek = (pin: Pin | null) => {
+      peekId = pin?.id ?? null;
+      stage.querySelectorAll<HTMLElement>('.gpin--group').forEach((g) => g.classList.toggle('is-peeking', !!peekId && (g.dataset.ids ?? '').split(',').includes(peekId)));
+      globe?.peek(pin);
+    };
 
     const byId = (id: string) => milestones.find((m) => m.dataset.id === id);
     const text = (m: HTMLElement, sel: string) => m.querySelector(sel)?.textContent?.trim() ?? '';
@@ -250,6 +262,12 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     const groupCard = (list: Pin[]) => {
       const el = document.createElement('div');
       el.className = 'gpin gpin--group';
+      el.dataset.ids = list.map((p) => p.id).join(',');
+      el.classList.toggle('is-peeking', !!peekId && list.some((p) => p.id === peekId));
+      // The ring shows the categories inside, in proportion.
+      const cats = list.map((p) => byId(p.id)?.dataset.category ?? 'other');
+      const stops = cats.map((c, i) => `var(--cat-${c}) ${(i / cats.length) * 100}% ${((i + 1) / cats.length) * 100}%`).join(', ');
+      el.style.setProperty('--ring', `conic-gradient(${stops})`);
       el.innerHTML =
         '<span class="gpin__pulse" aria-hidden="true"></span><button type="button" class="gpin__btn"><span class="gpin__count" aria-hidden="true"></span><span class="gpin__label" aria-hidden="true"><span class="gpin__date"></span><span class="gpin__title"></span></span></button>';
       el.querySelector('.gpin__count')!.textContent = String(list.length);
@@ -275,6 +293,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
       el.querySelector('.gpin__date')!.textContent = date;
       el.querySelector('.gpin__title')!.textContent = short || title.split(/[：:｜|]/)[0].trim() || title;
       el.classList.toggle('is-peek', peek);
+      colours(el, m.dataset.category);
       const btn = el.querySelector('button')!;
       btn.setAttribute('aria-label', [title, date].filter(Boolean).join(', '));
       btn.addEventListener('click', () => pick(pin.id));
@@ -315,6 +334,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
         b.className = 'jglobe__row';
         const icon = document.createElement('span');
         icon.className = 'jglobe__row-icon';
+        colours(icon, m.dataset.category);
         icon.setAttribute('aria-hidden', 'true');
         const svg = m.querySelector('.milestone__dot svg');
         if (svg) icon.append(svg.cloneNode(true));
@@ -325,10 +345,10 @@ const unplaced = items.filter((x) => !x.data.coords).length;
         when.className = 'jglobe__row-date';
         when.textContent = text(m, '.milestone__full-date');
         b.append(icon, name, when);
-        b.addEventListener('pointerenter', (e) => e.pointerType === 'mouse' && globe?.peek(pin));
-        b.addEventListener('pointerleave', () => globe?.peek(null));
-        b.addEventListener('focus', () => globe?.peek(pin));
-        b.addEventListener('blur', () => globe?.peek(null));
+        b.addEventListener('pointerenter', (e) => e.pointerType === 'mouse' && peek(pin));
+        b.addEventListener('pointerleave', () => peek(null));
+        b.addEventListener('focus', () => peek(pin));
+        b.addEventListener('blur', () => peek(null));
         b.addEventListener('click', () => pick(pin.id, true));
         li.append(b);
         ul.append(li);
@@ -345,7 +365,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
       backBtn.hidden = true;
       readBtn.hidden = true;
       panel.hidden = false;
-      globe.peek(null);
+      peek(null);
       globe.setPins(pins());
       if (fly) globe.flyToAll(group);
     }
@@ -360,7 +380,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
       backBtn.hidden = !list;
       readBtn.hidden = false;
       panel.hidden = false;
-      globe.peek(null);
+      peek(null);
       globe.setPins(pins(), id); // the picked one is never grouped
       globe.flyTo(pin);
       track('milestone', id);
@@ -369,7 +389,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
       panel.hidden = true;
       current = null;
       list = null;
-      globe?.peek(null);
+      peek(null);
       globe?.setPins(pins());
     };
 
@@ -543,9 +563,9 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    border: 1px solid var(--border-strong);
-    background: var(--bg-elev);
-    color: var(--accent);
+    border: 1px solid color-mix(in srgb, var(--c1, var(--accent)) 45%, var(--border-strong));
+    background: color-mix(in srgb, var(--c1, var(--accent)) 12%, var(--bg-elev));
+    color: var(--c1, var(--accent));
   }
   .milestone__dot :global(svg) {
     width: 18px;
@@ -811,6 +831,41 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     --globe-grid: rgba(10, 80, 160, 0.12);
     --globe-glow: #8fd0ff;
   }
+  /* Category colours (pins, list icons, timeline dots): two stops each, tuned per theme so they
+     read on the pale and on the deep-sea globe alike. */
+  .journey {
+    /* Light: deep enough that a white icon on them stays clear. */
+    --cat-run: #c9431b;
+    --cat-run-2: #e2622a;
+    --cat-hike: #0f7a47;
+    --cat-hike-2: #24924a;
+    --cat-travel: #6236c9;
+    --cat-travel-2: #8a3fcf;
+    --cat-dive: #08708c;
+    --cat-dive-2: #0e8aa3;
+    --cat-ride: #a35d00;
+    --cat-ride-2: #c27a05;
+    --cat-jump: #b4245a;
+    --cat-jump-2: #d03b78;
+    --cat-other: #2d57b8;
+    --cat-other-2: #4371d6;
+  }
+  :root[data-theme='dark'] .journey {
+    --cat-run: #ff7a4d;
+    --cat-run-2: #ffab5e;
+    --cat-hike: #3fcf86;
+    --cat-hike-2: #8be07a;
+    --cat-travel: #a98bff;
+    --cat-travel-2: #d58cff;
+    --cat-dive: #32c8e6;
+    --cat-dive-2: #6fe3ef;
+    --cat-ride: #ffbe3d;
+    --cat-ride-2: #ffd873;
+    --cat-jump: #ff6fa3;
+    --cat-jump-2: #ff9cc4;
+    --cat-other: #6ea2ff;
+    --cat-other-2: #9cc0ff;
+  }
   :root[data-theme='dark'] .jglobe {
     --globe-ocean-top: #0a1d33;
     --globe-ocean: #0c2745;
@@ -1030,12 +1085,14 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     width: 1.7rem;
     height: 1.7rem;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    background: linear-gradient(135deg, var(--c1, var(--accent)), var(--c2, var(--accent-2)));
     color: #fff;
   }
   .jglobe__panel-body :global(.jglobe__row-icon svg) {
     width: 0.85rem;
     height: 0.85rem;
+    stroke-width: 2.4;
+    filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.35));
   }
   .jglobe__panel-body :global(.jglobe__row-title) {
     min-width: 0;
@@ -1091,15 +1148,15 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     width: 24px;
     height: 10px;
     border-radius: 50%;
-    background: color-mix(in srgb, var(--accent) 45%, transparent);
-    box-shadow: 0 0 10px var(--accent);
+    background: color-mix(in srgb, var(--c1, var(--accent)) 45%, transparent);
+    box-shadow: 0 0 10px var(--c1, var(--accent));
   }
   .jglobe :global(.gpin__pulse::after) {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    border: 1.5px solid var(--accent);
+    border: 1.5px solid var(--c1, var(--accent));
     animation: gpin-pulse 2.4s var(--ease-out) infinite;
   }
   @keyframes gpin-pulse {
@@ -1144,6 +1201,15 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     bottom: -19px;
     width: 38px;
     height: 38px;
+    transform-origin: 50% 50%;
+    transition:
+      transform 0.3s var(--ease-out),
+      opacity 0.25s ease;
+  }
+  .jglobe :global(.gpin--group.is-peeking .gpin__btn) {
+    transform: scale(0.4);
+    opacity: 0;
+    pointer-events: none;
   }
   .jglobe :global(.gpin--group .gpin__pulse) {
     display: none;
@@ -1154,11 +1220,15 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     display: grid;
     place-items: center;
     box-sizing: border-box;
-    border: 2px solid #fff;
+    border: 3px solid transparent;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 28%, transparent);
-    color: #fff;
+    background:
+      linear-gradient(var(--bg-elev), var(--bg-elev)) padding-box,
+      var(--ring, linear-gradient(135deg, var(--accent), var(--accent-2))) border-box;
+    box-shadow:
+      0 0 0 1.5px #fff,
+      0 4px 12px rgb(0 0 0 / 0.3);
+    color: var(--text);
     font-size: 0.95rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
@@ -1171,19 +1241,36 @@ const unplaced = items.filter((x) => !x.data.coords).length;
   /* The real pin of a milestone pointed at in a group's list, drawn over the group. */
   .jglobe :global(.gpin.is-peek) {
     z-index: 1;
-    animation: gpin-peek 0.25s var(--ease-out);
   }
   .jglobe :global(.gpin.is-peek .gpin__btn) {
     transform: scale(1.15);
+    animation: gpin-drop 0.38s cubic-bezier(0.34, 1.5, 0.64, 1);
   }
   .jglobe :global(.gpin.is-peek .gpin__label) {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-soft);
+    border-color: var(--c1, var(--accent));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c1, var(--accent)) 22%, transparent);
+    animation: gpin-fade 0.3s ease 0.08s backwards;
   }
-  @keyframes gpin-peek {
+  /* The pin grows out of the spot (tip first), with a little overshoot. */
+  @keyframes gpin-drop {
+    from {
+      transform: scale(0.2);
+      opacity: 0;
+    }
+  }
+  @keyframes gpin-fade {
     from {
       opacity: 0;
-      translate: 0 -8px;
+      translate: -6px 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .jglobe :global(.gpin.is-peek .gpin__btn),
+    .jglobe :global(.gpin.is-peek .gpin__label) {
+      animation: none;
+    }
+    .jglobe :global(.gpin--group .gpin__btn) {
+      transition: opacity 0.15s;
     }
   }
   /* The teardrop: a square with three round corners, turned so the sharp one points down. */
@@ -1198,13 +1285,15 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     box-sizing: border-box;
     border-radius: 50% 50% 50% 0;
     border: 2px solid #fff;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    background: linear-gradient(135deg, var(--c1, var(--accent)), var(--c2, var(--accent-2)));
     transform: translateY(3px) rotate(-45deg);
   }
   .jglobe :global(.gpin__head svg) {
     width: 14px;
     height: 14px;
     color: #fff;
+    stroke-width: 2.4;
+    filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.35));
     transform: rotate(45deg);
   }
   .jglobe :global(.gpin__label) {
@@ -1228,12 +1317,12 @@ const unplaced = items.filter((x) => !x.data.coords).length;
   }
   .jglobe :global(.gpin__btn:hover .gpin__label),
   .jglobe :global(.gpin.is-current .gpin__label) {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-soft);
+    border-color: var(--c1, var(--accent));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c1, var(--accent)) 22%, transparent);
   }
   .jglobe :global(.gpin__date) {
     font-size: 0.68rem;
-    color: var(--accent);
+    color: var(--c1, var(--accent));
     font-weight: 600;
     font-variant-numeric: tabular-nums;
   }
