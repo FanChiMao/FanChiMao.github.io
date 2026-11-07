@@ -43,7 +43,40 @@ const setMenu = (open: boolean) => {
   menuBtn.setAttribute('aria-expanded', String(open));
 };
 
+// Phones: the floating tab bar (統計 / 發布 / 新增); 發布 and 新增 open a menu.
+const TB_GROUP: Record<string, string> = { stats: 'stats', deploys: 'publish', ig: 'publish', album: 'add', journey: 'add', ajie: 'add' };
+const TB_ORDER = ['stats', 'publish', 'add'];
+const tabbar = $('.tabbar');
+const tbMenus = $$<HTMLButtonElement>('[data-tabbar-menu]');
+const closeTbMenus = (except?: HTMLButtonElement) =>
+  tbMenus.forEach((b) => {
+    if (b === except) return;
+    b.setAttribute('aria-expanded', 'false');
+    document.getElementById(b.getAttribute('aria-controls')!)!.hidden = true;
+  });
+function paintTabbar(id: string) {
+  const group = TB_GROUP[id] ?? 'stats';
+  tabbar.style.setProperty('--i', String(TB_ORDER.indexOf(group)));
+  $$('[data-tabbar-group]').forEach((b) => b.toggleAttribute('data-active', b.dataset.tabbarGroup === group));
+  closeTbMenus();
+}
+tbMenus.forEach((b) =>
+  b.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const menuEl = document.getElementById(b.getAttribute('aria-controls')!)!;
+    const open = menuEl.hidden;
+    closeTbMenus(b);
+    menuEl.hidden = !open;
+    b.setAttribute('aria-expanded', String(open));
+  }),
+);
+document.addEventListener('click', (e) => {
+  if (!(e.target as Element).closest('.tabbar__menu')) closeTbMenus();
+});
+document.addEventListener('keydown', (e) => e.key === 'Escape' && closeTbMenus());
+
 function showTab(id: string) {
+  paintTabbar(id);
   $$('[data-tab]').forEach((b) => (b.dataset.tab === id ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current')));
   $$('[data-panel]').forEach((p) => (p.hidden = p.dataset.panel !== id));
   const adding = ADD_PANELS.includes(id);
@@ -141,6 +174,7 @@ async function loadDeploys(): Promise<Run[]> {
       : '<li class="muted">還沒有部署紀錄</li>';
     const latest = runs[0];
     $('#deploy-latest').innerHTML = latest ? `<span class="pill pill--${runLabel(latest)[1]}">${runLabel(latest)[0]}</span>` : '';
+    $('#tb-deploy').innerHTML = $('#deploy-latest').innerHTML;
     return runs;
   } catch (e) {
     $('#deploys').innerHTML = `<li class="error">${(e as Error).message}</li>`;
