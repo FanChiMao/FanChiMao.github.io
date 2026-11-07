@@ -578,7 +578,9 @@ class PostForm {
       if (run.conclusion === 'success') {
         const page = { ajie: '/zh-tw/personal/companion/', journey: '/zh-tw/personal/journey/', album: `/zh-tw/personal/gallery/${id}/` }[this.kind];
         const label = { ajie: '阿桔頁面', journey: '旅程頁面', album: '這本相簿（draft 的相簿不會公開）' }[this.kind];
-        line.innerHTML = `網站已更新 🎉 <a href="${page}" target="_blank" rel="noopener">打開${label}</a>（瀏覽器可能要強制重新整理）`;
+        line.innerHTML = `網站已更新 🎉 <a href="${page}" target="_blank" rel="noopener">打開${label}</a>（瀏覽器可能要強制重新整理）${
+          this.kind === 'ajie' ? `　<a class="button primary" href="/admin/?${new URLSearchParams({ ig: id })}#ig">接著發到 IG →</a>` : ''
+        }`;
         line.className = 'good';
       } else {
         line.innerHTML = `部署${label}：<a href="${run.url}" target="_blank" rel="noopener">看錯誤訊息</a>（內容已在 main，修好後可按「重新部署」）`;

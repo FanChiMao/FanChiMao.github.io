@@ -93,10 +93,19 @@ export function initIg(api: Api, tab: (id: string) => Element | null) {
     btn.textContent = post() && posted[select.value] !== undefined ? '再發一次到 IG' : '發到 IG';
   };
 
+  /** Not posted yet first, oldest first (backfilling keeps the IG grid in order); posted ones after, newest first. */
+  const ordered = () => {
+    const todo = posts.filter((p) => posted[p.id] === undefined).sort((a, b) => a.date.localeCompare(b.date));
+    const done = posts.filter((p) => posted[p.id] !== undefined).sort((a, b) => b.date.localeCompare(a.date));
+    return [...todo, ...done];
+  };
+  /** "接著發到 IG" after publishing a post opens this page with ?ig=<post id>. */
+  let wanted = new URLSearchParams(location.search).get('ig');
   const fillSelect = () => {
-    const keep = select.value;
-    select.innerHTML = posts.map((p) => `<option value="${p.id}">${posted[p.id] !== undefined ? '✓ ' : ''}${esc(period(p))} ${esc(p.title || p.id)}</option>`).join('');
+    const keep = wanted && posts.some((p) => p.id === wanted) ? wanted : '';
+    select.innerHTML = ordered().map((p) => `<option value="${p.id}">${posted[p.id] !== undefined ? '✓ ' : ''}${esc(period(p))} ${esc(p.title || p.id)}</option>`).join('');
     if (keep) select.value = keep;
+    else select.selectedIndex = 0;
   };
   const renderPost = () => {
     const p = post();
@@ -127,6 +136,10 @@ export function initIg(api: Api, tab: (id: string) => Element | null) {
     }
     fillSelect();
     renderPost();
+    if (wanted) {
+      wanted = null;
+      history.replaceState(null, '', `${location.pathname}#ig`);
+    }
   }
 
   async function publish() {
@@ -169,8 +182,11 @@ export function initIg(api: Api, tab: (id: string) => Element | null) {
       say('發佈中…');
       const res = await api<{ permalink: string }>('ig/publish', { method: 'POST', body: JSON.stringify({ post: p.id, ids, caption: caption.value, again }), headers: { 'Content-Type': 'application/json' } });
       posted[p.id] = res.permalink;
-      say(`已發到 IG 🎉 ${res.permalink ? `<a href="${esc(res.permalink)}" target="_blank" rel="noopener">打開貼文</a>` : ''}`, 'good');
+      // Move on to the next one still to post (oldest first), keeping the result on screen.
       fillSelect();
+      renderPost();
+      say(`「${esc(p.title || p.id)}」已發到 IG 🎉 ${res.permalink ? `<a href="${esc(res.permalink)}" target="_blank" rel="noopener">打開貼文</a>` : ''}`, 'good');
+      if (posted[select.value] === undefined) say(`下一篇：${esc(select.selectedOptions[0]?.textContent ?? '')}`, 'muted');
     } catch (e) {
       say(esc((e as Error).message), 'bad');
     } finally {
