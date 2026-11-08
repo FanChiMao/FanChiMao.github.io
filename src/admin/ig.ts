@@ -207,7 +207,22 @@ export function initIg(api: Api, tab: (id: string) => Element | null) {
       publishing = true;
       paintCancel();
       pr.set(0.93, '發佈中…');
-      const res = await api<{ permalink: string }>('ig/publish', { method: 'POST', body: JSON.stringify({ post: p.id, ids, caption: caption.value, again }), headers: { 'Content-Type': 'application/json' } });
+      // A big carousel can take Instagram a while to put together: the Worker waits ~40 s, then
+      // says NOT_READY with the carousel's id; wait here and try again with that same carousel.
+      let creation: string | undefined;
+      let res: { permalink: string } | undefined;
+      const waitFrom = Date.now();
+      for (let attempt = 0; !res; attempt++) {
+        try {
+          res = await api<{ permalink: string }>('ig/publish', { method: 'POST', body: JSON.stringify({ post: p.id, ids, caption: caption.value, again, creation }), headers: { 'Content-Type': 'application/json' } });
+        } catch (e) {
+          const err = e as { code?: string; extra?: { creation?: unknown } };
+          if (err.code !== 'NOT_READY' || attempt >= 8) throw e;
+          if (typeof err.extra?.creation === 'string') creation = err.extra.creation;
+          pr.set(0.95, 'Instagram 還在整理輪播…', `已等 ${duration(Date.now() - waitFrom)}・會自動再試（還沒發出）`);
+          await wait(6000);
+        }
+      }
       posted[p.id] = res.permalink;
       const title = p.title || p.id;
       // Move on to the next one still to post (oldest first); the result stays in the card.

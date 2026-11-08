@@ -17,7 +17,7 @@ import { verifyAccess } from './access';
 import { client, GitHubError } from './github';
 import { addAjiePostId, buildPost, InputError, type PublishInput } from './publish';
 import { contentPath, FILE, ID, inR2, isClip, KINDS, mediaKey, type Kind } from '../../../src/lib/admin-post';
-import { IgError, IgInput, instagram, type Item } from './instagram';
+import { IgError, IgInput, IgNotReady, instagram, type Item } from './instagram';
 
 export interface Env {
   DB: D1Database;
@@ -102,11 +102,12 @@ async function route(req: Request, env: Env): Promise<Response> {
         return json(await ig.cleanup(b?.post ?? ''));
       }
       if (pathname === '/api/admin/ig/publish' && req.method === 'POST') {
-        const b = (await req.json().catch(() => null)) as { post: string; ids: string[]; caption: string; again?: boolean } | null;
+        const b = (await req.json().catch(() => null)) as { post: string; ids: string[]; caption: string; again?: boolean; creation?: string } | null;
         if (!b) return fail(400, 'BAD_JSON', 'Body is not JSON.');
-        return json(await ig.publish(b.post, b.ids, b.caption, b.again === true));
+        return json(await ig.publish(b.post, b.ids, b.caption, b.again === true, b.creation));
       }
     } catch (e) {
+      if (e instanceof IgNotReady) return json({ error: { code: 'NOT_READY', message: e.message, creation: e.creation } }, 409);
       if (e instanceof IgInput) return fail(400, 'INVALID', e.message);
       if (e instanceof IgError) return fail(502, 'INSTAGRAM', `Instagram：${e.message}`);
       throw e;

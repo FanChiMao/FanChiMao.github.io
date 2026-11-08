@@ -25,8 +25,28 @@ export type IgEnv = { IG_TOKEN?: string; IG_USER_ID?: string; MEDIA: R2Bucket; F
 export type Item = { type: 'image' | 'video'; url: string };
 
 /** A refusal from Instagram, with its own message (they are usually clear: ratio, size, format). */
-export class IgError extends Error {}
+export class IgError extends Error {
+  constructor(
+    message: string,
+    readonly code?: number,
+    readonly subcode?: number,
+  ) {
+    super(message);
+  }
+}
 export class IgInput extends Error {}
+/**
+ * The carousel is still being put together on Instagram's side (big ones take a while): nothing
+ * is posted yet. The admin page waits and calls publish again with the same `creation` id.
+ */
+export class IgNotReady extends Error {
+  constructor(readonly creation: string) {
+    super('Instagram 還在整理這篇，稍等一下會自動再試。');
+  }
+}
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** "Media ID is not available" / "not ready for publishing" (code 9007, subcode 2207027). */
+const notReady = (e: unknown) => e instanceof IgError && (e.code === 9007 || e.subcode === 2207027 || /not (?:ready|available)|尚未準備/i.test(e.message));
 
 const tmpPrefix = (post: string) => `ig/tmp/${post}/`;
 const postedKey = (post: string) => `ig/posted/${post}.json`;
@@ -43,8 +63,8 @@ export function instagram(env: IgEnv) {
   async function graph<T>(path: string, params: Record<string, string> = {}, method: 'GET' | 'POST' = 'GET'): Promise<T> {
     const q = new URLSearchParams({ ...params, access_token: token });
     const res = await fetcher(method === 'GET' ? `${GRAPH}${path}?${q}` : `${GRAPH}${path}`, method === 'GET' ? {} : { method, body: q });
-    const body = (await res.json().catch(() => ({}))) as T & { error?: { message?: string; error_user_msg?: string } };
-    if (!res.ok || body.error) throw new IgError(body.error?.error_user_msg || body.error?.message || `Instagram ${res.status}`);
+    const body = (await res.json().catch(() => ({}))) as T & { error?: { message?: string; error_user_msg?: string; code?: number; error_subcode?: number } };
+    if (!res.ok || body.error) throw new IgError(body.error?.error_user_msg || body.error?.message || `Instagram ${res.status}`, body.error?.code, body.error?.error_subcode);
     return body;
   }
 
@@ -108,22 +128,36 @@ export function instagram(env: IgEnv) {
       return { removed: tmp.objects.length };
     },
 
-    async publish(post: string, ids: string[], caption: string, again: boolean) {
+    /**
+     * Publish: builds the carousel container (or reuses `creation` from an earlier try), waits for
+     * Instagram to finish it (about 40 s here at most), then publishes. Still not ready: IgNotReady.
+     */
+    async publish(post: string, ids: string[], caption: string, again: boolean, reuse?: string) {
       checkPost(post);
       if (!Array.isArray(ids) || !ids.length || ids.length > MAX_ITEMS || ids.some((id) => typeof id !== 'string' || !/^\d{5,30}$/.test(id))) throw new IgInput('Bad container ids.');
       if (typeof caption !== 'string' || caption.length > MAX_CAPTION) throw new IgInput('Bad caption.');
+      if (reuse !== undefined && (typeof reuse !== 'string' || !/^\d{5,30}$/.test(reuse))) throw new IgInput('Bad creation id.');
       if (!again && (await env.MEDIA.head(postedKey(post)))) throw new IgInput('這篇已經發到 IG 了。');
-      let creation = ids[0];
-      if (ids.length > 1) {
-        creation = (await graph<{ id: string }>(`/${me}/media`, { media_type: 'CAROUSEL', children: ids.join(','), caption }, 'POST')).id;
-        for (let i = 0; i < 10; i++) {
-          const s = await status(creation);
-          if (s.status_code === 'FINISHED') break;
-          if (s.status_code === 'ERROR') throw new IgError(s.status || 'Instagram could not build the carousel.');
-          await new Promise((r) => setTimeout(r, 1500));
+      let creation = reuse ?? ids[0];
+      if (ids.length > 1 && !reuse) creation = (await graph<{ id: string }>(`/${me}/media`, { media_type: 'CAROUSEL', children: ids.join(','), caption }, 'POST')).id;
+      for (let i = 0; ; i++) {
+        const s = await status(creation);
+        if (s.status_code === 'FINISHED') break;
+        if (s.status_code === 'ERROR' || s.status_code === 'EXPIRED') throw new IgError(s.status || 'Instagram could not build the carousel.');
+        if (i >= 20) throw new IgNotReady(creation);
+        await sleep(2000);
+      }
+      let id = '';
+      for (let i = 0; !id; i++) {
+        try {
+          id = (await graph<{ id: string }>(`/${me}/media_publish`, { creation_id: creation }, 'POST')).id;
+        } catch (e) {
+          // "Finished" can still be a moment early for media_publish.
+          if (!notReady(e)) throw e;
+          if (i >= 2) throw new IgNotReady(creation);
+          await sleep(4000);
         }
       }
-      const { id } = await graph<{ id: string }>(`/${me}/media_publish`, { creation_id: creation }, 'POST');
       const { permalink = '' } = await graph<{ permalink?: string }>(`/${id}`, { fields: 'permalink' }).catch(() => ({ permalink: '' }));
       await env.MEDIA.put(postedKey(post), JSON.stringify({ id, permalink, at: new Date().toISOString() }), { httpMetadata: { contentType: 'application/json' } });
       // Instagram has its own copies now.

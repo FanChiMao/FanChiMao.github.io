@@ -16,7 +16,16 @@ const $$ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = doc
 
 // ---------------------------------------------------------------- API
 
-class ApiError extends Error {}
+class ApiError extends Error {
+  constructor(
+    message: string,
+    /** The API's error code (e.g. NOT_READY) and the rest of its error object. */
+    readonly code?: string,
+    readonly extra?: Record<string, unknown>,
+  ) {
+    super(message);
+  }
+}
 async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   let res: Response;
   try {
@@ -25,8 +34,8 @@ async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     throw new ApiError('連不上後台（網路中斷，或登入已過期：請重新整理頁面）');
   }
   if (res.type === 'opaqueredirect' || res.status === 0) throw new ApiError('登入已過期，請重新整理頁面再登入一次');
-  const body = (await res.json().catch(() => null)) as (T & { error?: { message: string } }) | null;
-  if (!res.ok) throw new ApiError(body?.error?.message ?? `後台回應 ${res.status}`);
+  const body = (await res.json().catch(() => null)) as (T & { error?: { message: string; code?: string } & Record<string, unknown> }) | null;
+  if (!res.ok) throw new ApiError(body?.error?.message ?? `後台回應 ${res.status}`, body?.error?.code, body?.error);
   return body as T;
 }
 

@@ -6,6 +6,7 @@ import { IgError, IgInput, instagram } from '../src/instagram';
 type Call = { method: string; path: string; params: Record<string, string> };
 let calls: Call[];
 let refuse: string | null;
+let notReady: number;
 const graph: typeof fetch = async (input, init) => {
   const url = new URL(typeof input === 'string' ? input : (input as Request).url);
   const method = init?.method ?? 'GET';
@@ -16,6 +17,10 @@ const graph: typeof fetch = async (input, init) => {
   if (refuse && path.endsWith('/media')) return new Response(JSON.stringify({ error: { message: refuse } }), { status: 400 });
   if (path === '/1784' && method === 'GET') return ok({ username: 'ajie.archive' });
   if (path === '/1784/media') return ok({ id: String(90000 + calls.length) });
+  if (path === '/1784/media_publish' && notReady > 0) {
+    notReady--;
+    return new Response(JSON.stringify({ error: { message: 'Media ID is not available', code: 9007, error_subcode: 2207027 } }), { status: 400 });
+  }
   if (path === '/1784/media_publish') return ok({ id: '77777' });
   if (path === '/77777') return ok({ permalink: 'https://www.instagram.com/p/abc/' });
   if (/^\/\d+$/.test(path)) return ok({ status_code: 'FINISHED' });
@@ -27,6 +32,7 @@ const jpeg = () => new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]);
 beforeEach(() => {
   calls = [];
   refuse = null;
+  notReady = 0;
 });
 
 describe('instagram', () => {
@@ -76,6 +82,18 @@ describe('instagram', () => {
     await expect(ig().publish('p2', ids, '文案', false)).rejects.toThrow(/已經發到 IG/);
     await expect(ig().publish('p2', ids, '文案', true)).resolves.toBeTruthy();
   });
+
+  it('waits when Instagram says the carousel is not ready yet, and can reuse a carousel', async () => {
+    notReady = 1;
+    const res = await ig().publish('p5', ['11111', '22222'], 'x', false);
+    expect(res.permalink).toBe('https://www.instagram.com/p/abc/');
+    expect(calls.filter((c) => c.path === '/1784/media_publish')).toHaveLength(2);
+    calls = [];
+    await ig().publish('p6', ['11111', '22222'], 'x', false, '33333');
+    expect(calls.some((c) => c.params.media_type === 'CAROUSEL')).toBe(false); // reused, not built again
+    expect(calls.find((c) => c.path === '/1784/media_publish')!.params.creation_id).toBe('33333');
+    await expect(ig().publish('p7', ['11111'], 'x', false, '../x')).rejects.toThrow(IgInput);
+  }, 15000);
 
   it('cleans up staged photos after a cancel', async () => {
     await ig().stage('p4', 0, jpeg());
