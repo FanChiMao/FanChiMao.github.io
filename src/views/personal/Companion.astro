@@ -1,8 +1,9 @@
 ---
 import { AJIE_POST_IDS } from '@/data/ajie-posts';
 /**
- * /personal/ajie/: Ajie, as an IG-style profile. A header with Ajie's facts, a grid of
- * square thumbnails, and one dialog per post (photos / clips, caption, date, place).
+ * /personal/ajie/: Ajie, as an IG-style profile. A header with Ajie's facts, the posts as a grid
+ * of square thumbnails, a timeline (like the Journey's) or a calendar, and one dialog per post
+ * (photos / clips, caption, date, place).
  * Posts come from src/content/ajie/*.json; nothing here is invented.
  */
 import Photo from '@/components/Photo.astro';
@@ -107,6 +108,16 @@ if (span) {
     months.push({ ym, label: monthFmt.format(t), lead, cells });
   }
 }
+
+// Timeline view: newest first (pinned posts take their place by date here), under month headings.
+const byDate = posts.map((_, i) => i).sort((a, b) => posts[b].data.date.localeCompare(posts[a].data.date) || a - b);
+const tlMonths: { ym: string; label: string; items: number[] }[] = [];
+for (const i of byDate) {
+  const ym = posts[i].data.date.slice(0, 7);
+  const last = tlMonths.at(-1);
+  if (last?.ym === ym) last.items.push(i);
+  else tlMonths.push({ ym, label: monthFmt.format(utc(`${ym}-01`)), items: [i] });
+}
 ---
 
 <PersonalLayout {lang} path="/personal/ajie/" title={c.name} description={c.blurb} overlay={false} noindex={posts.length === 0}>
@@ -115,7 +126,8 @@ if (span) {
       try {
         const root = document.currentScript.closest('[data-ajie]');
         if (localStorage.getItem('ajie:ai-illustrations:v1') === 'hide') root.dataset.aiIllustrations = 'hide';
-        if (localStorage.getItem('ajie:view:v1') === 'calendar') root.dataset.view = 'calendar';
+        const v = localStorage.getItem('ajie:view:v1');
+        if (v === 'calendar' || v === 'timeline') root.dataset.view = v;
       } catch {}
     </script>
     <div class="container ajie__inner">
@@ -166,6 +178,9 @@ if (span) {
               <button type="button" data-view-btn="grid" aria-pressed="true" aria-label={p.ajie.viewGrid} title={p.ajie.viewGrid}>
                 <Icon name="lucide:grid-3x3" />
               </button>
+              <button type="button" data-view-btn="timeline" aria-pressed="false" aria-label={p.ajie.viewTimeline} title={p.ajie.viewTimeline}>
+                <Icon name="lucide:list" />
+              </button>
               <button type="button" data-view-btn="calendar" aria-pressed="false" aria-label={p.ajie.viewCalendar} title={p.ajie.viewCalendar}>
                 <Icon name="lucide:calendar-days" />
               </button>
@@ -214,6 +229,66 @@ if (span) {
               );
             })}
           </ul>
+          <ol class="ajie__tl">
+            {tlMonths.map(({ label, items }) => (
+              <li class="ajie__tl-month">
+                <h2 class="ajie__tl-label" data-reveal>
+                  {label}
+                </h2>
+                <ol class="ajie__tl-list">
+                  {items.map((i, k) => {
+                    const post = posts[i];
+                    const first = post.data.media[0];
+                    const title = pick(post.data.title);
+                    const excerpt = (pick(post.data.caption) ?? '').split(/\n+/)[0];
+                    const place = pick(post.data.location);
+                    const shots = post.data.media.length;
+                    const clip = post.data.media.some((m) => m.type !== 'image');
+                    return (
+                      <li class="ajie__tl-item" data-reveal="right" style={`--i:${k}`}>
+                        <span class="ajie__tl-dot" aria-hidden="true">
+                          <Icon name="lucide:paw-print" />
+                        </span>
+                        <button class="ajie__tl-card" type="button" data-open={i} aria-label={`${p.ajie.open}: ${title ?? excerpt.slice(0, 60)}, ${when(post.data)}`}>
+                          <span class="ajie__tl-main">
+                            <span class="ajie__tl-tags">
+                              <time class="ajie__tl-when" datetime={post.data.from ? `${post.data.from}/${post.data.date}` : post.data.date}>
+                                <Icon name="lucide:calendar" />
+                                {whenShort(post.data)}
+                              </time>
+                              {shots > 1 && (
+                                <span class="badge">
+                                  <Icon name="lucide:images" />
+                                  {shots}
+                                </span>
+                              )}
+                              {clip && (
+                                <span class="badge">
+                                  <Icon name="lucide:clapperboard" />
+                                </span>
+                              )}
+                            </span>
+                            <span class="ajie__tl-title">{title ?? c.name}</span>
+                            {excerpt && <span class="ajie__tl-excerpt">{excerpt}</span>}
+                            {place && (
+                              <span class="ajie__tl-meta">
+                                <Icon name="lucide:map-pin" />
+                                {place}
+                              </span>
+                            )}
+                          </span>
+                          <span class="ajie__tl-thumb">
+                            {post.data.cover && <Photo class="ajie__thumb ajie__thumb--ai" src={post.data.cover.src} alt="" widths={[160, 320]} sizes="96px" quality={72} loading="lazy" />}
+                            <Photo class:list={['ajie__thumb', 'ajie__thumb--real', { 'ajie__thumb--behind-ai': post.data.cover }]} src={thumbOf(first)!} alt="" widths={[160, 320]} sizes="96px" quality={72} loading="lazy" />
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </li>
+            ))}
+          </ol>
           <div class="ajie__cal" data-cal>
             <div class="ajie__cal-nav" data-cal-nav hidden>
               <button type="button" class="ajie__cal-step" data-cal-step="-1" aria-label={p.ajie.prevMonth} title={p.ajie.prevMonth}>
@@ -356,12 +431,48 @@ if (span) {
       root.querySelector('[data-cal-label]')!.textContent = monthEls[month].dataset.label ?? '';
       root.querySelectorAll<HTMLButtonElement>('[data-cal-step]').forEach((b) => (b.disabled = month + Number(b.dataset.calStep) < 0 || month + Number(b.dataset.calStep) >= monthEls.length));
     };
-    root.querySelectorAll<HTMLButtonElement>('[data-cal-step]').forEach((b) =>
-      b.addEventListener('click', () => {
-        month = Math.min(monthEls.length - 1, Math.max(0, month + Number(b.dataset.calStep)));
-        paintMonth();
-      }),
-    );
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    /** One month back (-1) or on (+1), sliding in from that side. */
+    const step = (by: number) => {
+      const to = Math.min(monthEls.length - 1, Math.max(0, month + by));
+      if (to === month) return;
+      month = to;
+      paintMonth();
+      if (reduceMotion) return;
+      const el = monthEls[month];
+      el.classList.remove('slide-next', 'slide-prev');
+      void el.offsetWidth; // restart the animation
+      el.classList.add(by > 0 ? 'slide-next' : 'slide-prev');
+    };
+    root.querySelectorAll<HTMLButtonElement>('[data-cal-step]').forEach((b) => b.addEventListener('click', () => step(Number(b.dataset.calStep))));
+    // Phones: swipe the month sideways (left for the next month, right for the one before).
+    if (cal) {
+      let x0 = 0, y0 = 0, tracking = false;
+      cal.addEventListener(
+        'touchstart',
+        (e) => {
+          tracking = e.touches.length === 1;
+          x0 = e.touches[0].clientX;
+          y0 = e.touches[0].clientY;
+        },
+        { passive: true },
+      );
+      cal.addEventListener(
+        'touchmove',
+        (e) => {
+          // Mostly vertical: the reader is scrolling the page, not switching months.
+          if (tracking && Math.abs(e.touches[0].clientY - y0) > Math.abs(e.touches[0].clientX - x0) * 1.2 && Math.abs(e.touches[0].clientY - y0) > 10) tracking = false;
+        },
+        { passive: true },
+      );
+      cal.addEventListener('touchend', (e) => {
+        if (!tracking) return;
+        tracking = false;
+        const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+        if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.5) step(dx < 0 ? 1 : -1);
+      });
+      cal.addEventListener('touchcancel', () => (tracking = false));
+    }
     paintMonth();
     // After a language swap the month names are new: repaint the label.
     document.addEventListener('langswap', paintMonth);
@@ -409,7 +520,9 @@ if (span) {
     const sequence = () =>
       root.dataset.view === 'calendar'
         ? dialogs.map((_, i) => i).sort((a, b) => (dialogs[a].dataset.date ?? '').localeCompare(dialogs[b].dataset.date ?? '') || b - a)
-        : dialogs.map((_, i) => i);
+        : root.dataset.view === 'timeline'
+          ? dialogs.map((_, i) => i).sort((a, b) => (dialogs[b].dataset.date ?? '').localeCompare(dialogs[a].dataset.date ?? '') || a - b)
+          : dialogs.map((_, i) => i);
     const open = (i: number) => {
       const d = dialogs[i];
       if (!d) return;
@@ -731,8 +844,199 @@ if (span) {
   /* Grid */
   /* Only the chosen view shows. */
   [data-view='calendar'] .ajie__grid,
-  [data-view='grid'] .ajie__cal {
+  [data-view='timeline'] .ajie__grid,
+  [data-view='grid'] .ajie__cal,
+  [data-view='timeline'] .ajie__cal,
+  [data-view='grid'] .ajie__tl,
+  [data-view='calendar'] .ajie__tl {
     display: none;
+  }
+
+  /* ---- Timeline view: the Journey's trail and cards, with a thumbnail on each card. */
+  .ajie__tl,
+  .ajie__tl-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ajie__tl {
+    display: grid;
+    gap: 2.25rem;
+    width: min(100%, 760px);
+    margin-inline: auto;
+  }
+  .ajie__tl-label {
+    margin-bottom: 1rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.35rem, 2.8vw, 1.8rem);
+    color: var(--accent);
+  }
+  .ajie__tl-list {
+    position: relative;
+    display: grid;
+    gap: 1.1rem;
+    padding-left: 3.25rem;
+  }
+  /* The trail */
+  .ajie__tl-list::before {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 2px;
+    border-radius: 2px;
+    background: linear-gradient(var(--accent), var(--accent-2));
+    opacity: 0.45;
+  }
+  .ajie__tl-item {
+    position: relative;
+    z-index: 1;
+  }
+  .ajie__tl-dot {
+    position: absolute;
+    left: -3.25rem;
+    top: 50%;
+    translate: 0 -50%;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border-strong));
+    background: color-mix(in srgb, var(--accent) 12%, var(--bg-elev));
+    color: var(--accent);
+  }
+  .ajie__tl-dot :global(svg) {
+    width: 18px;
+    height: 18px;
+  }
+  .ajie__tl-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+    width: 100%;
+    padding: 0.85rem 0.85rem 0.85rem clamp(1rem, 3vw, 1.4rem);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--bg-elev) 80%, transparent);
+    backdrop-filter: blur(6px);
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      border-color 0.3s,
+      transform 0.3s var(--ease-out),
+      box-shadow 0.3s;
+  }
+  .ajie__tl-card:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -14px rgb(0 0 0 / 0.35);
+  }
+  .ajie__tl-card:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .ajie__tl-main {
+    display: grid;
+    gap: 0.3rem;
+    min-width: 0;
+  }
+  .ajie__tl-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .ajie__tl-tags :global(svg) {
+    width: 0.8rem;
+    height: 0.8rem;
+  }
+  /* Date chip: outlined and neutral, apart from the filled chips (as on the Journey). */
+  .ajie__tl-when {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.18rem 0.6rem 0.18rem 0.5rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: var(--bg-elev);
+    color: var(--text-2);
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+  .ajie__tl-when :global(svg) {
+    color: var(--accent);
+  }
+  .ajie__tl-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 2.2vw, 1.25rem);
+    font-weight: 650;
+    line-height: 1.3;
+  }
+  .ajie__tl-excerpt {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    color: var(--text-2);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  .ajie__tl-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .ajie__tl-meta :global(svg) {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+  .ajie__tl-thumb {
+    position: relative;
+    width: clamp(4.5rem, 16vw, 6rem);
+    aspect-ratio: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--surface-2);
+  }
+  .ajie__tl-thumb :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition:
+      opacity 0.3s,
+      transform 0.5s var(--ease-out);
+  }
+  .ajie__tl-card:hover .ajie__tl-thumb :global(img) {
+    transform: scale(1.06);
+  }
+  @media (max-width: 560px) {
+    .ajie__tl-list {
+      padding-left: 2.6rem;
+    }
+    .ajie__tl-list::before {
+      left: 15px;
+    }
+    .ajie__tl-dot {
+      left: -2.6rem;
+      width: 32px;
+      height: 32px;
+    }
+    .ajie__tl-dot :global(svg) {
+      width: 15px;
+      height: 15px;
+    }
   }
 
   /* ---- Calendar view: narrower than the grid, so a month fits on one screen. */
@@ -768,6 +1072,28 @@ if (span) {
   }
   .ajie__month[hidden] {
     display: none;
+  }
+  /* Sideways swipes are ours (month switching); vertical ones still scroll the page. */
+  .ajie__cal.is-paged .ajie__days {
+    touch-action: pan-y;
+  }
+  .ajie__month.slide-next {
+    animation: cal-in-next 0.32s var(--ease-out);
+  }
+  .ajie__month.slide-prev {
+    animation: cal-in-prev 0.32s var(--ease-out);
+  }
+  @keyframes cal-in-next {
+    from {
+      opacity: 0;
+      translate: 28px 0;
+    }
+  }
+  @keyframes cal-in-prev {
+    from {
+      opacity: 0;
+      translate: -28px 0;
+    }
   }
   .ajie__cal-step {
     display: inline-grid;
