@@ -7,6 +7,9 @@ type Call = { method: string; path: string; params: Record<string, string> };
 let calls: Call[];
 let refuse: string | null;
 let notReady: number;
+/** media_publish posts it but answers with an error (as Instagram sometimes does). */
+let postsButFails: boolean;
+const published = new Set<string>();
 const graph: typeof fetch = async (input, init) => {
   const url = new URL(typeof input === 'string' ? input : (input as Request).url);
   const method = init?.method ?? 'GET';
@@ -16,14 +19,19 @@ const graph: typeof fetch = async (input, init) => {
   const ok = (b: unknown) => new Response(JSON.stringify(b));
   if (refuse && path.endsWith('/media')) return new Response(JSON.stringify({ error: { message: refuse } }), { status: 400 });
   if (path === '/1784' && method === 'GET') return ok({ username: 'ajie.archive' });
+  if (path === '/1784/media' && method === 'GET') return ok({ data: [{ id: '88888', permalink: 'https://www.instagram.com/p/newest/' }] });
   if (path === '/1784/media') return ok({ id: String(90000 + calls.length) });
+  if (path === '/1784/media_publish' && postsButFails) {
+    published.add(params.creation_id);
+    return new Response(JSON.stringify({ error: { message: '為了保護社群安全，我們會限制特定活動', code: 4 } }), { status: 400 });
+  }
   if (path === '/1784/media_publish' && notReady > 0) {
     notReady--;
     return new Response(JSON.stringify({ error: { message: 'Media ID is not available', code: 9007, error_subcode: 2207027 } }), { status: 400 });
   }
   if (path === '/1784/media_publish') return ok({ id: '77777' });
   if (path === '/77777') return ok({ permalink: 'https://www.instagram.com/p/abc/' });
-  if (/^\/\d+$/.test(path)) return ok({ status_code: 'FINISHED' });
+  if (/^\/\d+$/.test(path)) return ok({ status_code: published.has(path.slice(1)) ? 'PUBLISHED' : 'FINISHED' });
   return new Response('{}', { status: 404 });
 };
 const ig = () => instagram({ IG_TOKEN: 'tok', IG_USER_ID: '1784', MEDIA: env.MEDIA, FETCH: graph });
@@ -33,6 +41,8 @@ beforeEach(() => {
   calls = [];
   refuse = null;
   notReady = 0;
+  postsButFails = false;
+  published.clear();
 });
 
 describe('instagram', () => {
@@ -93,6 +103,19 @@ describe('instagram', () => {
     expect(calls.some((c) => c.params.media_type === 'CAROUSEL')).toBe(false); // reused, not built again
     expect(calls.find((c) => c.path === '/1784/media_publish')!.params.creation_id).toBe('33333');
     await expect(ig().publish('p7', ['11111'], 'x', false, '../x')).rejects.toThrow(IgInput);
+  }, 15000);
+
+  it('counts a post that went out despite an error from Instagram as done (no second post)', async () => {
+    postsButFails = true;
+    const res = await ig().publish('p8', ['11111', '22222'], 'x', false);
+    expect(res.permalink).toBe('https://www.instagram.com/p/newest/');
+    expect(calls.filter((c) => c.path === '/1784/media_publish')).toHaveLength(1);
+    expect((await ig().account()).posted.p8).toBe('https://www.instagram.com/p/newest/');
+    // A later try with the same carousel finds it published and does not post again.
+    calls = [];
+    const creation = [...published][0];
+    await ig().publish('p9', ['11111', '22222'], 'x', false, creation);
+    expect(calls.some((c) => c.path === '/1784/media_publish')).toBe(false);
   }, 15000);
 
   it('cleans up staged photos after a cancel', async () => {

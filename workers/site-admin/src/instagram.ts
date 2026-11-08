@@ -140,25 +140,46 @@ export function instagram(env: IgEnv) {
       if (!again && (await env.MEDIA.head(postedKey(post)))) throw new IgInput('這篇已經發到 IG 了。');
       let creation = reuse ?? ids[0];
       if (ids.length > 1 && !reuse) creation = (await graph<{ id: string }>(`/${me}/media`, { media_type: 'CAROUSEL', children: ids.join(','), caption }, 'POST')).id;
+      // Instagram sometimes answers a publish with an error ("not ready", "we restrict certain
+      // activity", a timeout) although the post did go out. The container then says PUBLISHED: in
+      // that case the newest post on the account is this one, and it counts as done (never posted twice).
+      const published = async () => (await status(creation).catch(() => null))?.status_code === 'PUBLISHED';
+      const newest = async () => (await graph<{ data?: { id: string; permalink?: string }[] }>(`/${me}/media`, { fields: 'id,permalink', limit: '1' })).data?.[0];
+      let id = '';
+      let permalink = '';
       for (let i = 0; ; i++) {
         const s = await status(creation);
         if (s.status_code === 'FINISHED') break;
+        if (s.status_code === 'PUBLISHED') {
+          const m = await newest();
+          id = m?.id ?? '';
+          permalink = m?.permalink ?? '';
+          break;
+        }
         if (s.status_code === 'ERROR' || s.status_code === 'EXPIRED') throw new IgError(s.status || 'Instagram could not build the carousel.');
         if (i >= 20) throw new IgNotReady(creation);
         await sleep(2000);
       }
-      let id = '';
-      for (let i = 0; !id; i++) {
+      let done = id !== '' || permalink !== '';
+      for (let i = 0; !done; i++) {
         try {
           id = (await graph<{ id: string }>(`/${me}/media_publish`, { creation_id: creation }, 'POST')).id;
+          done = true;
         } catch (e) {
+          await sleep(3000);
+          if (await published()) {
+            const m = await newest().catch(() => undefined);
+            id = m?.id ?? '';
+            permalink = m?.permalink ?? '';
+            done = true;
+            break;
+          }
           // "Finished" can still be a moment early for media_publish.
           if (!notReady(e)) throw e;
           if (i >= 2) throw new IgNotReady(creation);
-          await sleep(4000);
         }
       }
-      const { permalink = '' } = await graph<{ permalink?: string }>(`/${id}`, { fields: 'permalink' }).catch(() => ({ permalink: '' }));
+      if (id && !permalink) permalink = (await graph<{ permalink?: string }>(`/${id}`, { fields: 'permalink' }).catch(() => ({ permalink: '' }))).permalink ?? '';
       await env.MEDIA.put(postedKey(post), JSON.stringify({ id, permalink, at: new Date().toISOString() }), { httpMetadata: { contentType: 'application/json' } });
       // Instagram has its own copies now.
       const tmp = await env.MEDIA.list({ prefix: tmpPrefix(post) });
