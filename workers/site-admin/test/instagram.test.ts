@@ -40,7 +40,7 @@ describe('instagram', () => {
     expect(url).toMatch(/^https:\/\/media\.52hzfan\.com\/ig\/tmp\/2025-11-19-back-to-normal\/0-[0-9a-f]{8}\.jpg$/);
     await expect(ig().stage('2025-11-19-back-to-normal', 0, new Uint8Array([1, 2, 3, 4]))).rejects.toThrow(IgInput);
     await expect(ig().stage('../x', 0, jpeg())).rejects.toThrow(IgInput);
-    await expect(ig().stage('ok', 10, jpeg())).rejects.toThrow(IgInput);
+    await expect(ig().stage('ok', 20, jpeg())).rejects.toThrow(IgInput);
   });
 
   it('refuses media from anywhere else', async () => {

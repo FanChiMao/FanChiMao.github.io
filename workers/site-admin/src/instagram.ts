@@ -15,7 +15,9 @@ import { ID } from '../../../src/lib/admin-post';
 
 const GRAPH = 'https://graph.facebook.com/v25.0';
 const MEDIA = 'https://media.52hzfan.com/';
-const MAX_ITEMS = 10; // carousel limit of the API
+// Carousel limit: 20 in the Instagram app since 2024; the API docs still say 10. If the API
+// refuses more than 10, Instagram's own message shows when the carousel is built (nothing is posted).
+const MAX_ITEMS = 20;
 const MAX_CAPTION = 2200;
 const MAX_IMAGE = 8 * 1024 * 1024; // Instagram's limit for photos
 

@@ -9,7 +9,7 @@ type Api = <T>(path: string, init?: RequestInit) => Promise<T>;
 type Slide = { type: 'image' | 'video'; src: string; thumb: string; ai?: boolean };
 type Post = { id: string; date: string; from?: string; title: string; caption: string; place: string; slides: Slide[] };
 
-const MAX = 10;
+const MAX = 20; // Instagram's carousel limit (the app's; the API docs still say 10, see instagram.ts)
 const W = 1080;
 const H = 1350; // 4:5
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
