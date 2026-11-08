@@ -122,15 +122,18 @@ const unplaced = items.filter((x) => !x.data.coords).length;
             </div>
             {used.length > 0 && (
               <div class="journey__filter" role="group" aria-label={p.journey.filter}>
-                <button type="button" data-filter="all" aria-pressed="true">
+                {/* "All" stays put; the categories scroll sideways when they do not fit (phones). */}
+                <button type="button" class="journey__all" data-filter="all" aria-pressed="true">
                   {p.journey.all}
                 </button>
-                {used.map((k) => (
-                  <button type="button" data-filter={k} aria-pressed="false">
-                    <Icon name={`lucide:${ICON[k]}`} />
-                    {p.journey.categories[k]}
-                  </button>
-                ))}
+                <div class="journey__cats" data-cats>
+                  {used.map((k) => (
+                    <button type="button" data-filter={k} aria-pressed="false">
+                      <Icon name={`lucide:${ICON[k]}`} />
+                      {p.journey.categories[k]}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -165,13 +168,14 @@ const unplaced = items.filter((x) => !x.data.coords).length;
                         {/* Collapsible: the summary is one bar (date, category, title, place); all start collapsed. */}
                         <details class="milestone__card" data-milestone={m.id}>
                           <summary class="milestone__head">
-                            <time class="milestone__when" datetime={m.data.date}>
-                              <span class="milestone__day">{dayMonth.format(asDate(m.data.date))}</span>
-                              <span class="milestone__yr">{m.data.date.slice(0, 4)}</span>
-                            </time>
                             <span class="milestone__main">
                               <span class="milestone__tags">
-                                <span class="badge">{p.journey.categories[m.data.category]}</span>
+                                {/* The date is a chip like the others (the year is the heading above). */}
+                                <time class="milestone__when" datetime={m.data.date}>
+                                  <Icon name="lucide:calendar" />
+                                  {dayMonth.format(asDate(m.data.date))}
+                                </time>
+                                <span class="badge milestone__cat">{p.journey.categories[m.data.category]}</span>
                                 {m.data.stat && <span class="badge milestone__stat-chip">{m.data.stat}</span>}
                               </span>
                               <h3 class="milestone__title">{title}</h3>
@@ -391,7 +395,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
         el.textContent = value;
         panelBody.append(el);
       };
-      add('p', 'jglobe__tags', [text(m, '.milestone__tags .badge:not(.milestone__stat-chip)'), text(m, '.milestone__stat-chip')].filter(Boolean).join(' · '));
+      add('p', 'jglobe__tags', [text(m, '.milestone__cat'), text(m, '.milestone__stat-chip')].filter(Boolean).join(' · '));
       add('h3', 'jglobe__title', text(m, '.milestone__title'));
       add('p', 'jglobe__meta', [text(m, '.milestone__full-date'), text(m, '.milestone__meta > span:not(.milestone__full-date)')].filter(Boolean).join(' · '));
     };
@@ -561,12 +565,102 @@ const unplaced = items.filter((x) => !x.data.coords).length;
       if (list || (current && !pins().some((p) => p.id === current))) closePanel();
       globe?.setPins(pins(), current);
     };
+    const catsEl = root.querySelector<HTMLElement>('[data-cats]');
     filterBtns.forEach((b) =>
       b.addEventListener('click', () => {
         filter = b.dataset.filter ?? 'all';
         applyFilter();
+        // Bring the picked category fully into the scrolling row (back to the start for "All").
+        if (catsEl) {
+          if (filter === 'all') catsEl.scrollTo({ left: 0, behavior: reduce ? 'auto' : 'smooth' });
+          else {
+            const r = b.getBoundingClientRect(), c = catsEl.getBoundingClientRect();
+            const pad = 24;
+            if (r.left < c.left + pad || r.right > c.right - pad) catsEl.scrollBy({ left: r.left + r.width / 2 - (c.left + c.width / 2), behavior: reduce ? 'auto' : 'smooth' });
+          }
+        }
       }),
     );
+    // Soft edges on the category row where more chips are hidden.
+    catsEl?.addEventListener('scroll', () => paintCatEdges(), { passive: true });
+    const paintCatEdges = () => {
+      if (!catsEl) return;
+      const max = catsEl.scrollWidth - catsEl.clientWidth;
+      catsEl.classList.toggle('has-left', catsEl.scrollLeft > 2);
+      catsEl.classList.toggle('has-right', catsEl.scrollLeft < max - 2);
+    };
+    new ResizeObserver(paintCatEdges).observe(catsEl ?? root);
+    paintCatEdges();
+
+    /*
+     * When the categories do not fit (phones), the row drifts slowly back and forth on its own so
+     * the hidden ones show up, resting a moment at each end. It holds still while the reader
+     * touches, hovers or focuses it (and for a few seconds after they scroll it themselves), while a
+     * category is picked, off screen, or with reduced motion.
+     */
+    if (catsEl && !reduce) {
+      const SPEED = 22; // px per second
+      const REST = 1600; // ms at each end
+      let pos = 0;
+      let dir = 1;
+      let restUntil = performance.now() + 2500; // a moment before it starts
+      let holdUntil = 0;
+      let touching = false;
+      let hovering = false;
+      let visible = false;
+      let raf = 0;
+      let lastT = 0;
+      const running = () => visible && !touching && !hovering && filter === 'all' && !catsEl.contains(document.activeElement);
+      const tick = (t: number) => {
+        raf = 0;
+        const dt = lastT ? Math.min(64, t - lastT) : 0;
+        lastT = t;
+        const max = catsEl.scrollWidth - catsEl.clientWidth;
+        if (running() && max > 4 && t > restUntil && t > holdUntil) {
+          pos = Math.min(max, Math.max(0, pos + (dir * SPEED * dt) / 1000));
+          if (pos >= max || pos <= 0) {
+            dir = pos >= max ? -1 : 1;
+            restUntil = t + REST;
+          }
+          catsEl.scrollLeft = pos;
+        }
+        if (visible) raf = requestAnimationFrame(tick);
+      };
+      const start = () => {
+        if (!raf) {
+          lastT = 0;
+          raf = requestAnimationFrame(tick);
+        }
+      };
+      // The reader's own scrolling (not ours): follow it and pause for a while.
+      catsEl.addEventListener(
+        'scroll',
+        () => {
+          if (Math.abs(catsEl.scrollLeft - pos) > 2) {
+            pos = catsEl.scrollLeft;
+            holdUntil = performance.now() + 3500;
+          }
+        },
+        { passive: true },
+      );
+      catsEl.addEventListener('pointerdown', () => (touching = true));
+      addEventListener('pointerup', () => {
+        if (!touching) return;
+        touching = false;
+        holdUntil = performance.now() + 3500;
+      });
+      addEventListener('pointercancel', () => (touching = false));
+      catsEl.addEventListener('pointerenter', (e) => e.pointerType === 'mouse' && (hovering = true));
+      catsEl.addEventListener('pointerleave', () => (hovering = false));
+      new IntersectionObserver(([e]) => {
+        visible = e.isIntersecting;
+        if (visible) start();
+      }).observe(catsEl);
+      // Back to "All": it starts again after a short rest, from wherever the row is.
+      root.querySelector('[data-filter="all"]')?.addEventListener('click', () => {
+        holdUntil = performance.now() + 2500;
+      });
+    }
     // Year menu: a small glass list under the button (keyboard: arrows, Enter, Escape).
     const yearOpen = () => !!yearMenu && !yearMenu.hidden;
     const closeYear = (focusBtn = false) => {
@@ -708,6 +802,9 @@ const unplaced = items.filter((x) => !x.data.coords).length;
 <style>
   .journey__inner {
     display: grid;
+    /* One column that never grows past the screen: without minmax(0, ...) the row of category
+       chips (which scrolls sideways) widened the whole page on phones and pushed the globe off-centre. */
+    grid-template-columns: minmax(0, 1fr);
     gap: 2.75rem;
     max-width: 860px;
   }
@@ -803,10 +900,10 @@ const unplaced = items.filter((x) => !x.data.coords).length;
   .milestone__card[open]::details-content {
     block-size: auto;
   }
-  /* The bar: date | category, title, place | chevron */
+  /* The bar: date and category chips, title, place | chevron */
   .milestone__head {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 1.1rem;
     align-items: center;
     padding: 0.9rem clamp(1rem, 3vw, 1.4rem);
@@ -821,28 +918,26 @@ const unplaced = items.filter((x) => !x.data.coords).length;
     outline-offset: -2px;
     border-radius: 18px;
   }
+  /* Date chip: outlined and neutral, so it reads apart from the filled category / result chips. */
   .milestone__when {
-    display: grid;
-    justify-items: center;
-    min-width: 4.6rem;
-    padding: 0.45rem 0.6rem;
-    border-radius: 12px;
-    background: var(--accent-soft);
-    color: var(--accent);
-    line-height: 1.1;
-    text-align: center;
-  }
-  .milestone__day {
-    font-family: var(--font-display);
-    font-size: 1.05rem;
-    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.18rem 0.6rem 0.18rem 0.5rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: var(--bg-elev);
+    color: var(--text-2);
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.4;
     white-space: nowrap;
   }
-  .milestone__yr {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
+  .milestone__when :global(svg) {
+    width: 0.8rem;
+    height: 0.8rem;
+    color: var(--c1, var(--accent));
   }
   .milestone__main {
     display: grid;
@@ -919,13 +1014,10 @@ const unplaced = items.filter((x) => !x.data.coords).length;
   }
   @media (max-width: 560px) {
     .milestone__head {
-      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr);
     }
     .milestone__chev {
       display: none;
-    }
-    .milestone__when {
-      min-width: 3.9rem;
     }
   }
   .milestone__story {
@@ -1160,10 +1252,37 @@ const unplaced = items.filter((x) => !x.data.coords).length;
   .journey__filter {
     display: flex;
     flex-basis: 100%;
+    min-width: 0;
+    gap: 0.35rem;
+    max-width: 100%;
+  }
+  .journey__all {
+    flex: none;
+  }
+  .journey__cats {
+    --fade-l: 0px;
+    --fade-r: 0px;
+    display: flex;
+    flex: 1;
+    min-width: 0;
     gap: 0.35rem;
     overflow-x: auto;
+    overscroll-behavior-x: contain;
     scrollbar-width: none;
-    max-width: 100%;
+    /* Room for the focus ring (the scroller would clip it). */
+    padding: 4px 2px;
+    margin: -4px -2px;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent);
+  }
+  .journey__cats::-webkit-scrollbar {
+    display: none;
+  }
+  .journey__cats.has-left {
+    --fade-l: 1.5rem;
+  }
+  .journey__cats.has-right {
+    --fade-r: 1.5rem;
   }
   .journey__none {
     margin: 0 0 1rem;
@@ -1235,6 +1354,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
   .jglobe {
     position: relative;
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 0.6rem;
     /* Read by the globe script to paint its surface (plain colours: canvas and three.js parse them). */
     --globe-ocean-top: #dcecf9;
