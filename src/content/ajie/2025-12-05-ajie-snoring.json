@@ -1,0 +1,50 @@
+{
+  "date": "2025-12-05",
+  "title": {
+    "en": "Ajie's Little Snores",
+    "zh-tw": "阿桔的打呼聲",
+    "zh-cn": "阿桔的打呼声",
+    "ja": "アジエのいびき"
+  },
+  "location": {
+    "en": "Home",
+    "zh-tw": "家裡",
+    "zh-cn": "家里",
+    "ja": "自宅"
+  },
+  "cover": {
+    "src": "/media/ajie/2025-12-05-ajie-snoring-23126e70-3ae1-477c-997b-6e1ef8f81184.jpg",
+    "alt": {
+      "en": "Illustration: Ajie, an orange tabby, sleeps soundly behind me on my office chair, his paws stretched out and little snoring sounds escaping as I work from home.",
+      "zh-tw": "插畫：橘色虎斑貓阿桔窩在我的辦公椅後面熟睡，前腳伸得長長的，還發出可愛的打呼聲；旁邊小小的「我」正在居家辦公",
+      "zh-cn": "插画：橘色虎斑猫阿桔窝在我的办公椅后面熟睡，前脚伸得长长的，还发出可爱的打呼声；旁边小小的“我”正在居家办公",
+      "ja": "イラスト：茶トラのアジエが、在宅勤務中の僕の椅子の後ろで前足を伸ばしてぐっすり眠り、かわいいいびきをかいている"
+    }
+  },
+  "media": [
+    {
+      "type": "video",
+      "src": "/media/ajie/2025-12-05-ajie-snoring-img-6383.mp4",
+      "loop": false,
+      "poster": "/media/ajie/2025-12-05-ajie-snoring-img-6383-poster.jpg"
+    },
+    {
+      "type": "video",
+      "src": "/media/ajie/2025-12-05-ajie-snoring-img-6385.mp4",
+      "loop": false,
+      "poster": "/media/ajie/2025-12-05-ajie-snoring-img-6385-poster.jpg"
+    },
+    {
+      "type": "video",
+      "src": "/media/ajie/2025-12-05-ajie-snoring-img-6387.mp4",
+      "loop": false,
+      "poster": "/media/ajie/2025-12-05-ajie-snoring-img-6387-poster.jpg"
+    }
+  ],
+  "caption": {
+    "en": "December 5, while I was working from home, Ajie climbed onto the chair behind me and fell fast asleep.\n\nThen I noticed he was actually snoring! He looked so comfortable sleeping there, and those little snores were ridiculously cute ☺️\n\nI didn't expect working from home to come with such adorable background noise XD",
+    "zh-tw": "12/05 在家 WFH 上班的時候，阿桔跑到我後面的椅子上睡覺。\n\n結果睡著睡著，竟然開始打呼！看牠睡得那麼舒服，還一直發出小小的打呼聲，真的超級可愛 ☺️\n\n沒想到居家辦公還有這種可愛的背景音效 XD",
+    "zh-cn": "12/05 在家 WFH 上班的时候，阿桔跑到我后面的椅子上睡觉。\n\n结果睡着睡着，竟然开始打呼！看它睡得那么舒服，还一直发出小小的打呼声，真的超级可爱 ☺️\n\n没想到居家办公还有这种可爱的背景音效 XD",
+    "ja": "12月5日、在宅勤務中にアジエが僕の後ろの椅子にやってきて、そのまま眠ってしまった。\n\nすると、なんといびきをかき始めた！気持ちよさそうに寝ながら、小さないびきをずっとかいていて、本当にかわいすぎる ☺️\n\nまさか在宅勤務にこんなかわいいBGMがついてくるとは XD"
+  }
+}
