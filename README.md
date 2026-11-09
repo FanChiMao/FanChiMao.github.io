@@ -106,7 +106,7 @@ Rules live in `src/lib/passport.ts` (`ACHIEVEMENTS`); texts in `src/i18n/persona
 
 ## Stats API (badge rates, Ajie likes)
 
-`workers/achievement-stats/` is a Cloudflare Worker with a D1 database. It counts, anonymously, how many explorers (visitors who entered the personal world) hold each badge, and the likes on Ajie's posts. Spec: `docs/specs/achievement-statistics.md`.
+`workers/achievement-stats/` is a Cloudflare Worker with a D1 database. It counts, anonymously, how many explorers (visitors who entered the personal world) hold each badge, and the likes on Ajie's posts. Against padded numbers: a new browser identity passes Cloudflare Turnstile once (invisible; site key in `src/lib/passport-stats.ts`, secret `TURNSTILE_SECRET` on the Worker, allowed hostnames in `TURNSTILE_HOSTNAMES`), new identities per IP are rate limited, and the 52Hz badge only counts for a day-old identity holding most other badges. Spec: `docs/specs/achievement-statistics.md`.
 
 - The browser keeps a random installation secret (`passport-stats:identity:v1`); the Worker stores only its SHA-256. No IP, user agent or location is stored.
 - Professional pages never call the API. Personal pages register once and report new badges (batched, at most a few requests per visit).

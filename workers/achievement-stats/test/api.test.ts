@@ -12,10 +12,14 @@ function secret() {
   return btoa(String.fromCharCode(...b)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
+/** A different documentation-range IP per request, so the per-IP limits only bite where a test means them to. */
+let ipN = 0;
+const ip = () => `198.51.${(++ipN >> 8) & 255}.${ipN & 255}`;
+
 const sync = (token: string | null, ids: unknown, init: RequestInit = {}) =>
   SELF.fetch(`${API}/v1/passport/sync`, {
     method: 'POST',
-    headers: { Origin: ORIGIN, 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    headers: { Origin: ORIGIN, 'CF-Connecting-IP': ip(), 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: typeof ids === 'string' ? ids : JSON.stringify({ achievementIds: ids }),
     ...init,
   });
@@ -80,6 +84,16 @@ describe('POST /v1/passport/sync', () => {
     expect(await snapshot()).toEqual({ n: 0, counts: {} });
   });
 
+  it('limits how many new identities one IP can register', async () => {
+    const at = { 'CF-Connecting-IP': '203.0.113.77', 'Content-Type': 'application/json', Origin: ORIGIN };
+    const statuses: number[] = [];
+    for (let i = 0; i < 6; i++) {
+      const t = secret();
+      statuses.push((await sync(t, [], { headers: { ...at, Authorization: `Bearer ${t}` } })).status);
+    }
+    expect(statuses).toEqual([200, 200, 200, 200, 200, 429]);
+  });
+
   it('rate limits a single identity with Retry-After', async () => {
     const t = secret();
     const statuses: number[] = [];
@@ -133,16 +147,89 @@ describe('GET /v1/passport/stats', () => {
   });
 });
 
+/** SHA-256 hex of the stored form of a secret (as the Worker does). */
+async function hashOf(token: string) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`52hz:${token}`));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+/** Make an identity look registered `hours` ago. */
+async function age(token: string, hours: number) {
+  await env.DB.prepare('UPDATE visitors SET created_at = ?1 WHERE visitor_hash = ?2').bind(Date.now() - hours * 3_600_000, await hashOf(token)).run();
+}
+const everyOther = ACHIEVEMENT_IDS.filter((id) => id !== 'lonely-whale');
+
+describe('Turnstile for new identities', () => {
+  /** Calls the Worker directly with a Turnstile secret and a fake Siteverify. */
+  const call = async (token: string, turnstile: string | null, verdict: object) => {
+    const ctx = createExecutionContext();
+    const req = new Request(`${API}/v1/passport/sync`, {
+      method: 'POST',
+      headers: { Origin: ORIGIN, 'CF-Connecting-IP': ip(), 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...(turnstile ? { 'X-Turnstile-Token': turnstile } : {}) },
+      body: JSON.stringify({ achievementIds: [] }),
+    });
+    const verify = (async () => new Response(JSON.stringify(verdict))) as typeof fetch;
+    const res = await worker.fetch(req, { ...env, TURNSTILE_SECRET: 's', TURNSTILE_HOSTNAMES: '52hzfan.com', VERIFY_FETCH: verify }, ctx);
+    await waitOnExecutionContext(ctx);
+    return res;
+  };
+  const good = { success: true, action: 'register', hostname: '52hzfan.com' };
+
+  it('lets a new identity in only with a good token, for our action and our site', async () => {
+    expect((await call(secret(), null, good)).status).toBe(403);
+    expect((await call(secret(), 'tok', { ...good, success: false })).status).toBe(403);
+    expect((await call(secret(), 'tok', { ...good, action: 'login' })).status).toBe(403);
+    expect((await call(secret(), 'tok', { ...good, hostname: 'evil.example' })).status).toBe(403);
+    expect((await snapshot()).n).toBe(0);
+    expect((await call(secret(), 'tok', good)).status).toBe(200);
+    expect((await snapshot()).n).toBe(1);
+  });
+
+  it('does not ask an identity it already knows', async () => {
+    const a = secret();
+    await call(a, 'tok', good);
+    expect((await call(a, null, good)).status).toBe(200);
+  });
+});
+
+describe('the 52Hz badge only counts when it is plausible', () => {
+  it('is left unacknowledged for a brand-new identity, or one missing most badges', async () => {
+    const a = secret();
+    const fresh = await sync(a, [...everyOther, 'lonely-whale']);
+    expect((await fresh.json<{ acknowledgedIds: string[] }>()).acknowledgedIds).not.toContain('lonely-whale');
+    expect((await snapshot()).counts['lonely-whale']).toBeUndefined();
+    const b = secret();
+    await sync(b, ['deep-diver']);
+    await age(b, 30);
+    const thin = await sync(b, ['researcher', 'lonely-whale']);
+    expect((await thin.json<{ acknowledgedIds: string[] }>()).acknowledgedIds).toEqual(['researcher']);
+  });
+
+  it('counts for a day-old identity holding (nearly) every other badge, offered again later', async () => {
+    const a = secret();
+    await sync(a, everyOther);
+    await age(a, 30);
+    const later = await sync(a, ['lonely-whale']);
+    expect((await later.json<{ acknowledgedIds: string[] }>()).acknowledgedIds).toEqual(['lonely-whale']);
+    expect((await snapshot()).counts['lonely-whale']).toBe(1);
+  });
+});
+
 describe('GET /v1/passport/rank', () => {
-  const rank = (token: string | null) => SELF.fetch(`${API}/v1/passport/rank`, { headers: { Origin: ORIGIN, ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+  const rank = (token: string | null) => SELF.fetch(`${API}/v1/passport/rank`, { headers: { Origin: ORIGIN, 'CF-Connecting-IP': ip(), ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+  /** A day-old identity with every other badge, then the 52Hz one. */
+  const whale = async (token: string) => {
+    await sync(token, everyOther);
+    await age(token, 30);
+    await sync(token, ['lonely-whale']);
+  };
 
   it("gives each holder of the 52Hz badge their own place, in the order they reached it", async () => {
     const a = secret();
     const b = secret();
     const c = secret();
-    await sync(a, ['lonely-whale']);
+    await whale(a);
     await new Promise((r) => setTimeout(r, 5));
-    await sync(b, ['lonely-whale']);
+    await whale(b);
     await sync(c, ['deep-diver']);
     expect(await (await rank(a)).json()).toMatchObject({ rank: 1, total: 2 });
     expect(await (await rank(b)).json()).toMatchObject({ rank: 2, total: 2 });
@@ -156,7 +243,7 @@ describe('GET /v1/passport/rank', () => {
 
 describe('Ajie likes', () => {
   const like = (token: string, post: string, method: 'PUT' | 'DELETE' = 'PUT') =>
-    SELF.fetch(`${API}/v1/ajie/likes/${post}`, { method, headers: { Origin: ORIGIN, Authorization: `Bearer ${token}` } });
+    SELF.fetch(`${API}/v1/ajie/likes/${post}`, { method, headers: { Origin: ORIGIN, 'CF-Connecting-IP': ip(), Authorization: `Bearer ${token}` } });
 
   it('counts one like per visitor and allows taking it back', async () => {
     const a = secret();
@@ -200,7 +287,7 @@ describe('configuration', () => {
     const ctx = createExecutionContext();
     const req = new Request(`${API}/v1/passport/sync`, {
       method: 'POST',
-      headers: { Origin: ORIGIN, 'Content-Type': 'application/json', Authorization: `Bearer ${secret()}` },
+      headers: { Origin: ORIGIN, 'CF-Connecting-IP': ip(), 'Content-Type': 'application/json', Authorization: `Bearer ${secret()}` },
       body: JSON.stringify({ achievementIds: [] }),
     });
     const res = await worker.fetch(req, { ...env, RATE_SALT: undefined } as typeof env, ctx);

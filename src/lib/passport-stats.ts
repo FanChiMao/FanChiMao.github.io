@@ -7,6 +7,9 @@
  *   stores just a SHA-256 digest. It is never put in a URL or logged.
  * - Only personal-world pages sync (startSync); the professional site never calls the API.
  * - Without PUBLIC_PASSPORT_STATS_API_URL, or without localStorage, nothing is registered.
+ * - A new identity passes Cloudflare Turnstile once (invisible; a checkbox only if Cloudflare is
+ *   unsure), so scripts cannot mint identities in bulk. If it fails or is blocked, badges still
+ *   work in this browser; they just are not counted.
  */
 import { unlocked } from './passport';
 
@@ -80,6 +83,80 @@ function identity() {
   return identityPromise;
 }
 
+// ---------------------------------------------------------------- Turnstile (once per identity)
+
+/** Public site key of the Turnstile widget (it is in every page anyway). */
+const SITE_KEY = (import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? '0x4AAAAAAF6Hm4iD3mU45uSN').trim();
+type TurnstileApi = { render: (el: HTMLElement, opts: Record<string, unknown>) => string; remove: (id: string) => void };
+
+let apiPromise: Promise<TurnstileApi | null> | null = null;
+/** Cloudflare's script, loaded only when a new identity needs it, once the page is idle. */
+function loadTurnstile(): Promise<TurnstileApi | null> {
+  apiPromise ??= new Promise((ok) => {
+    const w = window as unknown as { turnstile?: TurnstileApi };
+    if (w.turnstile) return ok(w.turnstile);
+    const go = () => {
+      const s = document.createElement('script');
+      s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      s.async = true;
+      s.onload = () => ok(w.turnstile ?? null);
+      s.onerror = () => {
+        apiPromise = null;
+        ok(null);
+      };
+      document.head.append(s);
+    };
+    if ('requestIdleCallback' in window) requestIdleCallback(go, { timeout: 3000 });
+    else setTimeout(go, 1000);
+  });
+  return apiPromise;
+}
+
+let tokenPromise: Promise<string | null> | null = null;
+/**
+ * A fresh single-use token showing a person is here (null if Turnstile fails or is blocked).
+ * Invisible; the widget only shows (bottom of the screen) if Cloudflare wants a click.
+ */
+function humanToken(): Promise<string | null> {
+  if (!SITE_KEY) return Promise.resolve(null);
+  tokenPromise ??= (async () => {
+    const ts = await loadTurnstile();
+    if (!ts) return null;
+    const box = document.createElement('div');
+    box.style.cssText = 'position:fixed;left:50%;bottom:16px;translate:-50% 0;z-index:2147483000;display:none';
+    document.body.append(box);
+    return new Promise<string | null>((ok) => {
+      let id = '';
+      let done = false;
+      const finish = (t: string | null) => {
+        if (done) return;
+        done = true;
+        try {
+          ts.remove(id);
+        } catch {}
+        box.remove();
+        ok(t);
+      };
+      try {
+        id = ts.render(box, {
+          sitekey: SITE_KEY,
+          action: 'register',
+          appearance: 'interaction-only',
+          callback: (t: string) => finish(t),
+          'error-callback': () => finish(null),
+          'expired-callback': () => finish(null),
+          'timeout-callback': () => finish(null),
+          'before-interactive-callback': () => (box.style.display = 'block'),
+        });
+      } catch {
+        finish(null);
+      }
+      setTimeout(() => finish(null), 120_000);
+    });
+  })().finally(() => (tokenPromise = null));
+  return tokenPromise;
+}
+
 // ---------------------------------------------------------------- sync
 
 type SyncState = { tag: string; registered: boolean; acked: string[] };
@@ -116,9 +193,12 @@ async function runSync() {
   inFlight = true;
   again = false;
   try {
+    // First contact for this identity: a Turnstile token (none: try again on a later page).
+    const human = state.registered ? null : await humanToken();
+    if (!state.registered && !human) return;
     const res = await fetch(`${API}/v1/passport/sync`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${id.secret}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${id.secret}`, ...(human ? { 'X-Turnstile-Token': human } : {}) },
       body: JSON.stringify({ achievementIds: pending.slice(0, 64) }),
     });
     if (res.ok) {
@@ -177,7 +257,6 @@ export type StatsResult = { stats: BadgeStats | null; stale: boolean; fetchedAt:
 let statsMemory: { at: number; stats: BadgeStats } | null = null;
 let statsPromise: Promise<StatsResult> | null = null;
 
-/** All badge counts in one request, cached for 10 minutes (shared across tabs and languages). */
 const RANK_KEY = 'passport-stats:rank:v1';
 /**
  * This browser's place among those holding the 52Hz badge ("No. 7"), or null (stats off, not
@@ -201,6 +280,7 @@ export async function getRank(): Promise<number | null> {
   }
 }
 
+/** All badge counts in one request, cached for 10 minutes (shared across tabs and languages). */
 export function getStats(): Promise<StatsResult> {
   if (!statsEnabled) return Promise.resolve({ stats: null, stale: false, fetchedAt: null });
   const cached = read<{ at: number; stats: BadgeStats }>(STATS_KEY) ?? statsMemory;
@@ -283,11 +363,16 @@ export async function setLike(postId: string, on: boolean): Promise<number | nul
   const id = await identity();
   if (!id) return null;
   try {
+    // A first like can also be this identity's first contact: it needs a Turnstile token then.
+    const known = loadSync(id.tag).registered;
+    const human = known ? null : await humanToken();
+    if (!known && !human) return null;
     const res = await fetch(`${API}/v1/ajie/likes/${encodeURIComponent(postId)}`, {
       method: on ? 'PUT' : 'DELETE',
-      headers: { Authorization: `Bearer ${id.secret}` },
+      headers: { Authorization: `Bearer ${id.secret}`, ...(human ? { 'X-Turnstile-Token': human } : {}) },
     });
     if (!res.ok) return null;
+    if (!known) write(SYNC_KEY, { ...loadSync(id.tag), registered: true });
     const body = (await res.json()) as { count: number };
     const liked = likedPosts();
     if (on) liked.add(postId);

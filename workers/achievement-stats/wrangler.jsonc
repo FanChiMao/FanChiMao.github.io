@@ -16,12 +16,17 @@
   // Workers rate limiting: per Cloudflare location and approximate, not an exact global quota.
   "ratelimits": [
     { "name": "VISITOR_LIMITER", "namespace_id": "52001", "simple": { "limit": 10, "period": 60 } },
-    { "name": "IP_LIMITER", "namespace_id": "52002", "simple": { "limit": 30, "period": 60 } }
+    { "name": "IP_LIMITER", "namespace_id": "52002", "simple": { "limit": 30, "period": 60 } },
+    // New identities (fresh installation secrets) per IP: padding the counts needs many of them.
+    { "name": "REGISTER_LIMITER", "namespace_id": "52003", "simple": { "limit": 5, "period": 60 } }
   ],
   "vars": {
     // Comma-separated list of origins allowed to call the API (CORS).
-    "ALLOWED_ORIGINS": "https://52hzfan.com,http://localhost:4321,http://127.0.0.1:4321,http://localhost:4322,http://[::1]:4322"
+    "ALLOWED_ORIGINS": "https://52hzfan.com,http://localhost:4321,http://127.0.0.1:4321,http://localhost:4322,http://[::1]:4322",
+    // Pages a Turnstile token may come from (production only: no localhost).
+    "TURNSTILE_HOSTNAMES": "52hzfan.com"
   }
   // Secret (Dashboard → Settings → Variables and Secrets, or `wrangler secret put`):
-  //   RATE_SALT  random string used to hash IPs for rate limiting; never stored.
+  //   RATE_SALT         random string used to hash IPs for rate limiting; never stored.
+  //   TURNSTILE_SECRET  Cloudflare Turnstile secret key (new identities pass Turnstile once).
 }
