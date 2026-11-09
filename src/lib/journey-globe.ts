@@ -1,5 +1,5 @@
 /**
- * The Journey's globe view: a stylised 3D Earth (three.js through globe.gl) in the site's deep-sea
+ * The Journey's globe view: a stylised 3D Earth (three.js, through the small MiniGlobe) in the site's deep-sea
  * look, with a pin on each milestone's exact spot. Loaded only when the reader switches to the
  * globe, so the timeline stays light.
  *
@@ -16,7 +16,7 @@
  * Pins that land too close together on screen are drawn as one group (a count), recomputed as the
  * camera moves, so a cluster like northern Taiwan never piles up into unreadable labels.
  */
-import Globe, { type GlobeInstance } from 'globe.gl';
+import { MiniGlobe } from './mini-globe';
 import { BufferGeometry, CanvasTexture, Color, DoubleSide, Float32BufferAttribute, Mesh, MeshPhongMaterial, SRGBColorSpace } from 'three';
 import { feature } from 'topojson-client';
 import type { Topology } from 'topojson-specification';
@@ -64,7 +64,7 @@ export function canDrawGlobe(): boolean {
   }
 }
 
-const RADIUS = 100; // globe.gl's globe radius in scene units
+const RADIUS = 100; // the globe's radius in scene units (globe.gl's convention, kept by MiniGlobe)
 type Palette = { oceanTop: string; ocean: string; oceanBottom: string; land: string; coast: string; dot: string; grid: string; glow: string };
 /** A land ring in [lng, lat], made continuous across the date line, with its bounding box. */
 type Ring = { pts: [number, number][]; lng0: number; lng1: number; lat0: number; lat1: number };
@@ -307,7 +307,7 @@ export async function createGlobe(stage: HTMLElement, draw: (m: Mark) => HTMLEle
     };
   };
 
-  const g: GlobeInstance = new Globe(stage, { rendererConfig: { antialias: true, alpha: true }, waitForGlobeReady: false, animateIn: !reduceMotion })
+  const g = new MiniGlobe(stage, { rendererConfig: { antialias: true, alpha: true }, animateIn: !reduceMotion })
     .backgroundColor('rgba(0,0,0,0)')
     .showAtmosphere(true)
     .atmosphereAltitude(0.2)
@@ -414,14 +414,15 @@ export async function createGlobe(stage: HTMLElement, draw: (m: Mark) => HTMLEle
   controls.zoomSpeed = 0.9;
   controls.minDistance = RADIUS * 1.06; // regional scale: the painted coastline stays crisp
   controls.maxDistance = RADIUS * 5;
-  // Spin like the real Earth: west to east, so the surface moves left to right (the camera orbits
-  // the other way, hence the negative speed). Stops for good once the reader takes over.
+  // Spin like the real Earth: west to east, so the surface moves left to right. A positive speed
+  // orbits the camera westward (towards lower longitudes), which turns the Earth eastward under it.
+  // Stops for good once the reader takes over.
   let spinListener: (on: boolean) => void = () => {};
   const spin = (on: boolean) => {
     controls.autoRotate = on;
     spinListener(on);
   };
-  controls.autoRotateSpeed = -0.45;
+  controls.autoRotateSpeed = 0.45;
   controls.autoRotate = !reduceMotion;
   controls.addEventListener('start', () => controls.autoRotate && spin(false));
 
@@ -468,7 +469,7 @@ export async function createGlobe(stage: HTMLElement, draw: (m: Mark) => HTMLEle
       if (p.id === solo) continue;
       const { x, y } = g.getScreenCoords(p.lat, p.lng, 0.002);
       const front = facing(p);
-      // Off-screen or behind the Earth: drawn alone (globe.gl hides it), never pulls others in.
+      // Off-screen or behind the Earth: drawn alone (MiniGlobe hides it), never pulls others in.
       const near = front && x > -GROUP_PX && y > -GROUP_PX && x < w + GROUP_PX && y < h + GROUP_PX ? groups.find((gr) => gr.front && Math.hypot(gr.x - x, gr.y - y) < GROUP_PX) : undefined;
       if (near) near.pins.push(p);
       else groups.push({ pins: [p], x, y, front });
