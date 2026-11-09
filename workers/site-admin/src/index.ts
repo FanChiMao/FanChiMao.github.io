@@ -156,7 +156,9 @@ async function route(req: Request, env: Env): Promise<Response> {
     if (clip && String.fromCharCode(...bytes.subarray(4, 8)) !== 'ftyp') return fail(400, 'BAD_BODY', 'Body must be an MP4 file.');
     if (!clip && !(bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff)) return fail(400, 'BAD_BODY', 'Body must be a JPEG file.');
     const key = mediaKey(kind, id, name);
-    await env.MEDIA.put(key, bytes, { httpMetadata: { contentType: clip ? 'video/mp4' : 'image/jpeg', cacheControl: 'public, max-age=604800' } });
+    // A key is never written twice (a live post refuses new uploads above, names are fixed per post),
+    // so browsers and Cloudflare may keep the file for good.
+    await env.MEDIA.put(key, bytes, { httpMetadata: { contentType: clip ? 'video/mp4' : 'image/jpeg', cacheControl: 'public, max-age=31536000, immutable' } });
     return json({ key });
   }
 

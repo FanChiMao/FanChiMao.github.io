@@ -36,8 +36,51 @@ jobs:
         with:
           path: dist
 
+  # Runs next to the build; the site only goes out if both pass, so a broken change (by hand or
+  # from the admin page) never reaches the live site. The Workers' tests run only when their code or
+  # a file they share with the site changed (posts published from the admin page skip them).
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            workers/site-admin/package-lock.json
+            workers/achievement-stats/package-lock.json
+      - run: npm ci
+      - name: Type check (astro check)
+        run: npx astro check
+      - name: Did the Workers (or what they share with the site) change?
+        id: changes
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          shared='^(workers/|src/lib/admin-post\.ts|src/lib/achievements\.ts|src/data/ajie-posts\.ts|\.github/workflows/)'
+          if [ "$EVENT" != "push" ] || [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "workers=true" >> "$GITHUB_OUTPUT"   # manual / weekly run, or a new branch: test everything
+          elif ! git fetch --quiet --depth=1 origin "$BEFORE"; then
+            echo "workers=true" >> "$GITHUB_OUTPUT"   # previous commit not reachable (force push): test everything
+          elif git diff --name-only "$BEFORE" "$GITHUB_SHA" | grep -Eq "$shared"; then
+            echo "workers=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "workers=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: site-admin Worker (types, tests)
+        if: steps.changes.outputs.workers == 'true'
+        working-directory: workers/site-admin
+        run: npm ci && npm run check && npm test
+      - name: achievement-stats Worker (types, tests)
+        if: steps.changes.outputs.workers == 'true'
+        working-directory: workers/achievement-stats
+        run: npm ci && npm run check && npm test
+
   deploy:
-    needs: build
+    needs: [build, check]
     runs-on: ubuntu-latest
     environment:
       name: github-pages

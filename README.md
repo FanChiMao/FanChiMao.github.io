@@ -160,4 +160,5 @@ Old URLs (`index_tw.html`, `index_ch.html`, `index_jp.html`, `gallery/main.html`
 ## Deploy
 
 `.github/workflows/deploy.yml` builds and publishes on every push to `main`, and every Monday so the GitHub star counts stay fresh.
+Next to the build, a check job runs `astro check` (and, when `workers/` or a file they share with the site changed, both Workers' type checks and tests); the site is only published if both pass, so a broken change, by hand or from the admin page, stays off the live site (the admin page then reports the deploy as failed).
 One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**. The custom domain is kept via `public/CNAME`.
