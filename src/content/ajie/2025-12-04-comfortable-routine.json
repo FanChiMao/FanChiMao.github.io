@@ -7,6 +7,12 @@
     "zh-cn": "最舒服的一周",
     "ja": "いちばん穏やかな一週間"
   },
+  "location": {
+    "en": "Home",
+    "zh-tw": "家裡",
+    "zh-cn": "家里",
+    "ja": "自宅"
+  },
   "cover": {
     "src": "/media/ajie/2025-12-04-comfortable-routine-c9a69a90-79e8-45b0-9da2-8402fd64c243.jpg",
     "alt": {

@@ -7,6 +7,12 @@
     "zh-cn": "终于迎来好消息",
     "ja": "ついに届いた嬉しい知らせ"
   },
+  "location": {
+    "en": "Home",
+    "zh-tw": "家裡",
+    "zh-cn": "家里",
+    "ja": "自宅"
+  },
   "cover": {
     "src": "/media/ajie/2025-11-24-finally-good-news-413d8687-929c-4c99-91fa-98b19cb5aed1.jpg",
     "alt": {
