@@ -16,6 +16,10 @@ export const ACHIEVEMENTS = [
   { id: 'inventor', scope: 'pro', icon: 'lightbulb', event: 'patent' },
   /** Opened a project's code on GitHub. */
   { id: 'source-diver', scope: 'pro', icon: 'github', event: 'github' },
+  /** Opened three different award certificates (competitions and publications). */
+  { id: 'trophy-cabinet', scope: 'pro', icon: 'trophy', event: 'certificate', count: 3 },
+  /** Watched two different demo videos (competitions and publications). */
+  { id: 'demo-day', scope: 'pro', icon: 'clapperboard', event: 'demo', count: 2 },
   /** Dragged the thesis restoration before/after slider. */
   { id: 'restorer', scope: 'pro', icon: 'wand-sparkles', event: 'restore' },
   /** Ran the hero's detection + classification pipeline five times (start to result). */
@@ -35,8 +39,24 @@ export const ACHIEVEMENTS = [
   { id: 'sunrise-sail', scope: 'personal', icon: 'sunrise', event: 'boat-sun' },
   /** Opened one of Ajie's posts. */
   { id: 'cat-person', scope: 'personal', icon: 'cat', event: 'ajie-post' },
+  /** Opened ten different posts of Ajie's. */
+  { id: 'cat-whisperer', scope: 'personal', icon: 'paw-print', event: 'ajie-post', count: 10 },
+  /** Liked three of Ajie's posts. */
+  { id: 'ajie-fan', scope: 'personal', icon: 'heart-handshake', event: 'ajie-like', count: 3 },
+  /** Looked at Ajie's posts as a grid, a timeline and a calendar. */
+  { id: 'every-angle', scope: 'personal', icon: 'layers', event: 'ajie-view', need: ['grid', 'timeline', 'calendar'] },
+  /** Swiped to the last photo of three long posts (four slides or more). */
+  { id: 'photo-finish', scope: 'personal', icon: 'images', event: 'ajie-album-end', count: 3 },
   /** Opened one of the Journey milestones. */
   { id: 'fellow-traveller', scope: 'personal', icon: 'route', event: 'milestone' },
+  /** Opened eight different Journey milestones (timeline or globe). */
+  { id: 'well-travelled', scope: 'personal', icon: 'milestone', event: 'milestone', count: 8 },
+  /** Opened five different milestones from their pins on the globe. */
+  { id: 'pin-hopper', scope: 'personal', icon: 'map-pinned', event: 'globe-pin', count: 5 },
+  /** Sat through a whole Play tour of the globe (three stops or more). */
+  { id: 'armchair-pilot', scope: 'personal', icon: 'plane-takeoff', event: 'journey-tour' },
+  /** Narrowed the Journey by search, by year and by category. */
+  { id: 'curator', scope: 'personal', icon: 'list-filter', event: 'journey-filter', need: ['search', 'year', 'category'] },
   /** Opened a photo album. */
   { id: 'leafing-through', scope: 'personal', icon: 'book-image', event: 'album' },
   /** Opened every chapter of the personal world. */

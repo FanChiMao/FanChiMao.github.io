@@ -178,6 +178,29 @@ let statsMemory: { at: number; stats: BadgeStats } | null = null;
 let statsPromise: Promise<StatsResult> | null = null;
 
 /** All badge counts in one request, cached for 10 minutes (shared across tabs and languages). */
+const RANK_KEY = 'passport-stats:rank:v1';
+/**
+ * This browser's place among those holding the 52Hz badge ("No. 7"), or null (stats off, not
+ * synced yet, offline). Kept once known: the place never changes.
+ */
+export async function getRank(): Promise<number | null> {
+  if (!statsEnabled) return null;
+  const id = await identity();
+  if (!id) return null;
+  const kept = read<{ tag: string; rank: number }>(RANK_KEY);
+  if (kept && kept.tag === id.tag && kept.rank > 0) return kept.rank;
+  try {
+    const res = await fetch(`${API}/v1/passport/rank`, { headers: { Authorization: `Bearer ${id.secret}` } });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { rank?: number | null };
+    if (typeof body.rank !== 'number' || body.rank < 1) return null;
+    write(RANK_KEY, { tag: id.tag, rank: body.rank });
+    return body.rank;
+  } catch {
+    return null;
+  }
+}
+
 export function getStats(): Promise<StatsResult> {
   if (!statsEnabled) return Promise.resolve({ stats: null, stale: false, fetchedAt: null });
   const cached = read<{ at: number; stats: BadgeStats }>(STATS_KEY) ?? statsMemory;

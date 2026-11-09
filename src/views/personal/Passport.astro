@@ -107,7 +107,7 @@ const rateText = JSON.stringify({
     </div>
 
     <!-- One dialog for every stamp; filled from the clicked stamp. -->
-    <dialog class="stamp-dlg" data-stamp-dialog aria-labelledby="stamp-dlg-name" data-collected={pp.detail.collected} data-locked={pp.detail.locked}>
+    <dialog class="stamp-dlg" data-stamp-dialog aria-labelledby="stamp-dlg-name" data-collected={pp.detail.collected} data-locked={pp.detail.locked} data-rank-line={pp.rankLine} data-took-line={pp.tookLine} data-took-one={pp.tookLineOne}>
       <button class="icon-btn stamp-dlg__close" type="button" data-close aria-label={pp.detail.close}>
         <Icon name="lucide:x" />
       </button>
@@ -126,6 +126,9 @@ const rateText = JSON.stringify({
         <b data-dlg-count data-swap-skip></b>
       </div>
       <p class="stamp-dlg__date" data-dlg-date data-swap-skip></p>
+      {/* The 52Hz badge only: how long it took, and this browser's place among everyone who has it. */}
+      <p class="stamp-dlg__rank" data-dlg-took data-swap-skip hidden></p>
+      {statsEnabled && <p class="stamp-dlg__rank" data-dlg-rank data-swap-skip hidden />}
       {statsEnabled && <p class="stamp-dlg__rate" data-dlg-rate data-swap-skip />}
     </dialog>
   </section>
@@ -133,7 +136,7 @@ const rateText = JSON.stringify({
 
 <script>
   import { ACHIEVEMENTS, enabled, markSeen, progressOf, reset, unlocked, type AchievementId } from '@/lib/passport';
-  import { getStats, rateOf, statsEnabled, type StatsResult } from '@/lib/passport-stats';
+  import { getRank, getStats, rateOf, statsEnabled, type StatsResult } from '@/lib/passport-stats';
 
   const found = document.querySelector<HTMLElement>('[data-passport]');
   if (found) {
@@ -225,6 +228,42 @@ const rateText = JSON.stringify({
       $('[data-dlg-date]').textContent = at ? `${root.dataset.unlockedOn} ${dateFmt().format(at)}` : '';
       const dlgRate = dlg.querySelector<HTMLElement>('[data-dlg-rate]');
       if (dlgRate) dlgRate.textContent = rateLine(id);
+      paintRank(id, on);
+    }
+
+    // ---- "You are No. 7 in the world": on the 52Hz badge's card, once it is collected and synced.
+    let rank: number | null = null;
+    let asking = false;
+    function paintRank(id: AchievementId, on: boolean) {
+      // Days from the first badge to the last one (at least one).
+      const took = dlg.querySelector<HTMLElement>('[data-dlg-took]')!;
+      const got = unlocked();
+      const done = got['lonely-whale'];
+      const final = id === 'lonely-whale' && on && !!done;
+      took.hidden = !final;
+      if (final) {
+        const first = Math.min(...Object.values(got).filter((t): t is number => typeof t === 'number'));
+        const days = Math.max(1, Math.ceil((done - first) / 86_400_000));
+        took.textContent = days === 1 ? (dlg.dataset.tookOne ?? '') : (dlg.dataset.tookLine ?? '').replace('{n}', String(days));
+      }
+      const el = dlg.querySelector<HTMLElement>('[data-dlg-rank]');
+      if (!el) return;
+      const show = id === 'lonely-whale' && on && rank !== null;
+      el.hidden = !show;
+      el.textContent = show ? (dlg.dataset.rankLine ?? '').replace('{n}', String(rank)) : '';
+      if (id === 'lonely-whale' && on && rank === null && !asking) {
+        asking = true;
+        // The badge is synced a moment after it unlocks: try again a little later if needed.
+        const ask = (tries: number) =>
+          getRank().then((r) => {
+            if (r) {
+              rank = r;
+              if (dlg.open && openId === 'lonely-whale') paintRank('lonely-whale', true);
+            } else if (tries > 1) setTimeout(() => ask(tries - 1), 5000);
+            else asking = false;
+          });
+        ask(3);
+      }
     }
 
     // ---- Card flip: the stamp turns edge-on in place, then the dialog turns out of it and
@@ -522,6 +561,14 @@ const rateText = JSON.stringify({
   }
 
   /* Unlocked (on the card, and its copy inside the dialog) */
+  .stamp-dlg__rank {
+    margin: 0.2rem 0 0;
+    font-weight: 650;
+    color: var(--text);
+  }
+  .stamp-dlg__rank[hidden] {
+    display: none;
+  }
   .stamp[data-state='unlocked'] .stamp__btn {
     border-color: var(--pass-on-line);
     background: var(--pass-on-card);

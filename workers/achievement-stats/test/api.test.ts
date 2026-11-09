@@ -133,6 +133,27 @@ describe('GET /v1/passport/stats', () => {
   });
 });
 
+describe('GET /v1/passport/rank', () => {
+  const rank = (token: string | null) => SELF.fetch(`${API}/v1/passport/rank`, { headers: { Origin: ORIGIN, ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
+
+  it("gives each holder of the 52Hz badge their own place, in the order they reached it", async () => {
+    const a = secret();
+    const b = secret();
+    const c = secret();
+    await sync(a, ['lonely-whale']);
+    await new Promise((r) => setTimeout(r, 5));
+    await sync(b, ['lonely-whale']);
+    await sync(c, ['deep-diver']);
+    expect(await (await rank(a)).json()).toMatchObject({ rank: 1, total: 2 });
+    expect(await (await rank(b)).json()).toMatchObject({ rank: 2, total: 2 });
+    expect(await (await rank(c)).json()).toMatchObject({ rank: null, total: 2 });
+  });
+
+  it('needs the installation secret', async () => {
+    expect((await rank(null)).status).toBe(401);
+  });
+});
+
 describe('Ajie likes', () => {
   const like = (token: string, post: string, method: 'PUT' | 'DELETE' = 'PUT') =>
     SELF.fetch(`${API}/v1/ajie/likes/${post}`, { method, headers: { Origin: ORIGIN, Authorization: `Bearer ${token}` } });

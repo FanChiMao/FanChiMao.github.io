@@ -479,7 +479,10 @@ for (const i of byDate) {
 
     // ---- Grid / calendar view (remembered in this browser).
     const viewBtns = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-view-btn]'));
-    const paintView = () => viewBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.viewBtn === root.dataset.view)));
+    const paintView = () => {
+      viewBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.viewBtn === root.dataset.view)));
+      if (root.dataset.view) track('ajie-view', root.dataset.view);
+    };
     paintView();
     viewBtns.forEach((b) =>
       b.addEventListener('click', () => {
@@ -511,6 +514,11 @@ for (const i of byDate) {
     document.addEventListener('langswap', paintAiPreference);
 
     const dialogs = Array.from(root.querySelectorAll<HTMLDialogElement>('dialog[data-post]'));
+    // The last photo of a long post (four slides or more).
+    root.addEventListener('pmedia:end', (e) => {
+      const d = (e.target as Element).closest<HTMLElement>('dialog[data-post]');
+      if (d && ((e as CustomEvent<{ count: number }>).detail?.count ?? 0) >= 4) track('ajie-album-end', d.dataset.slug ?? '');
+    });
     const tiles = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-open]'));
     let opener: HTMLElement | null = null;
     /**
@@ -585,7 +593,10 @@ for (const i of byDate) {
             if (on) liked.delete(id);
             else liked.add(id);
             counts.set(id, before);
-          } else counts.set(id, server);
+          } else {
+            counts.set(id, server);
+            if (on) track('ajie-like', id);
+          }
           paint();
         }),
       );

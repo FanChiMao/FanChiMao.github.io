@@ -180,10 +180,16 @@ const items = await Promise.all(
         d.tabIndex = k < from || k > to ? -1 : 0;
       });
     };
+    let lastAt = -1;
     const paint = () => {
       const shownSlides = slides();
       const shownDots = dots();
       const i = current();
+      // Reached the last slide: the page may care (e.g. the "Photo Finish" badge on Ajie's posts).
+      if (i !== lastAt) {
+        lastAt = i;
+        if (shownSlides.length > 1 && i === shownSlides.length - 1) root.dispatchEvent(new CustomEvent('pmedia:end', { bubbles: true, detail: { count: shownSlides.length } }));
+      }
       allDots.forEach((d) => {
         d.classList.remove('is-on');
         d.removeAttribute('aria-current');

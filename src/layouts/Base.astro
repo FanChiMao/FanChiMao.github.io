@@ -344,6 +344,17 @@ const ogAlt = Astro.props.ogAlt ?? `${t.hero.name} · ${t.hero.position}`;
       };
       document.addEventListener('click', onLink, true);
       document.addEventListener('auxclick', onLink, true);
+      // Award certificates and demo videos in the competitions / publications (shared media dialog).
+      document.addEventListener(
+        'click',
+        (e) => {
+          const t = (e.target as Element).closest?.<HTMLElement>('#competitions [data-image], #publications [data-image], #competitions [data-video], #publications [data-video]');
+          if (!t) return;
+          if (t.dataset.image) track('certificate', t.dataset.image);
+          if (t.dataset.video) track('demo', t.dataset.video);
+        },
+        true,
+      );
       // Dragging the thesis restoration before/after slider.
       document.addEventListener('input', (e) => {
         if ((e.target as Element).matches?.('.ba__range')) track('restore');

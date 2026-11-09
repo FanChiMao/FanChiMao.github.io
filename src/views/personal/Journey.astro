@@ -467,7 +467,10 @@ const unplaced = items.filter((x) => !x.data.coords).length;
       peek(null);
       globe.setPins(pins(), id); // the picked one is never grouped
       globe.flyTo(pin);
-      if (!auto) track('milestone', id);
+      if (!auto) {
+        track('milestone', id);
+        track('globe-pin', id);
+      }
     }
     const closePanel = () => {
       stopTour();
@@ -562,6 +565,9 @@ const unplaced = items.filter((x) => !x.data.coords).length;
       milestones.forEach((m) => (m.hidden = !shown(m)));
       root.querySelectorAll<HTMLElement>('.milestones__year').forEach((y) => (y.hidden = !y.querySelector('.milestone:not([hidden])')));
       noneEl.hidden = milestones.some((m) => !m.hidden);
+      if (query) track('journey-filter', 'search');
+      if (year !== 'all') track('journey-filter', 'year');
+      if (filter !== 'all') track('journey-filter', 'category');
       if (list || (current && !pins().some((p) => p.id === current))) closePanel();
       globe?.setPins(pins(), current);
     };
@@ -745,6 +751,7 @@ const unplaced = items.filter((x) => !x.data.coords).length;
       const step = () => {
         if (!touring || !globe) return;
         if (i >= order.length) {
+          if (order.length >= 3) track('journey-tour');
           stopTour();
           return;
         }

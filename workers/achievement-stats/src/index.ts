@@ -3,6 +3,7 @@
  *
  *   POST   /v1/passport/sync           register this browser and report its badges (Bearer secret)
  *   GET    /v1/passport/stats          group stats: how many explorers have each badge
+ *   GET    /v1/passport/rank           this browser's place among those holding the 52Hz badge (Bearer secret)
  *   GET    /v1/ajie/likes              like count per Ajie post
  *   PUT    /v1/ajie/likes/:postId      like a post (Bearer secret)
  *   DELETE /v1/ajie/likes/:postId      take the like back (Bearer secret)
@@ -174,6 +175,29 @@ async function stats(env: Env) {
   };
 }
 
+/** The badge for collecting every other one. */
+const FINAL_BADGE = 'lonely-whale';
+
+/**
+ * Where this browser stands among everyone holding the final badge, by the time it was reported
+ * (ties broken by hash). Only the asker's own place; null until its badge has been synced.
+ */
+async function rank(req: Request, env: Env) {
+  const visitor = await visitorHash(req);
+  await limit(req, env, visitor);
+  const mine = await env.DB.prepare('SELECT reported_at AS t FROM visitor_achievements WHERE visitor_hash = ?1 AND achievement_id = ?2').bind(visitor, FINAL_BADGE).first<{ t: number }>();
+  const total = (await env.DB.prepare('SELECT COUNT(*) AS n FROM visitor_achievements WHERE achievement_id = ?1').bind(FINAL_BADGE).first<{ n: number }>())!.n;
+  let place: number | null = null;
+  if (mine) {
+    place = (
+      await env.DB.prepare('SELECT COUNT(*) AS n FROM visitor_achievements WHERE achievement_id = ?1 AND (reported_at < ?2 OR (reported_at = ?2 AND visitor_hash <= ?3))')
+        .bind(FINAL_BADGE, mine.t, visitor)
+        .first<{ n: number }>()
+    )!.n;
+  }
+  return json({ version: 1, rank: place, total }, 200, { 'Cache-Control': 'no-store' });
+}
+
 async function likeCounts(env: Env) {
   const { results } = await env.DB.prepare('SELECT post_id AS id, COUNT(*) AS c FROM ajie_likes GROUP BY post_id').all<{ id: string; c: number }>();
   return { version: 1, asOf: new Date().toISOString(), counts: Object.fromEntries(results.map((r) => [r.id, r.c])) };
@@ -212,6 +236,10 @@ async function route(req: Request, env: Env, ctx: ExecutionContext): Promise<Res
   if (pathname === '/v1/passport/stats') {
     if (m !== 'GET') throw new HttpError('METHOD_NOT_ALLOWED', 'Use GET.');
     return cached(ctx, '/v1/passport/stats', STATS_TTL, STATS_TTL, () => stats(env));
+  }
+  if (pathname === '/v1/passport/rank') {
+    if (m !== 'GET') throw new HttpError('METHOD_NOT_ALLOWED', 'Use GET.');
+    return rank(req, env);
   }
   if (pathname === '/v1/ajie/likes') {
     if (m !== 'GET') throw new HttpError('METHOD_NOT_ALLOWED', 'Use GET.');
