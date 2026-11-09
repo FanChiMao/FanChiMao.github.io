@@ -64,7 +64,8 @@ const items = await Promise.all(
               </>
             ) : (
               <>
-                <video src={m.src} poster={m.posterSrc} controls playsinline preload="metadata" aria-label={m.alt} />
+                {/* No preload: the poster is the preview, so nothing downloads until play is pressed (a page with many clips used to fetch ~0.5 MB of each up front). */}
+                <video src={m.src} poster={m.posterSrc} controls playsinline preload="none" aria-label={m.alt} />
                 <span class="pmedia__spin" aria-hidden="true" />
               </>
             ))}
@@ -192,12 +193,24 @@ const items = await Promise.all(
       active?.setAttribute('aria-current', 'true');
       windowDots(shownDots, i);
       allSlides.forEach((s) => s !== shownSlides[i] && s.querySelector('video')?.pause());
-      // Warm up the clip on this slide and the next one.
+      // Warm up the clip on this slide and the next one, only once this media is really on screen
+      // (a collapsed Journey card or a closed post dialog keeps it laid out but clipped away).
+      if (!onScreen) return;
       for (const s of [shownSlides[i], shownSlides[i + 1]]) {
         const v = s?.querySelector<HTMLVideoElement>('video[data-autoplay]');
-        if (v && v.preload === 'none' && root.offsetParent !== null) v.preload = 'auto';
+        if (v && v.preload === 'none') v.preload = 'auto';
       }
     };
+    // On screen (or about to be): IntersectionObserver counts clipping by ancestors, unlike
+    // offsetParent, so media inside closed <details> or hidden views does not download.
+    let onScreen = false;
+    new IntersectionObserver(
+      ([e]) => {
+        onScreen = e.isIntersecting;
+        if (onScreen) paint();
+      },
+      { rootMargin: '200px 0px' },
+    ).observe(root);
     // Wraps around: past the last photo comes the first, and the other way round.
     const go = (i: number) => {
       const n = slides().length;
