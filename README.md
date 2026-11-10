@@ -100,6 +100,12 @@ Second paragraph."
 
 An Ajie post has `date`, `media`, `caption`, and optionally `location` and `pinned`. Photos of Ajie posts and Journey milestones (and clip posters) are not in git either: they sit in the same bucket as the clips below, as `<kind>/<id>-<name>.jpg` (long side 2400 px, no metadata) plus `-480.jpg`, `-800.jpg` and `-1200.jpg` copies for `srcset`; the admin page makes and uploads all four. Album photos stay in `src/assets/gallery/` (optimised at build time). Short clips (H.264 MP4, a few MB; they loop muted like an IG clip, or set `"loop": false` for controls and sound) are not in git: they live in the Cloudflare R2 bucket `52hzfan-media`, served at `https://media.52hzfan.com`. The JSON keeps the site path `/media/<ajie|journey>/<id>-<name>.mp4` and the bucket key is the same path without `/media/`. The admin page uploads them there (re-encoded, metadata removed); by hand, check the file with `npm run photos:check` while it is still in `public/media/` (MP4s there are gitignored), then `npx wrangler r2 object put 52hzfan-media/ajie/<id>-<name>.mp4 --file <file> --content-type video/mp4 --cache-control "public, max-age=604800" --remote` from `workers/site-admin`. Long clips are better on YouTube. A chapter with no posts yet stays noindex and out of the sitemap.
 
+### Pixel Ajie
+
+A small pixel-art Ajie walks along the bottom of the Ajie page (`src/lib/ajie-pet/`, loaded only when on; the cat button next to the view switcher turns him off, remembered per browser, off by default with reduced motion). Pet him (click / tap), drag him, or click an empty spot and he comes over; he reacts to likes, view switches and opened posts (he hops into an open post and sits on its bottom edge), and near the top of the page he rests on the Instagram link, batting a paw at its icon.
+
+The sprite sheet is `public/ajie/pixel-ajie.png` (32 × 32 frames facing right, one animation per row in the order of `ANIMS` in `sprite.ts`). A generated image of any size is converted with `node scripts/pixel-ajie.mjs <generated.png> public/ajie/pixel-ajie.png`; with `SHEET_SRC` empty a placeholder painted in code is used. Full spec, layout guide and a ready prompt: `docs/specs/pixel-ajie/`.
+
 ### Explorer Passport (achievements)
 
 Rules live in `src/lib/passport.ts` (`ACHIEVEMENTS`); texts in `src/i18n/personal.ts` (`passport.items`). Components only report events with `track('event', 'detail')`. Progress is stored in the visitor's localStorage; the page is `/personal/achievements/`.

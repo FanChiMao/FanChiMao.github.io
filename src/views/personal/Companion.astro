@@ -185,6 +185,9 @@ for (const i of byDate) {
                 <Icon name="lucide:calendar-days" />
               </button>
             </div>
+            <button class="ajie__pet-btn" type="button" data-pet-toggle aria-pressed="false" aria-label={p.ajie.pet} title={p.ajie.pet} data-meow={p.ajie.meow}>
+              <Icon name="lucide:cat" />
+            </button>
             {hasAiCovers && (
               <div class="ajie__art" role="group" aria-label={p.ajie.aiIllustrations} title={p.ajie.aiDisclosure}>
                 <span class="ajie__art-thumb" aria-hidden="true" />
@@ -407,6 +410,7 @@ for (const i of byDate) {
                 </button>
               </>
             )}
+            <div class="ajie-post__pet" data-pet-slot data-swap-skip />
           </dialog>
         );
       })
@@ -417,8 +421,41 @@ for (const i of byDate) {
 <script>
   import { track } from '@/lib/passport';
   import { canLike, getLikes, likedPosts, setLike, startSync, statsEnabled } from '@/lib/passport-stats';
+  import type { Pet } from '@/lib/ajie-pet/pet';
   const root = document.querySelector<HTMLElement>('[data-ajie]');
   if (root) {
+    // ---- Pixel Ajie (loaded only when on; off by default for reduced motion; remembered).
+    let pet: Pet | null = null;
+    const petBtn = root.querySelector<HTMLButtonElement>('[data-pet-toggle]');
+    const PET_KEY = 'ajie:pet:v1';
+    const setPet = async (on: boolean) => {
+      petBtn?.setAttribute('aria-pressed', String(on));
+      if (!on) {
+        pet?.destroy();
+        pet = null;
+        return;
+      }
+      if (pet) return;
+      const { startPet } = await import('@/lib/ajie-pet/pet');
+      if (pet || petBtn?.getAttribute('aria-pressed') !== 'true') return;
+      pet = startPet({ meow: () => petBtn?.dataset.meow ?? 'Meow!', perch: root.querySelector<HTMLElement>('.ajie__ig') });
+    };
+    if (petBtn) {
+      let want = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+      try {
+        const v = localStorage.getItem(PET_KEY);
+        if (v) want = v === 'on';
+      } catch {}
+      petBtn.addEventListener('click', () => {
+        const on = petBtn.getAttribute('aria-pressed') !== 'true';
+        try {
+          localStorage.setItem(PET_KEY, on ? 'on' : 'off');
+        } catch {}
+        setPet(on);
+      });
+      setPet(want);
+    }
+
     // ---- Calendar months: one at a time, newest first; the arrows step through them.
     const cal = root.querySelector<HTMLElement>('[data-cal]');
     const monthEls = Array.from(root.querySelectorAll<HTMLElement>('[data-month]'));
@@ -486,6 +523,7 @@ for (const i of byDate) {
     paintView();
     viewBtns.forEach((b) =>
       b.addEventListener('click', () => {
+        if (b.dataset.viewBtn !== root.dataset.view) pet?.react('view');
         root.dataset.view = b.dataset.viewBtn;
         try {
           localStorage.setItem('ajie:view:v1', root.dataset.view!);
@@ -517,7 +555,10 @@ for (const i of byDate) {
     // The last photo of a long post (four slides or more).
     root.addEventListener('pmedia:end', (e) => {
       const d = (e.target as Element).closest<HTMLElement>('dialog[data-post]');
-      if (d && ((e as CustomEvent<{ count: number }>).detail?.count ?? 0) >= 4) track('ajie-album-end', d.dataset.slug ?? '');
+      if (d && ((e as CustomEvent<{ count: number }>).detail?.count ?? 0) >= 4) {
+        track('ajie-album-end', d.dataset.slug ?? '');
+        pet?.react('album-end');
+      }
     });
     const tiles = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-open]'));
     let opener: HTMLElement | null = null;
@@ -543,6 +584,7 @@ for (const i of byDate) {
         b.dataset.to = to === undefined ? '' : String(to);
       });
       if (!d.open) d.showModal();
+      pet?.react('open', d);
       track('ajie-post', d.dataset.slug ?? String(i));
     };
     tiles.forEach((t) =>
@@ -587,6 +629,7 @@ for (const i of byDate) {
           else liked.delete(id);
           counts.set(id, Math.max(0, before + (on ? 1 : -1)));
           b.classList.toggle('is-popping', on);
+          pet?.react(on ? 'like' : 'unlike');
           paint();
           const server = await setLike(id, on);
           if (server === null) {
@@ -616,6 +659,7 @@ for (const i of byDate) {
       });
       d.addEventListener('close', () => {
         d.querySelectorAll('video').forEach((v) => v.pause());
+        pet?.react('close');
         if (!dialogs.some((x) => x.open)) opener?.focus({ preventScroll: true });
       });
     }
@@ -748,6 +792,45 @@ for (const i of byDate) {
   .ajie__views :global(svg) {
     width: 1.15rem;
     height: 1.15rem;
+  }
+  /* Pixel Ajie on / off: sits next to the view switcher. */
+  .ajie__pet-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 2.3rem;
+    height: 2.3rem;
+    margin-right: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      border-color 0.2s;
+  }
+  .ajie__pet-btn:hover {
+    color: var(--text);
+  }
+  .ajie__pet-btn[aria-pressed='true'] {
+    border-color: transparent;
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .ajie__pet-btn :global(svg) {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+  .ajie__pet-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  /* Where Pixel Ajie goes while a post is open (out of the grid's flow). */
+  .ajie-post__pet {
+    position: absolute;
+    width: 0;
+    height: 0;
   }
   .ajie__views button:focus-visible {
     outline: 2px solid var(--accent);
