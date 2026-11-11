@@ -1,0 +1,49 @@
+{
+  "date": "2026-01-17",
+  "title": {
+    "en": "Ajie's First Bath",
+    "zh-tw": "第一次帶阿桔去洗澡",
+    "zh-cn": "第一次带阿桔去洗澡",
+    "ja": "アジエの初めてのお風呂"
+  },
+  "location": {
+    "en": "Jia Jia Pet Grooming, Sanchong",
+    "zh-tw": "三重｜佳佳寵物美容部",
+    "zh-cn": "三重｜佳佳宠物美容部",
+    "ja": "三重｜佳佳ペットサロン"
+  },
+  "cover": {
+    "src": "/media/ajie/2026-01-17-first-bath-7785bd1a-6a9a-42ee-b0a3-ac18779774bb.jpg",
+    "alt": {
+      "en": "Illustration: Ajie, an orange tabby, protests loudly while being bathed in a mesh laundry bag at the groomer. After returning home and playing with a new toy, he falls asleep exhausted on the bed.",
+      "zh-tw": "插畫：橘色虎斑貓阿桔第一次洗澡，在洗衣袋裡激烈反抗；回家玩了一下新玩具後，就累得攤在床上睡著了",
+      "zh-cn": "插画：橘色虎斑猫阿桔第一次洗澡，在洗衣袋里激烈反抗；回家玩了一下新玩具后，就累得瘫在床上睡着了",
+      "ja": "イラスト：茶トラのアジエが初めてのお風呂で、洗濯ネットの中から必死に抵抗している。帰宅後は新しいおもちゃで少し遊んだだけで、疲れてベッドに倒れ込むように眠ってしまった"
+    }
+  },
+  "media": [
+    {
+      "type": "image",
+      "src": "/media/ajie/2026-01-17-first-bath-img-7022.jpg"
+    },
+    {
+      "type": "video",
+      "src": "/media/ajie/2026-01-17-first-bath-img-7020.mp4",
+      "poster": "/media/ajie/2026-01-17-first-bath-img-7020-poster.jpg"
+    },
+    {
+      "type": "image",
+      "src": "/media/ajie/2026-01-17-first-bath-img-7025.jpg"
+    },
+    {
+      "type": "image",
+      "src": "/media/ajie/2026-01-17-first-bath-img-7026.jpg"
+    }
+  ],
+  "caption": {
+    "en": "January 17 was Ajie's very first trip to the groomer for a bath!\n\nSince I had no idea how he'd react, I stayed by his side to help throughout the whole process.\n\nAnd sure enough, he resisted with everything he had XD\n\nThankfully, the groomers were really experienced. They used a mesh laundry bag to help keep him under control while washing him, and we somehow managed to get through his first bath.\n\nAfter getting home, I played with Ajie for a bit using a new toy I'd bought him. But he was so exhausted that he quickly collapsed into a sleepy little pile on the bed.\n\nLooks like his first bath really took a lot out of him XD",
+    "zh-tw": "1/17 第一次帶阿桔去洗澡！\n\n因為不知道牠會不會有什麼激烈的反應，所以這次我全程都在旁邊協助。\n\n結果果然不出所料，阿桔整隻貓劇烈反抗 XD\n\n還好美容師們都很專業，最後把阿桔放進洗衣袋裡協助搓澡，總算順利完成第一次洗澡。\n\n回到家後，還陪阿桔玩了一下新買的玩具，結果牠沒多久就累到直接攤在床上睡著了。\n\n看來第一次洗澡真的消耗了牠不少體力 XD",
+    "zh-cn": "1/17 第一次带阿桔去洗澡！\n\n因为不知道它会不会有什么激烈的反应，所以这次我全程都在旁边协助。\n\n结果果然不出所料，阿桔整只猫剧烈反抗 XD\n\n还好美容师们都很专业，最后把阿桔放进洗衣袋里协助洗澡，总算顺利完成第一次洗澡。\n\n回到家后，还陪阿桔玩了一下新买的玩具，结果它没多久就累到直接瘫在床上睡着了。\n\n看来第一次洗澡真的消耗了它不少体力 XD",
+    "ja": "1月17日、初めてアジエをペットサロンに連れて行ってお風呂に入れてもらった！\n\nどんな反応をするのか全然わからなかったので、今回は最初から最後までそばで手伝うことにした。\n\nすると案の定、アジエは全力で抵抗 XD\n\n幸い、トリマーさんたちはとても慣れていて、最後は洗濯ネットに入れて体を洗ってくれた。なんとか初めてのお風呂を無事に終えることができた。\n\n家に帰ってからは、新しく買ったおもちゃで少し遊んであげた。でも、よほど疲れたのか、すぐにベッドの上でぐったりと寝てしまった。\n\n初めてのお風呂は、アジエにとってかなり体力を使うイベントだったみたい XD"
+  }
+}
