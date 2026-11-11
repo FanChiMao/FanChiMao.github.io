@@ -1,0 +1,43 @@
+{
+  "date": "2026-01-09",
+  "from": "2026-01-05",
+  "title": {
+    "en": "Ajie Learns His First Tricks",
+    "zh-tw": "阿桔的第一次才藝訓練",
+    "zh-cn": "阿桔的第一次才艺训练",
+    "ja": "アジエの初めての芸の練習"
+  },
+  "location": {
+    "en": "Home",
+    "zh-tw": "家裡",
+    "zh-cn": "家里",
+    "ja": "自宅"
+  },
+  "cover": {
+    "src": "/media/ajie/2026-01-09-ajie-first-tricks-0ac3bc23-b70a-4529-80c1-7af67d16e97f.jpg",
+    "alt": {
+      "en": "Illustration: Ajie, an orange tabby, sits attentively and places his paw in my hand while looking eagerly at a tube of cat treat, practicing shaking paws, switching paws, and high fives.",
+      "zh-tw": "插畫：橘色虎斑貓阿桔專心地坐著，把小肉掌放在我的手上，眼睛緊盯著肉泥點心，正在練習握手、換手和擊掌",
+      "zh-cn": "插画：橘色虎斑猫阿桔专心地坐着，把小肉掌放在我的手上，眼睛紧盯着猫条零食，正在练习握手、换手和击掌",
+      "ja": "イラスト：茶トラのアジエが真剣な表情で座り、おやつをじっと見つめながら僕の手に前足を乗せている。お手、おかわり、ハイタッチの練習をしている場面"
+    }
+  },
+  "media": [
+    {
+      "type": "video",
+      "src": "/media/ajie/2026-01-09-ajie-first-tricks-copy-effb1e64-d652-48de-bd0f-8791cbdf1f59.mp4",
+      "poster": "/media/ajie/2026-01-09-ajie-first-tricks-copy-effb1e64-d652-48de-bd0f-8791cbdf1f59-poster.jpg"
+    },
+    {
+      "type": "video",
+      "src": "/media/ajie/2026-01-09-ajie-first-tricks-img-6954.mp4",
+      "poster": "/media/ajie/2026-01-09-ajie-first-tricks-img-6954-poster.jpg"
+    }
+  ],
+  "caption": {
+    "en": "From January 5 to January 9, I started trying to teach Ajie some tricks!\n\nMaybe it's because he's an orange cat, but Ajie really loves food XD. Every time I bring out a tube of cat treat, he becomes incredibly focused.\n\nHe's so distracted by the treat that I can sometimes trim his nails or sneak medication into his food without too much trouble.\n\nSo I thought, why not try teaching him something? I started with shaking paws, switching paws, and high fives.\n\nTo my surprise, after just two or three days of practice, he was already doing them pretty consistently!!\n\nI didn't expect him to learn so quickly. Apparently, as long as there's a treat involved, Ajie is a pretty motivated student XD",
+    "zh-tw": "1/5～1/9 這幾天，開始嘗試訓練阿桔一些小才藝！\n\n不知道是不是因為牠是橘貓，真的超級愛吃 XD。每次只要拿出肉泥點心，牠就會變得非常專心。\n\n專心到有時候可以趁牠吃肉泥時偷剪指甲，或是把藥丸偷偷混進去，牠也不太會發現。\n\n所以就想說，不然來試試看教牠握手、換手和擊掌好了。\n\n沒想到才練習短短兩、三天，阿桔就已經學得差不多，而且成功率還滿穩定的！！\n\n原本完全沒想到牠學這麼快，看來只要有肉泥，阿桔的學習動力就會直接拉滿 XD",
+    "zh-cn": "1/5～1/9 这几天，开始尝试训练阿桔一些小才艺！\n\n不知道是不是因为它是橘猫，真的超级爱吃 XD。每次只要拿出猫条零食，它就会变得非常专心。\n\n专心到有时候可以趁它吃猫条时偷偷剪指甲，或者把药片偷偷混进去，它也不太会发现。\n\n所以就想说，不然来试试看教它握手、换手和击掌好了。\n\n没想到才练习短短两三天，阿桔就已经学得差不多，而且成功率还蛮稳定的！！\n\n原本完全没想到它学这么快，看来只要有猫条，阿桔的学习动力就会直接拉满 XD",
+    "ja": "1月5日から1月9日にかけて、アジエにちょっとした芸を教えてみることにした！\n\n茶トラだからなのかはわからないけど、アジエは本当に食いしん坊 XD。猫用のおやつを取り出すと、急にものすごく集中する。\n\nおやつに夢中になっている間なら、こっそり爪を切ったり、薬を食べ物に混ぜたりしても、あまり気づかないこともある。\n\nそれなら何か芸も覚えられるんじゃないかと思って、お手、おかわり、ハイタッチを教えてみることにした。\n\nするとびっくり！たった2、3日練習しただけで、ほとんど覚えてしまって、成功率もかなり安定してきた！！\n\nこんなに早く覚えるとは思っていなかった。どうやらアジエは、おやつさえあれば学習意欲が一気に上がるタイプらしい XD"
+  }
+}
