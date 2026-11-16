@@ -1,0 +1,20 @@
+{
+  "order": 6,
+  "title": {
+    "en": "Danhai Wave-Watching Spot",
+    "zh-tw": "淡海觀浪處",
+    "zh-cn": "淡海观浪处",
+    "ja": "淡海の波見スポット"
+  },
+  "place": {
+    "en": "Tamsui, New Taipei",
+    "zh-tw": "新北・淡水",
+    "zh-cn": "新北・淡水",
+    "ja": "台湾・新北・淡水"
+  },
+  "video": {
+    "type": "youtube",
+    "id": "cSI6zm_1JGw"
+  },
+  "aspect": "9:16"
+}

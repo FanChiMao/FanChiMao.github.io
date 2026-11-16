@@ -1,0 +1,20 @@
+{
+  "order": 11,
+  "title": {
+    "en": "Batu Caves",
+    "zh-tw": "黑風洞",
+    "zh-cn": "黑风洞",
+    "ja": "バトゥ洞窟"
+  },
+  "place": {
+    "en": "Kuala Lumpur, Malaysia",
+    "zh-tw": "馬來西亞・吉隆坡",
+    "zh-cn": "马来西亚・吉隆坡",
+    "ja": "マレーシア・クアラルンプール"
+  },
+  "video": {
+    "type": "youtube",
+    "id": "tEzes6xWGds"
+  },
+  "aspect": "9:16"
+}

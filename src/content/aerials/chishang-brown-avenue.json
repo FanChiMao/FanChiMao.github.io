@@ -1,0 +1,20 @@
+{
+  "order": 8,
+  "title": {
+    "en": "Mr. Brown Avenue",
+    "zh-tw": "伯朗大道",
+    "zh-cn": "伯朗大道",
+    "ja": "伯朗大道"
+  },
+  "place": {
+    "en": "Chishang, Taitung",
+    "zh-tw": "台東・池上",
+    "zh-cn": "台东・池上",
+    "ja": "台湾・台東・池上"
+  },
+  "video": {
+    "type": "youtube",
+    "id": "Kk6JuTUQkhI"
+  },
+  "aspect": "9:16"
+}

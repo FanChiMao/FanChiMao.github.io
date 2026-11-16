@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import PersonalLayout from '@/layouts/PersonalLayout.astro';
 import AlbumCard from '@/components/AlbumCard.astro';
+import AerialTheater from '@/components/personal/AerialTheater.astro';
 import { ui, type Locale } from '@/i18n/ui';
 import { personalUi } from '@/i18n/personal';
 import { albumCategories } from '@/content.config';
@@ -14,8 +15,13 @@ const t = ui[lang];
 const p = personalUi[lang];
 const path = '/personal/gallery/';
 const albums = (await getCollection('albums', ({ data }) => !data.draft)).sort((a, b) => a.data.order - b.data.order);
-// Only offer categories that actually have albums.
-const used = albumCategories.filter((c) => albums.some((a) => a.data.categories.includes(c)));
+// Drone films: featured first, then newest (by date, else the highest `order`, i.e. the latest added). Drafts show only in `astro dev`, to preview a flight before publishing.
+const flights = (await getCollection('aerials', ({ data }) => import.meta.env.DEV || !data.draft)).sort(
+  (a, b) => Number(!!b.data.featured) - Number(!!a.data.featured) || (b.data.date ?? '').localeCompare(a.data.date ?? '') || (b.data.order ?? 0) - (a.data.order ?? 0),
+);
+// Only offer categories that actually have albums (the drone films count for "drone").
+// Drone first: the aerial films open the page, so their filter comes right after "All".
+const used = [...albumCategories].sort((x, y) => Number(y === 'drone') - Number(x === 'drone')).filter((c) => albums.some((a) => a.data.categories.includes(c)) || (c === 'drone' && flights.length > 0));
 ---
 
 <PersonalLayout {lang} {path} title={p.chapters.gallery.name} description={t.gallery.subtitle} overlay={false}>
@@ -41,6 +47,10 @@ const used = albumCategories.filter((c) => albums.some((a) => a.data.categories.
       )
     }
 
+    <div data-categories="drone" data-aerial-wrap>
+      <AerialTheater {lang} {flights} />
+    </div>
+
     <div class="container albums" data-albums>
       {albums.map((album, i) => <AlbumCard {lang} {album} index={i} />)}
     </div>
@@ -51,7 +61,7 @@ const used = albumCategories.filter((c) => albums.some((a) => a.data.categories.
   // Category filter. Without JS the buttons stay hidden and every album shows.
   // The choice lives in the URL hash (e.g. #astro) so it can be linked.
   const bar = document.querySelector<HTMLElement>('[data-filters]');
-  const cards = [...document.querySelectorAll<HTMLElement>('[data-albums] [data-categories]')];
+  const cards = [...document.querySelectorAll<HTMLElement>('[data-albums] [data-categories], [data-aerial-wrap]')];
   if (bar) {
     bar.hidden = false;
     const buttons = [...bar.querySelectorAll<HTMLButtonElement>('[data-filter]')];
@@ -107,7 +117,8 @@ const used = albumCategories.filter((c) => albums.some((a) => a.data.categories.
     background: var(--accent);
     color: var(--accent-contrast);
   }
-  .albums > :global([hidden]) {
+  .albums > :global([hidden]),
+  [data-aerial-wrap][hidden] {
     display: none;
   }
   .albums {

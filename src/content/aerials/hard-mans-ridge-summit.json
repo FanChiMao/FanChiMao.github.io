@@ -1,0 +1,20 @@
+{
+  "order": 13,
+  "title": {
+    "en": "Summit of Yinghanling (Hard Man's Ridge)",
+    "zh-tw": "硬漢嶺山頂",
+    "zh-cn": "硬汉岭山顶",
+    "ja": "硬漢嶺の山頂"
+  },
+  "place": {
+    "en": "Mount Guanyin, Bali, New Taipei",
+    "zh-tw": "新北・八里・觀音山",
+    "zh-cn": "新北・八里・观音山",
+    "ja": "台湾・新北・八里・観音山"
+  },
+  "video": {
+    "type": "clip",
+    "src": "/media/aerial/hard-mans-ridge-summit-film.mp4"
+  },
+  "poster": "/media/aerial/hard-mans-ridge-summit-poster.jpg"
+}

@@ -1,0 +1,20 @@
+{
+  "order": 12,
+  "title": {
+    "en": "Summit of Chiyou Mountain",
+    "zh-tw": "池有山山頂",
+    "zh-cn": "池有山山顶",
+    "ja": "池有山の山頂"
+  },
+  "place": {
+    "en": "Wuling, Shei-Pa National Park",
+    "zh-tw": "雪霸國家公園・武陵",
+    "zh-cn": "雪霸国家公园・武陵",
+    "ja": "雪覇国家公園・武陵"
+  },
+  "video": {
+    "type": "clip",
+    "src": "/media/aerial/chiyou-mountain-summit-film.mp4"
+  },
+  "poster": "/media/aerial/chiyou-mountain-summit-poster-end.jpg"
+}

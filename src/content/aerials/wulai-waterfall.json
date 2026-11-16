@@ -1,0 +1,20 @@
+{
+  "order": 5,
+  "title": {
+    "en": "Wulai Waterfall",
+    "zh-tw": "烏來瀑布",
+    "zh-cn": "乌来瀑布",
+    "ja": "烏来瀑布"
+  },
+  "place": {
+    "en": "Wulai, New Taipei",
+    "zh-tw": "新北・烏來",
+    "zh-cn": "新北・乌来",
+    "ja": "台湾・新北・烏来"
+  },
+  "video": {
+    "type": "youtube",
+    "id": "UbJVN6QZ26k"
+  },
+  "aspect": "9:16"
+}

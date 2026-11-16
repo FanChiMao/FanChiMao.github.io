@@ -1,0 +1,687 @@
+---
+/**
+ * Aerial (drone) films on the gallery page.
+ *
+ * - The wall: every film as a tile in justified rows (all tiles in a row share one height, each as
+ *   wide as its shape), so 16:9, 4:3 and vertical 9:16 films (Shorts) sit together with no gaps.
+ *   Hovering a tile shows the drone-OSD frame; a `preview` clip (R2) loops silently on hover.
+ * - The cinema: a tile opens a dark full-screen player sized to the film's shape (films start
+ *   muted; the speaker button turns sound on for every film, remembered per browser), with the
+ *   flight's details, and previous / next (buttons, arrow keys). Esc or the backdrop closes it.
+ * Without JS every tile is a plain link to the film.
+ */
+import { getImage } from 'astro:assets';
+import { Icon } from 'astro-icon/components';
+import type { CollectionEntry } from 'astro:content';
+import { localeMeta, type Locale } from '@/i18n/ui';
+import { personalUi } from '@/i18n/personal';
+import { asset } from '@/lib/assets';
+import { clipUrl, isMedia, photoSrcset, photoUrl } from '@/lib/media';
+
+interface Props {
+  lang: Locale;
+  flights: CollectionEntry<'aerials'>[];
+}
+const { lang, flights } = Astro.props;
+const p = personalUi[lang];
+const a = p.gallery.aerial;
+const pick = (v: string | Record<Locale, string> | undefined) => (typeof v === 'string' ? v : v?.[lang]);
+const dateFmt = new Intl.DateTimeFormat(localeMeta[lang].htmlLang, { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+const deg = (v: number, pos: string, neg: string) => `${Math.abs(v).toFixed(4)}°${v >= 0 ? pos : neg}`;
+const RATIO = { '16:9': 16 / 9, '4:3': 4 / 3, '4:5': 4 / 5, '9:16': 9 / 16 } as const;
+
+/** A poster from R2, src/assets or YouTube (whose hqdefault is 4:3 with bars; cover-cropping to the film's shape removes them). */
+async function poster(f: CollectionEntry<'aerials'>['data']) {
+  if (f.poster && isMedia(f.poster)) return { src: photoUrl(f.poster, 800), srcset: photoSrcset(f.poster) };
+  if (f.poster) {
+    const img = await getImage({ src: asset(f.poster), widths: [480, 800, 1200], format: 'webp', quality: 76 });
+    return { src: img.src, srcset: img.srcSet.attribute };
+  }
+  const id = f.video.type === 'youtube' ? f.video.id : '';
+  return { src: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`, srcset: '' };
+}
+
+const items = await Promise.all(
+  flights.map(async ({ id, data: f }, i) => {
+    const img = await poster(f);
+    const date = f.date ? dateFmt.format(new Date(`${f.date}T00:00:00Z`)) : '';
+    return {
+      id,
+      n: String(i + 1).padStart(2, '0'),
+      title: pick(f.title)!,
+      place: pick(f.place) ?? '',
+      story: pick(f.story) ?? '',
+      date,
+      coords: f.coords ? `${deg(f.coords.lat, 'N', 'S')}  ${deg(f.coords.lng, 'E', 'W')}` : '',
+      alt: f.altitude !== undefined ? `${Math.round(f.altitude)} m` : '',
+      specs: f.specs ?? '',
+      drone: f.drone ?? '',
+      aspect: f.aspect,
+      r: RATIO[f.aspect],
+      kind: f.video.type,
+      src: f.video.type === 'clip' ? clipUrl(f.video.src) : f.video.id,
+      href: f.video.type === 'clip' ? clipUrl(f.video.src) : `https://www.youtube.com/watch?v=${f.video.id}`,
+      preview: f.preview ? clipUrl(f.preview) : '',
+      img: img.src,
+      srcset: img.srcset,
+    };
+  }),
+);
+// Data for the cinema (rendered with textContent, never as HTML). "<" is escaped so no text can end the script element.
+const data = JSON.stringify(items.map(({ srcset: _s, ...rest }) => rest)).replaceAll('<', '\\u003c');
+---
+
+{
+  items.length > 0 && (
+    <section class="aerial" id="aerial" aria-label={p.gallery.categories.drone} data-aerial>
+
+      <div class="container">
+      <ol class="wall">
+        {items.map((f, i) => (
+          <li class="film" style={`--r: ${f.r}`} data-reveal>
+            <a class="film__link" href={f.href} data-film={i} data-aspect={f.aspect} data-preview={f.preview || undefined} aria-label={`${a.play}: ${f.title}`}>
+              <img src={f.img} srcset={f.srcset || undefined} sizes={`${Math.round(f.r * 300)}px`} alt="" loading={i < 6 ? 'eager' : 'lazy'} decoding="async" />
+              <span class="film__shade" aria-hidden="true" />
+              <span class="osd" aria-hidden="true">
+                <span class="osd__c osd__c--tl" />
+                <span class="osd__c osd__c--tr" />
+                <span class="osd__c osd__c--bl" />
+                <span class="osd__c osd__c--br" />
+                <span class="osd__cross" />
+              </span>
+              <span class="film__top" aria-hidden="true">
+                <span>FLT {f.n}</span>
+              </span>
+              <span class="film__play" aria-hidden="true">
+                <Icon name="lucide:play" />
+              </span>
+              <span class="film__text">
+                <strong>{f.title}</strong>
+                {(f.place || f.date) && <small>{[f.place, f.date].filter(Boolean).join(' · ')}</small>}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ol>
+      </div>
+
+      <dialog class="cinema" data-cinema aria-labelledby="cinema-title">
+        <div class="cinema__bar">
+          <span class="cinema__flt" data-c="flt" />
+          <span class="cinema__actions">
+            {/* Sound for every film, remembered in this browser (off by default). */}
+            <button type="button" class="cinema__btn cinema__sound" data-sound aria-pressed="false" aria-label={p.posts.sound}>
+              <Icon name="lucide:volume-x" class="cinema__muted" />
+              <Icon name="lucide:volume-2" class="cinema__unmuted" />
+            </button>
+            <button type="button" class="cinema__btn" data-close aria-label={p.posts.close}>
+              <Icon name="lucide:x" />
+            </button>
+          </span>
+        </div>
+        <div class="cinema__body" data-c="body">
+          <div class="cinema__frame" data-c="frame">
+            <span class="osd osd--on" aria-hidden="true">
+              <span class="osd__c osd__c--tl" />
+              <span class="osd__c osd__c--tr" />
+              <span class="osd__c osd__c--bl" />
+              <span class="osd__c osd__c--br" />
+            </span>
+            <div class="cinema__screen" data-c="screen" />
+          </div>
+          <div class="cinema__info">
+            <h3 class="cinema__title" id="cinema-title" data-c="title" />
+            <p class="cinema__meta" data-c="meta" />
+            <div class="cinema__story" data-c="story" />
+          </div>
+        </div>
+        {
+          items.length > 1 && (
+            <>
+              <button type="button" class="cinema__nav cinema__nav--prev" data-step="-1" aria-label={p.posts.prev}>
+                <Icon name="lucide:chevron-left" />
+              </button>
+              <button type="button" class="cinema__nav cinema__nav--next" data-step="1" aria-label={p.posts.next}>
+                <Icon name="lucide:chevron-right" />
+              </button>
+            </>
+          )
+        }
+      </dialog>
+      <script type="application/json" data-films set:html={data} />
+    </section>
+  )
+}
+
+<script>
+  type Film = {
+    id: string;
+    n: string;
+    title: string;
+    place: string;
+    story: string;
+    date: string;
+    coords: string;
+    alt: string;
+    specs: string;
+    drone: string;
+    aspect: string;
+    r: number;
+    kind: 'clip' | 'youtube';
+    src: string;
+    href: string;
+    preview: string;
+    img: string;
+  };
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.querySelectorAll<HTMLElement>('[data-aerial]').forEach((root) => {
+    const films: Film[] = JSON.parse(root.querySelector('[data-films]')!.textContent!);
+    const dialog = root.querySelector<HTMLDialogElement>('[data-cinema]')!;
+    const $ = (k: string) => dialog.querySelector<HTMLElement>(`[data-c="${k}"]`)!;
+    const screen = $('screen');
+    let at = 0;
+
+    // ---- Sound: one switch for every film, remembered per browser; off until turned on.
+    const SOUND_KEY = 'aerial:sound';
+    const YT_ORIGIN = 'https://www.youtube-nocookie.com';
+    let soundOn = false;
+    try {
+      soundOn = localStorage.getItem(SOUND_KEY) === 'on';
+    } catch {}
+    const soundBtn = dialog.querySelector<HTMLButtonElement>('[data-sound]')!;
+    const setSound = (on: boolean) => {
+      soundOn = on;
+      soundBtn.setAttribute('aria-pressed', String(on));
+      try {
+        localStorage.setItem(SOUND_KEY, on ? 'on' : 'off');
+      } catch {}
+    };
+    soundBtn.setAttribute('aria-pressed', String(soundOn));
+    // Applies the switch to the film on screen: a clip directly, YouTube through its player API.
+    const applySound = () => {
+      const el = screen.firstElementChild;
+      if (el instanceof HTMLVideoElement) el.muted = !soundOn;
+      else if (el instanceof HTMLIFrameElement) el.contentWindow?.postMessage(JSON.stringify({ event: 'command', func: soundOn ? 'unMute' : 'mute', args: [] }), YT_ORIGIN);
+    };
+    soundBtn.addEventListener('click', () => {
+      setSound(!soundOn);
+      applySound();
+    });
+
+    // ---- Hover previews on the wall (R2 clips with a `preview`).
+    if (!reduce)
+      root.querySelectorAll<HTMLAnchorElement>('[data-preview]').forEach((tile) => {
+        let v: HTMLVideoElement | null = null;
+        tile.addEventListener('pointerenter', () => {
+          v ??= Object.assign(document.createElement('video'), { muted: true, loop: true, playsInline: true, src: tile.dataset.preview!, className: 'film__preview' });
+          if (!v.isConnected) tile.insertBefore(v, tile.querySelector('.film__shade'));
+          v.play().catch(() => {});
+        });
+        tile.addEventListener('pointerleave', () => v?.pause());
+      });
+
+    // ---- The cinema.
+    const show = (i: number) => {
+      at = (i + films.length) % films.length;
+      const f = films[at];
+      screen.replaceChildren();
+      $('body').dataset.aspect = f.aspect;
+      $('frame').style.setProperty('--r', String(f.r));
+      $('flt').textContent = `FLT ${f.n} / ${String(films.length).padStart(2, '0')}`;
+      $('title').textContent = f.title;
+      $('meta').textContent = [f.place, f.date, f.drone, f.alt && `▲ ${f.alt}`, f.specs, f.coords].filter(Boolean).join('  ·  ');
+      $('story').replaceChildren(
+        ...f.story
+          .split(/\n{2,}/)
+          .filter(Boolean)
+          .map((t) => Object.assign(document.createElement('p'), { textContent: t })),
+      );
+
+      if (f.kind === 'youtube') {
+        const iframe = document.createElement('iframe');
+        iframe.src = `${YT_ORIGIN}/embed/${encodeURIComponent(f.src)}?autoplay=1&mute=${soundOn ? 0 : 1}&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`;
+        iframe.title = f.title;
+        iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+        iframe.allowFullscreen = true;
+        screen.append(iframe);
+      } else {
+        const v = Object.assign(document.createElement('video'), { src: f.src, controls: true, autoplay: true, muted: !soundOn, playsInline: true, poster: f.img });
+        v.setAttribute('aria-label', f.title);
+        // The player's own volume button changes the switch too.
+        v.addEventListener('volumechange', () => v.muted !== !soundOn && setSound(!v.muted));
+        screen.append(v);
+      }
+    };
+    const open = (i: number) => {
+      show(i);
+      if (!dialog.open) dialog.showModal();
+    };
+
+    root.querySelectorAll<HTMLAnchorElement>('[data-film]').forEach((tile) =>
+      tile.addEventListener('click', (ev) => {
+        if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.button !== 0) return;
+        ev.preventDefault();
+        open(Number(tile.dataset.film));
+      }),
+    );
+    dialog.querySelectorAll<HTMLButtonElement>('[data-step]').forEach((b) => b.addEventListener('click', () => show(at + Number(b.dataset.step))));
+    dialog.querySelector('[data-close]')!.addEventListener('click', () => dialog.close());
+    // A click on the dark backdrop (not on the film or its text) closes.
+    dialog.addEventListener('click', (ev) => {
+      const t = ev.target as Element;
+      if (t === dialog || t.matches('.cinema__body')) dialog.close();
+    });
+    dialog.addEventListener('keydown', (ev) => {
+      if (films.length < 2) return;
+      if (ev.key === 'ArrowRight') show(at + 1);
+      if (ev.key === 'ArrowLeft') show(at - 1);
+    });
+    // Stop the film and give focus back to its tile.
+    dialog.addEventListener('close', () => {
+      screen.replaceChildren();
+      root.querySelector<HTMLElement>(`[data-film="${at}"]`)?.focus({ preventScroll: true });
+    });
+  });
+</script>
+
+<style>
+  .aerial {
+    --osd: rgb(232 246 255 / 0.9);
+    margin-bottom: 3.5rem;
+  }
+
+  /* ---- The wall: justified rows. Each tile grows in proportion to its shape, so a row shares one height. */
+  .wall {
+    --h: 400px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  /* Keeps the last row from stretching a lone tile across the page. */
+  .wall::after {
+    content: '';
+    flex: 999 1 0;
+  }
+  @media (max-width: 900px) {
+    .wall {
+      --h: 300px;
+    }
+  }
+  @media (max-width: 560px) {
+    .wall {
+      --h: 250px;
+      gap: 8px;
+    }
+  }
+  .film {
+    flex: var(--r) 1 calc(var(--r) * var(--h));
+    aspect-ratio: var(--r);
+    min-width: 0;
+  }
+  .film__link {
+    position: relative;
+    display: block;
+    height: 100%;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: 14px;
+    background: #0b1422;
+    color: #fff;
+    text-decoration: none;
+    box-shadow: 0 12px 30px -16px rgb(0 0 0 / 0.55);
+  }
+  .film__link > img,
+  .film__link > :global(.film__preview) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1.2s var(--ease-out);
+  }
+  .film__link:hover > img {
+    transform: scale(1.06);
+  }
+  .film__shade {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to bottom, rgb(0 0 0 / 0.4), transparent 28%),
+      linear-gradient(to top, rgb(3 6 13 / 0.85), transparent 55%);
+  }
+
+  /* Drone on-screen display: corner brackets and a crosshair, shown on hover / focus. */
+  .osd {
+    position: absolute;
+    inset: 8px;
+    pointer-events: none;
+    opacity: 0;
+    transition:
+      opacity 0.3s,
+      inset 0.4s var(--ease-out);
+  }
+  .film__link:is(:hover, :focus-visible) .osd {
+    opacity: 1;
+    inset: 12px;
+  }
+  .osd--on {
+    opacity: 1;
+  }
+  .osd__c {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 0 solid var(--osd);
+  }
+  .osd__c--tl {
+    top: 0;
+    left: 0;
+    border-width: 2px 0 0 2px;
+  }
+  .osd__c--tr {
+    top: 0;
+    right: 0;
+    border-width: 2px 2px 0 0;
+  }
+  .osd__c--bl {
+    bottom: 0;
+    left: 0;
+    border-width: 0 0 2px 2px;
+  }
+  .osd__c--br {
+    bottom: 0;
+    right: 0;
+    border-width: 0 2px 2px 0;
+  }
+  .osd__cross {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 64px;
+    height: 64px;
+    translate: -50% -50%;
+    background:
+      linear-gradient(var(--osd), var(--osd)) center / 100% 1px no-repeat,
+      linear-gradient(var(--osd), var(--osd)) center / 1px 100% no-repeat;
+    mask: radial-gradient(circle, transparent 22px, #000 23px);
+    opacity: 0.7;
+  }
+
+  .film__top {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.85rem;
+    right: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-shadow: 0 1px 3px rgb(0 0 0 / 0.6);
+  }
+  .film__play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: rgb(0 0 0 / 0.35);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    scale: 0.85;
+    transition:
+      opacity 0.3s,
+      scale 0.35s var(--ease-out);
+  }
+  .film__play :global(svg) {
+    width: 20px;
+    height: 20px;
+    margin-left: 3px;
+  }
+  .film__link:is(:hover, :focus-visible) .film__play {
+    opacity: 1;
+    scale: 1;
+  }
+  /* Touch screens have no hover: keep a small play mark visible. */
+  @media (hover: none) {
+    .film__play {
+      opacity: 1;
+      scale: 0.75;
+    }
+  }
+  .film__text {
+    position: absolute;
+    left: 0.85rem;
+    right: 0.85rem;
+    bottom: 0.75rem;
+    display: grid;
+    gap: 0.1rem;
+    text-shadow: 0 1px 4px rgb(0 0 0 / 0.6);
+  }
+  .film__text strong {
+    overflow: hidden;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .film__text small {
+    overflow: hidden;
+    font-size: 0.75rem;
+    opacity: 0.8;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* Narrow (vertical) tiles: smaller type so it fits. */
+  .film__link[data-aspect='9:16'] .film__text strong {
+    font-size: 0.9rem;
+    white-space: normal;
+  }
+  .film__link:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+  @media (max-width: 560px) {
+    .film__text strong {
+      font-size: 0.85rem;
+    }
+    .film__text small,
+    .film__top {
+      display: none;
+    }
+  }
+
+  /* ---- The cinema */
+  .cinema {
+    --chrome: 15.5rem;
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: rgb(2 4 9 / 0.96);
+    color: #eef4fa;
+    overflow: hidden;
+  }
+  .cinema::backdrop {
+    background: rgb(2 4 9 / 0.7);
+    backdrop-filter: blur(6px);
+  }
+  .cinema[open] {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  :global(html:has(.cinema[open])) {
+    overflow: hidden;
+  }
+  .cinema__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem 0.25rem 1.25rem;
+  }
+  .cinema__flt {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    color: rgb(238 244 250 / 0.6);
+  }
+  .cinema__btn,
+  .cinema__nav {
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.08);
+    color: inherit;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .cinema__btn:hover,
+  .cinema__nav:hover {
+    background: rgb(255 255 255 / 0.18);
+  }
+  .cinema__btn :global(svg),
+  .cinema__nav :global(svg) {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+  .cinema__actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .cinema__sound[aria-pressed='true'] :global(.cinema__muted),
+  .cinema__sound[aria-pressed='false'] :global(.cinema__unmuted) {
+    display: none;
+  }
+  .cinema__sound[aria-pressed='true'] {
+    background: rgb(255 255 255 / 0.2);
+  }
+  .cinema__nav {
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+  }
+  .cinema__nav--prev {
+    left: 1rem;
+  }
+  .cinema__nav--next {
+    right: 1rem;
+  }
+  .cinema__body {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 1.25rem;
+    padding: 0 4.5rem 1.5rem;
+    overflow-y: auto;
+  }
+  /* The film's frame: as large as fits, in its own shape. */
+  .cinema__frame {
+    position: relative;
+    width: min(100%, calc((100dvh - var(--chrome)) * var(--r, 1.778)));
+    aspect-ratio: var(--r, 16 / 9);
+  }
+  .cinema__frame > .osd {
+    inset: -10px;
+  }
+  .cinema__screen {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: 6px;
+    background: #000;
+  }
+  .cinema__screen > :global(*) {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .cinema__info {
+    width: min(100%, 52rem);
+    text-align: center;
+  }
+  .cinema__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 2.4vw, 1.7rem);
+    letter-spacing: -0.01em;
+  }
+  .cinema__meta {
+    margin: 0.35rem 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    color: rgb(238 244 250 / 0.6);
+    white-space: pre-wrap;
+  }
+  .cinema__meta:empty {
+    display: none;
+  }
+  .cinema__story {
+    margin-top: 0.6rem;
+    color: rgb(238 244 250 / 0.85);
+    text-align: start;
+  }
+  .cinema__story :global(p) {
+    margin: 0 0 0.5rem;
+  }
+  /* Upright films on a wide screen: the film on the left, the details beside it. */
+  @media (min-width: 900px) {
+    .cinema__body:is([data-aspect='9:16'], [data-aspect='4:5']) {
+      --chrome: 6.5rem;
+      grid-template-columns: auto minmax(0, 24rem);
+      justify-content: center;
+      align-items: center;
+      gap: 3rem;
+    }
+    .cinema__body:is([data-aspect='9:16'], [data-aspect='4:5']) .cinema__frame {
+      width: calc((100dvh - var(--chrome)) * var(--r));
+    }
+    .cinema__body:is([data-aspect='9:16'], [data-aspect='4:5']) .cinema__info {
+      text-align: start;
+    }
+  }
+  @media (max-width: 700px) {
+    .cinema {
+      --chrome: 13rem;
+    }
+    .cinema__body {
+      padding: 0 0.75rem 5rem;
+    }
+    .cinema__nav {
+      top: auto;
+      bottom: 1rem;
+      translate: none;
+    }
+    .cinema__nav--prev {
+      left: calc(50% - 3.1rem);
+    }
+    .cinema__nav--next {
+      right: calc(50% - 3.1rem);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .film__link > img,
+    .osd,
+    .film__play {
+      transition: none;
+    }
+    .film__link:hover > img {
+      transform: none;
+    }
+  }
+</style>

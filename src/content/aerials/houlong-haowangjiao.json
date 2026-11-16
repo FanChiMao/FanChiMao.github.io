@@ -1,0 +1,20 @@
+{
+  "order": 3,
+  "title": {
+    "en": "Haowangjiao (Cape of Good Hope)",
+    "zh-tw": "好望角",
+    "zh-cn": "好望角",
+    "ja": "好望角"
+  },
+  "place": {
+    "en": "Houlong, Miaoli",
+    "zh-tw": "苗栗・後龍",
+    "zh-cn": "苗栗・后龙",
+    "ja": "台湾・苗栗・後龍"
+  },
+  "video": {
+    "type": "youtube",
+    "id": "naRfCyxn49g"
+  },
+  "aspect": "9:16"
+}

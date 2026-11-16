@@ -1,0 +1,20 @@
+{
+  "order": 9,
+  "title": {
+    "en": "Beitou Park",
+    "zh-tw": "北投公園",
+    "zh-cn": "北投公园",
+    "ja": "北投公園"
+  },
+  "place": {
+    "en": "Beitou, Taipei",
+    "zh-tw": "台北・北投",
+    "zh-cn": "台北・北投",
+    "ja": "台湾・台北・北投"
+  },
+  "video": {
+    "type": "youtube",
+    "id": "TJc0e4groIU"
+  },
+  "aspect": "9:16"
+}

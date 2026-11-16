@@ -205,4 +205,46 @@ const journey = defineCollection({
   }),
 });
 
-export const collections = { experience, competitions, publications, patents, education, albums, ajie, journey };
+/**
+ * Aerial (drone) films, shown in their own theatre on the gallery page. One JSON per flight:
+ * src/content/aerials/<date>-<slug>.json. The film is a clip in R2 ("/media/aerial/<id>-<name>.mp4",
+ * played with controls and sound) or a YouTube video; the HUD fields are optional facts of the flight.
+ */
+const aerials = defineCollection({
+  loader: glob({ pattern: '*.json', base: './src/content/aerials' }),
+  schema: z
+    .object({
+      /** Day of the flight; leave out if unknown (sorted last, no date on the HUD). */
+      date: z.iso.date().optional(),
+      title: textOrT,
+      place: textOrT.optional(),
+      /** Take-off point, shown on the HUD (decimal degrees). */
+      coords: z.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) }).optional(),
+      /** The film: a clip in R2, or a YouTube video id. */
+      video: z.discriminatedUnion('type', [
+        z.object({ type: z.literal('clip'), src: z.string().startsWith('/media/') }),
+        z.object({ type: z.literal('youtube'), id: z.string() }),
+      ]),
+      /** Shape of the picture itself (not of YouTube's player): 16:9 (default), 4:3, 4:5, or 9:16 for vertical films and Shorts. */
+      aspect: z.enum(['16:9', '4:3', '4:5', '9:16']).default('16:9'),
+      /** Order among flights without a date: higher first, so a new flight takes the next number and shows at the top. */
+      order: z.number().optional(),
+      /** Still frame ("/media/..." in R2 or a path under src/assets). Optional for YouTube (its thumbnail is used). */
+      poster: asset.optional(),
+      /** A few silent seconds ("/media/....mp4", muted loop) playing on the stage before Play is pressed. */
+      preview: z.string().startsWith('/media/').optional(),
+      /** e.g. "DJI Mini 4 Pro". */
+      drone: z.string().optional(),
+      /** Highest altitude above take-off, in metres. */
+      altitude: z.number().nonnegative().optional(),
+      /** e.g. "4K · 60fps · D-Log M". */
+      specs: z.string().optional(),
+      story: textOrT.optional(),
+      /** Featured flights come first, before the newest. */
+      featured: z.boolean().optional(),
+      draft: z.boolean().optional(),
+    })
+    .refine((d) => d.poster || d.video.type === 'youtube', { message: 'a clip needs a `poster`', path: ['poster'] }),
+});
+
+export const collections = { experience, competitions, publications, patents, education, albums, ajie, journey, aerials };

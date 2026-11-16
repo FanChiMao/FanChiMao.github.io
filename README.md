@@ -31,6 +31,7 @@ Requires Node 24 (see `.nvmrc`).
 | Structured data (schema.org Person, WebSite, ScholarlyArticle) | `src/components/StructuredData.astro` |
 | Google Search Console ownership file (**do not delete**, verification depends on it) | `public/googlea75f55073ef5610a.html` |
 | Photo albums | `src/content/albums/*.json` + photos in `src/assets/gallery/<album>/` |
+| Aerial (drone) films on the gallery page | `src/content/aerials/*.json` + clips in R2 (`/media/aerial/`) or YouTube |
 | Standalone apps (not processed by Astro) | `public/playground/` |
 | Content schema (validated at build time) | `src/content.config.ts` |
 
@@ -70,6 +71,32 @@ Lower `order` shows first. The first 4 cards are shown; the rest sit behind "Loa
 ```
 
 Every build runs `npm run photos:check` first and fails if any image under `src/assets` or `public` still carries GPS, so a location can never be deployed by accident. The repo is public: run `npm run photos` **before committing** new photos.
+
+### Aerial films (drone)
+
+The gallery page opens with the aerial wall: every film as a tile in justified rows (16:9, 4:3 and vertical 9:16 films side by side), each opening a full-screen player with the flight's details and previous / next. One JSON per flight in `src/content/aerials/<slug>.json`; the section disappears when there are none, and the "Drone" filter shows it alone.
+
+```json
+{
+  "date": "2025-03-02",
+  "order": 1,
+  "title": { "en": "Tamsui at dusk", "zh-tw": "淡水黃昏", "zh-cn": "淡水黄昏", "ja": "夕暮れの淡水" },
+  "place": "Tamsui, New Taipei",
+  "video": { "type": "youtube", "id": "VIDEO_ID" },
+  "aspect": "9:16",
+  "drone": "DJI Mini 4 Pro",
+  "altitude": 118,
+  "specs": "4K · 60fps",
+  "coords": { "lat": 25.1677, "lng": 121.4407 },
+  "story": "Optional text."
+}
+```
+
+- `video` is `{ "type": "youtube", "id": "..." }` or a clip in R2 (`{ "type": "clip", "src": "/media/aerial/....mp4" }` + a `poster`, required for clips).
+- `aspect`: the shape of the picture itself, not of YouTube's player: `16:9` (default), `4:3`, `4:5`, or `9:16` for Shorts and vertical films uploaded as normal videos (YouTube pads those with blurred or black sides; the tile and the player crop them away).
+- Order: `featured` first, then by `date` (newest first), then `order` for flights without a date (higher first: give a new flight the next number and it shows at the top). Everything except `title` and `video` is optional; `date` shows on the tile and in the player when given. Films start muted; the speaker button in the player turns the sound on or off for every film and is remembered in that browser.
+- `preview` (R2 clip only): a few silent seconds looping on the tile on hover. `draft: true` shows a flight only in `npm run dev`.
+- Upload a clip by hand: `npx wrangler r2 object put 52hzfan-media/aerial/<file> --file <file> --content-type video/mp4 --cache-control "public, max-age=604800" --remote` (from `workers/site-admin`; strip metadata/GPS first).
 
 ### Ajie and Journey posts
 

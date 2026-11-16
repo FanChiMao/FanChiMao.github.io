@@ -1,0 +1,20 @@
+{
+  "order": 4,
+  "title": {
+    "en": "Crocodile Island, Thousand Island Lake",
+    "zh-tw": "鱷魚島 千島湖",
+    "zh-cn": "鳄鱼岛 千岛湖",
+    "ja": "鰐魚島・千島湖"
+  },
+  "place": {
+    "en": "Shiding, New Taipei",
+    "zh-tw": "新北・石碇",
+    "zh-cn": "新北・石碇",
+    "ja": "台湾・新北・石碇"
+  },
+  "video": {
+    "type": "youtube",
+    "id": "Ytm6G0-rNqM"
+  },
+  "aspect": "4:5"
+}

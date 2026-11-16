@@ -1,0 +1,20 @@
+{
+  "order": 2,
+  "title": {
+    "en": "Shuinandong & the Yin Yang Sea",
+    "zh-tw": "水湳洞 陰陽海",
+    "zh-cn": "水湳洞 阴阳海",
+    "ja": "水湳洞・陰陽海"
+  },
+  "place": {
+    "en": "Ruifang, New Taipei",
+    "zh-tw": "新北・瑞芳",
+    "zh-cn": "新北・瑞芳",
+    "ja": "台湾・新北・瑞芳"
+  },
+  "video": {
+    "type": "youtube",
+    "id": "ec2Rnvuzkyk"
+  },
+  "aspect": "9:16"
+}

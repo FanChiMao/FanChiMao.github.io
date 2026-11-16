@@ -1,0 +1,20 @@
+{
+  "order": 7,
+  "title": {
+    "en": "Laomei Green Reef",
+    "zh-tw": "綠石槽",
+    "zh-cn": "绿石槽",
+    "ja": "老梅緑石槽"
+  },
+  "place": {
+    "en": "Shimen, New Taipei",
+    "zh-tw": "新北・石門",
+    "zh-cn": "新北・石门",
+    "ja": "台湾・新北・石門"
+  },
+  "video": {
+    "type": "youtube",
+    "id": "dJk8MMEtvbE"
+  },
+  "aspect": "9:16"
+}

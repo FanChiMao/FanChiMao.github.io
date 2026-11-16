@@ -67,6 +67,7 @@ const en = {
     filter: 'Filter albums',
     all: 'All',
     categories: { astro: 'Astrophotography', drone: 'Drone', landscape: 'Landscapes', city: 'City & Night', everyday: 'Everyday Moments' },
+    aerial: { play: 'Play film' },
   },
   stub: {
     soon: 'This chapter is still being written.',
@@ -258,6 +259,7 @@ const zhTw: PersonalUI = {
     filter: '篩選相簿',
     all: '全部',
     categories: { astro: '星空攝影', drone: '空拍', landscape: '風景', city: '城市與夜景', everyday: '日常片刻' },
+    aerial: { play: '播放影片' },
   },
   stub: {
     soon: '這一章還在撰寫中。',
@@ -446,6 +448,7 @@ const zhCn: PersonalUI = {
     filter: '筛选相册',
     all: '全部',
     categories: { astro: '星空摄影', drone: '航拍', landscape: '风景', city: '城市与夜景', everyday: '日常片刻' },
+    aerial: { play: '播放视频' },
   },
   stub: {
     soon: '这一章还在撰写中。',
@@ -634,6 +637,7 @@ const ja: PersonalUI = {
     filter: 'アルバムを絞り込む',
     all: 'すべて',
     categories: { astro: '星景写真', drone: 'ドローン', landscape: '風景', city: '街と夜景', everyday: '日常のひとこま' },
+    aerial: { play: '動画を再生' },
   },
   stub: {
     soon: 'この章はまだ執筆中です。',

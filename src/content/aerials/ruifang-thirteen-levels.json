@@ -1,0 +1,20 @@
+{
+  "order": 1,
+  "title": {
+    "en": "Thirteen Levels Smelter Ruins",
+    "zh-tw": "十三層遺址",
+    "zh-cn": "十三层遗址",
+    "ja": "十三層遺址"
+  },
+  "place": {
+    "en": "Ruifang, New Taipei",
+    "zh-tw": "新北・瑞芳",
+    "zh-cn": "新北・瑞芳",
+    "ja": "台湾・新北・瑞芳"
+  },
+  "video": {
+    "type": "youtube",
+    "id": "zeDCAMSaS3k"
+  },
+  "aspect": "9:16"
+}

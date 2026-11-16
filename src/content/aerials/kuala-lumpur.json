@@ -1,0 +1,20 @@
+{
+  "order": 10,
+  "title": {
+    "en": "Kuala Lumpur",
+    "zh-tw": "吉隆坡",
+    "zh-cn": "吉隆坡",
+    "ja": "クアラルンプール"
+  },
+  "place": {
+    "en": "Kuala Lumpur, Malaysia",
+    "zh-tw": "馬來西亞・吉隆坡",
+    "zh-cn": "马来西亚・吉隆坡",
+    "ja": "マレーシア・クアラルンプール"
+  },
+  "video": {
+    "type": "youtube",
+    "id": "jOrsvL-Tsg0"
+  },
+  "aspect": "9:16"
+}
